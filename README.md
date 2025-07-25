@@ -1,6 +1,7 @@
 # CSE325 Team Project
 
 ## Team Members - Team 06
+
 - Andrea Toreki
 - Amanda Cristina Schneider Migliorini
 - Anana Agwu Ezikpe
@@ -11,7 +12,9 @@
 - Richard Boniface Sam
 
 ## Project Idea: Add project idea
-Add project description after the firsy meeting
+
+Add project description after the first meeting
 
 ### Features:
-Add features after the first team meeting 
+
+Add features after the first team meeting

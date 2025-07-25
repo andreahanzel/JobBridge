@@ -1,0 +1,107 @@
+/* Main Layout Styling */
+.page-layout-horizontal {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.top-navbar-container {
+    background-color: rgba(229, 215, 136, 0.75);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+/* Main Content Styling */
+.main-content-horizontal {
+    flex: 1 0 auto; /* Ensure main content takes available space */
+    padding-bottom: 4rem; /* Prevent overlap with footer */
+}
+
+.content.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Navigation Link Styling */
+.navbar-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center; /* Align all nav items vertically */
+    justify-content: around; /* Spread items evenly */
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(19, 121, 19, 0.9);
+    text-decoration: none;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    height: 2.5rem; /* Consistent height */
+    padding: 0 0.75rem;
+}
+
+.navbar-nav .nav-link.active {
+    color: white;
+    background-color: rgba(19, 121, 19, 0.9);
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.navbar-nav .nav-link:hover {
+    color: rgba(19, 121, 19, 1);
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+    text-decoration: underline;
+}
+
+/* Navbar Brand Styling */
+.navbar-brand {
+    font-size: 1.25rem; /* Match nav-link font size */
+    color: rgba(19, 121, 19, 1);
+    display: flex;
+    align-items: center; /* Align vertically with nav items */
+    height: 2.5rem; /* Match nav-item height */
+    padding: 0 0.75rem;
+    margin-right: 0.75rem;
+}
+
+/* Logout Button Styling */
+.top-navbar-container .nav-item .btn-link {
+    color: rgba(19, 121, 19, 0.9);
+    padding: 0 0.75rem;
+    height: 2.5rem; /* Match nav-item height */
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.top-navbar-container .nav-item .btn-link:hover {
+    color: rgba(19, 121, 19, 1);
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+    text-decoration: underline;
+}
+
+/* Error UI Styling */
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0,0,0,0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1001; /* Above footer */
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}

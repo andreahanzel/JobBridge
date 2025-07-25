@@ -1,0 +1,111 @@
+# Visual Studio files and folders
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.opendb
+*.VC.db
+*.sdf
+*.cache
+*.obj
+*.bak
+*.exe
+*.dll
+*.pdb
+*.tlog
+*.idb
+*.lib
+*.ncb
+*.res
+*.sbr
+*.bsc
+*.log
+*.filter
+*.metaproj
+*.objidb
+*.ipch
+*.aps
+*.manifest
+*.pch
+*.vcproj.*.filters
+*.vshost.*
+*.testsettings
+*.trx
+*.vsix
+*.webtest
+*.coverage
+*.coveragexml
+*.rptproj.user
+*.mdf
+*.ldf
+*.dacpac
+*.publish.xml
+*.sqlproj.user
+*.sqlproj.dbmdl
+*.sqlce
+*.csproj.user
+*.vbproj.user
+*.fsproj.user
+*.dbml.layout
+*.dbml
+*.pfx
+*.snk
+*.orig
+*.swp
+*.bak
+_UpgradeReport_Files/
+App_Data/
+Publish/
+bin/
+obj/
+Generated_Code/
+TestResults/
+Resharper/
+*.resharper
+*.resharper.user
+.idea/ # For Rider/IntelliJ
+packages/ # For older .NET projects using NuGet packages folder
+TestResults/
+node_modules/ # If you use npm/yarn
+temp/
+out/
+.DS_Store # macOS files
+Thumbs.db # Windows thumbnail cache
+
+# Custom additions for Blazor/ASP.NET Core
+appsettings.Development.json # Often contains local connection strings/secrets
+appsettings.Staging.json     # Or other environment-specific settings not meant for repo
+appsettings.Production.json
+appsettings.*.json # Catch-all for environment settings, but be careful if some *are* meant to be tracked
+*.sqlite # SQLite database files (if you're using local SQLite)
+wwwroot/css/*.map # CSS sourcemaps if you're using Sass/Less and not bundling
+wwwroot/js/*.map # JS sourcemaps
+dist/ # If you have any build output directory
+.webpack/ # If you use webpack
+.env # Environment variables
+
+# User secrets (ASP.NET Core Secret Manager)
+*.usersecrets
+
+# Azure related
+.azure/
+.azurefunctions/
+.funcignore
+local.settings.json # Often contains sensitive settings for Azure Functions
+
+# Docker files (if applicable)
+docker-compose.override.yml # Local Docker overrides
+
+# VS Code (if you use it)
+.vscode/
+
+# Npm debug log
+npm-debug.log*
+
+# Dotnet tool local tools folder
+.config/dotnet-tools.json
+.config/dotnet-tools.checksum
+
+# Rider
+.idea/

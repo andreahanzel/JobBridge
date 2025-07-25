@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page-layout-horizontal">
+    <header class="top-navbar-container">
+        <NavMenu />
+    </header>
+
+    <main class="main-content-horizontal">
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+
+    <Footer />
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
