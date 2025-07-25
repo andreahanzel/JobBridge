@@ -10,6 +10,11 @@
 - Yawogan Abraham Nyuiadzi
 - Ernest Nkansah Kyei
 - Richard Boniface Sam
+- Steven Thomas
+
+## Repo link
+
+[https://dev.azure.com/atorekiTEAM/_git/CSE325TeamProject]
 
 ## Project Idea: Add project idea
 
