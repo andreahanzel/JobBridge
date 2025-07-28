@@ -47,13 +47,13 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 // --- END: Identity and Authentication Services ---
 
 
-// --- START: YOUR CUSTOM SERVICE REGISTRATIONS ---
-// Register your custom business logic services
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<JobService>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<ApplicationService>();
-// --- END: YOUR CUSTOM SERVICE REGISTRATIONS ---
+// // --- START: YOUR CUSTOM SERVICE REGISTRATIONS ---
+// // Register your custom business logic services
+// builder.Services.AddScoped<AuthService>();
+// builder.Services.AddScoped<JobService>();
+// builder.Services.AddScoped<UserService>();
+// builder.Services.AddScoped<ApplicationService>();
+// // --- END: YOUR CUSTOM SERVICE REGISTRATIONS ---
 
 
 var app = builder.Build();
@@ -94,5 +94,16 @@ app.MapRazorComponents<App>()
 // Adds additional endpoints for Identity UI (e.g., /Identity/Account/Login)
 // This method is provided by the IdentityEndpointsExtensions.cs file
 app.MapAdditionalIdentityEndpoints();
+
+// Initialize the database
+var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+using (var scope = scopeFactory.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<PizzaStoreContext>();
+    if (db.Database.EnsureCreated())
+    {
+        SeedData.Initialize(db);
+    }
+}
 
 app.Run();
