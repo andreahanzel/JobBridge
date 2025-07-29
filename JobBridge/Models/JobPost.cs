@@ -1,6 +1,6 @@
-namespace JobBridge.Models
+namespace JobBridge.Data
 {
-    public class JobPosts
+    public class JobPost
     {
         public int Id { get; set; }
         public string Title { get; set; }

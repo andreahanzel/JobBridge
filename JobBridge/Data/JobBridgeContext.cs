@@ -10,5 +10,5 @@ public class JobBridgeContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Employers> Employers { get; set; }
-    public DbSet<JobPosts> JobPosts { get; set; }
+    public DbSet<JobPost> JobPosts { get; set; }
 }
