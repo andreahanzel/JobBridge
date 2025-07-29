@@ -62,6 +62,17 @@ namespace JobBridge.Data
             db.Employers.AddRange(employers);
             db.SaveChanges();
 
+            //Fields
+            var fields = new Field[]
+            {
+                new Field { FieldTitle = "Software Development" },
+                new Field { FieldTitle = "Marketing" },
+                new Field { FieldTitle = "Business" },
+                new Field { FieldTitle = "Sales" }
+            };
+            db.Fields.AddRange(fields);
+            db.SaveChanges();
+
             // Jobs
             var jobPosts = new JobPost[]
             {
@@ -77,7 +88,8 @@ namespace JobBridge.Data
                     PostExpirationDate = DateTime.UtcNow.AddDays(30),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    EmployerId = employers[0].Id
+                    EmployerId = employers[0].Id,
+                    FieldId = fields[0].Id // Assign FieldId
                 },
                 new JobPost
                 {
@@ -91,31 +103,8 @@ namespace JobBridge.Data
                     PostExpirationDate = DateTime.UtcNow.AddDays(45),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    EmployerId = employers[1].Id
-                }
-            };
-            //Fields
-            var fields = new Field[]
-            {
-                new Field
-                {
-                    FieldTitle = "Software Development",
-
-                },
-                new Field
-                {
-                    FieldTitle = "Marketing",
-
-                },
-                new Field
-                {
-                    FieldTitle = "Business",
-
-                },
-                new Field
-                {
-                    FieldTitle = "Sales",
-
+                    EmployerId = employers[1].Id,
+                    FieldId = fields[0].Id // Assign FieldId
                 }
             };
 
