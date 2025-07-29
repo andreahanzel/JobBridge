@@ -31,7 +31,64 @@ public static class SeedData
                 UpdatedAt = DateTime.UtcNow
             },
         };
+
+        var employers = new Employers[]
+        {
+            new Employers()
+            {
+                Id = 1,
+                Name = "Tech Solutions",
+                Location = "New York, NY",
+                NumberOfEmployees = 50,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new Employers()
+            {
+                Id = 2,
+                Name = "Innovative Designs",
+                Location = "San Francisco, CA",
+                NumberOfEmployees = 30,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+        };
+
+        var jobPosts = new JobPost[]
+        {
+            new JobPost()
+            {
+                Id = 1,
+                Title = "Software Engineer",
+                Description = "Develop and maintain software applications.",
+                Requirements = "Bachelor's degree in Computer Science or related field.",
+                Salary = 80000,
+                ApplicationLink = "https://example.com/apply",
+                NumberOfApplications = 5,
+                DatePosted = DateTime.UtcNow,
+                PostExpirationDate = DateTime.UtcNow.AddMonths(1),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new JobPost()
+            {
+                Id = 2,
+                Title = "Graphic Designer",
+                Description = "Create visual concepts to communicate ideas.",
+                Requirements = "Proficiency in Adobe Creative Suite.",
+                Salary = 60000,
+                ApplicationLink = "https://example.com/apply",
+                NumberOfApplications = 3,
+                DatePosted = DateTime.UtcNow,
+                PostExpirationDate = DateTime.UtcNow.AddMonths(1),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+        };
+
         db.Users.AddRange(users);
+        db.Employers.AddRange(employers);
+        db.JobPosts.AddRange(jobPosts);
         db.SaveChanges();
     }
 }

@@ -13,12 +13,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddControllers();
+
 // --- START: Identity and Authentication Services ---
 // These lines set up the authentication state management for Blazor
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddHttpClient();
+builder.Services.AddSqlite<JobBridgeContext>("Data Source=jobbridge.db");
 
 // Configure Identity authentication schemes (cookies)
 builder.Services.AddAuthentication(options =>
@@ -28,17 +33,17 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-// Configure the database context for Identity (ApplicationDbContext)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+// // Configure the database context for Identity (ApplicationDbContext)
+// var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//     options.UseSqlServer(connectionString));
 
 // Add database developer page filter for migrations during development
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// Configure Identity Core with ApplicationUser and link it to ApplicationDbContext
+// Configure Identity Core with ApplicationUser and link it to JobBridgeContext
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>() // Connects Identity to EF Core and your DbContext
+    .AddEntityFrameworkStores<JobBridgeContext>() // Connects Identity to EF Core and your DbContext
     .AddSignInManager() // Enables sign-in functionality
     .AddDefaultTokenProviders(); // For features like password reset tokens
 
@@ -95,11 +100,13 @@ app.MapRazorComponents<App>()
 // This method is provided by the IdentityEndpointsExtensions.cs file
 app.MapAdditionalIdentityEndpoints();
 
+app.MapControllers();
+
 // Initialize the database
 var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
 using (var scope = scopeFactory.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<PizzaStoreContext>();
+    var db = scope.ServiceProvider.GetRequiredService<JobBridgeContext>();
     if (db.Database.EnsureCreated())
     {
         SeedData.Initialize(db);
