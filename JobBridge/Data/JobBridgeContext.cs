@@ -31,13 +31,13 @@ namespace JobBridge.Data
                 .HasForeignKey(j => j.FieldId);
 
             // Relationship: Bookmarks → Users
-            modelBuilder.Entity<Bookmarks>()
+            modelBuilder.Entity<Bookmark>()
                 .HasOne(b => b.User)
                 .WithMany()
                 .HasForeignKey(b => b.UserId);
 
             // Relationship: Bookmarks → JobPosts
-            modelBuilder.Entity<Bookmarks>()
+            modelBuilder.Entity<Bookmark>()
                 .HasOne(b => b.JobPost)
                 .WithMany()
                 .HasForeignKey(b => b.JobPostId);

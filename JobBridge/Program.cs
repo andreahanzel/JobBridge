@@ -30,7 +30,7 @@ builder.Services.AddAuthentication(options =>
 
 // Configure the database context for Identity (ApplicationDbContext)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<JobBridgeContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddDbContext<JobBridgeContext>(options =>
@@ -42,7 +42,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // Configure Identity Core with ApplicationUser and link it to ApplicationDbContext
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>() // Connects Identity to EF Core and your DbContext
+    .AddEntityFrameworkStores<JobBridgeContext>() // Connects Identity to EF Core and your DbContext
     .AddSignInManager() // Enables sign-in functionality
     .AddDefaultTokenProviders(); // For features like password reset tokens
 
