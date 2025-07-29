@@ -33,6 +33,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.AddDbContext<JobBridgeContext>(options =>
+    options.UseSqlServer(connectionString));
+
+
 // Add database developer page filter for migrations during development
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -99,11 +103,12 @@ app.MapAdditionalIdentityEndpoints();
 var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
 using (var scope = scopeFactory.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<PizzaStoreContext>();
+    var db = scope.ServiceProvider.GetRequiredService<JobBridgeContext>();
     if (db.Database.EnsureCreated())
     {
         SeedData.Initialize(db);
     }
+
 }
 
 app.Run();

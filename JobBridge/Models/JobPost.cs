@@ -13,5 +13,11 @@ namespace JobBridge.Data
         public DateTime PostExpirationDate { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        //foreigns
+        public int EmployerId { get; set; }
+        public Employers Employer { get; set; }
+        public int FieldId { get; set; }
+        public Field Field { get; set; }
+
     }
 }
