@@ -1,12 +1,14 @@
+using JobBridge.Data.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace JobBridge.Data
+namespace JobBridge.Data;
+
+public class JobBridgeContext : IdentityDbContext<ApplicationUser>
 {
-    public class JobBridgeContext : DbContext
+    public JobBridgeContext(DbContextOptions<JobBridgeContext> options) : base(options)
     {
-        public JobBridgeContext(DbContextOptions options) : base(options)
-        {
-        }
+    }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Employers> Employers { get; set; }
@@ -41,6 +43,5 @@ namespace JobBridge.Data
                 .HasOne(b => b.JobPost)
                 .WithMany()
                 .HasForeignKey(b => b.JobPostId);
-        }
     }
 }

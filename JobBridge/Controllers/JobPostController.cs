@@ -4,7 +4,7 @@ using JobBridge.Data;
 
 namespace JobBridge.Controllers;
 
-[Route("jobs")]
+[Route("jobposts")]
 [ApiController]
 public class JobPostController : Controller
 {
@@ -16,8 +16,8 @@ public class JobPostController : Controller
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Employers>>> GetEmployers()
+    public async Task<ActionResult<List<JobPost>>> GetJobPosts()
     {
-        return (await _db.Employers.ToListAsync()).OrderByDescending(e => e.Name).ToList();
+        return await _db.JobPosts.OrderByDescending(jp => jp.DatePosted).ToListAsync();
     }
 }
