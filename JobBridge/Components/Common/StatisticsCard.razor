@@ -1,0 +1,13 @@
+<div class="stat-card">
+    <div class="stat-icon">@Icon</div>
+    <div class="stat-content">
+        <h3 class="stat-number">@Value</h3>
+        <p class="stat-label">@Label</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Icon { get; set; } = "📊";
+    [Parameter] public string Value { get; set; } = "0";
+    [Parameter] public string Label { get; set; } = "Statistic";
+}

@@ -7,17 +7,65 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    
+    <!-- Preconnect to Google Fonts for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Load Inter font family -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Load Bootstrap (keeping for grid system and utilities) -->
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    <!-- Load our modern design system -->
     <link rel="stylesheet" href="css/app.css" />
+    
+    <!-- Load component-specific styles -->
     <link rel="stylesheet" href="JobBridge.styles.css" />
 
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png" />
+    
+    <!-- Meta tags for better SEO and performance -->
+    <meta name="description" content="JobBridge - Modern job matching platform connecting job seekers and employers" />
+    <meta name="theme-color" content="#2563eb" />
+    
     <HeadOutlet />
 </head>
 
 <body>
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Main application routes -->
     <Routes @rendermode="RenderMode.InteractiveServer" />
+    
+    <!-- Blazor framework script -->
     <script src="_framework/blazor.web.js"></script>
+    
+    <!-- Optional: Add smooth scrolling and theme detection -->
+    <script>
+        // Add smooth scrolling behavior
+        document.documentElement.style.scrollBehavior = 'smooth';
+        
+        // Add theme color meta tag based on user preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1e293b');
+        }
+        
+        // Update navbar shadow on scroll
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.top-navbar-container');
+            if (navbar) {
+                if (window.scrollY > 10) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>

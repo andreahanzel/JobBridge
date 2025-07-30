@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
 
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
@@ -18,14 +19,42 @@
                         <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
                     </NavLink>
                 </li>
+                
                 <li class="nav-item">
                     <NavLink class="nav-link" href="job-listings">
                         <span class="bi bi-search-nav-menu" aria-hidden="true"></span> Browse Jobs
                     </NavLink>
                 </li>
 
+                <!-- Dashboard Links for Authenticated Users -->
                 <AuthorizeView>
                     <Authorized>
+                        @if (context.User.IsInRole("JobSeeker"))
+                        {
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="dashboard/jobseeker">
+                                    <span class="bi bi-speedometer-fill-nav-menu" aria-hidden="true"></span> Dashboard
+                                </NavLink>
+                            </li>
+                        }
+                        @if (context.User.IsInRole("Employer"))
+                        {
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="dashboard/employer">
+                                    <span class="bi bi-building-fill-nav-menu" aria-hidden="true"></span> Dashboard
+                                </NavLink>
+                            </li>
+                        }
+                        @if (context.User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="dashboard/admin">
+                                    <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Admin
+                                </NavLink>
+                            </li>
+                        }
+                        
+                        <!-- Logout for Authenticated Users -->
                         <li class="nav-item">
                             <form action="Account/Logout" method="post" class="h-100">
                                 <AntiforgeryToken />
@@ -35,6 +64,8 @@
                             </form>
                         </li>
                     </Authorized>
+                    
+                    <!-- Login/Register for Non-Authenticated Users -->
                     <NotAuthorized>
                         <li class="nav-item">
                             <NavLink class="nav-link" href="Account/Register">

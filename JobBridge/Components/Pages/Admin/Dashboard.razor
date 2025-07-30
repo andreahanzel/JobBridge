@@ -1,0 +1,329 @@
+@page "/dashboard/admin"
+@* Add this later: @attribute [Authorize(Roles = "Admin")] *@
+
+<PageTitle>Admin Dashboard - JobBridge</PageTitle>
+
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">Admin Dashboard</h1>
+                <p class="hero-subtitle">Platform Overview and Management</p>
+                <div class="hero-buttons">
+                    <a href="/admin/users" class="btn btn-primary">Manage Users</a>
+                    <a href="/admin/jobs" class="btn btn-secondary">Moderate Jobs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Statistics -->
+    <div class="dashboard-stats">
+        <div class="grid grid-cols-4">
+            <StatisticsCard Icon="👥" Value="@totalUsers.ToString()" Label="Total Users" />
+            <StatisticsCard Icon="💼" Value="@totalJobs.ToString()" Label="Active Jobs" />
+            <StatisticsCard Icon="📊" Value="@totalApplications.ToString()" Label="Applications Today" />
+            <StatisticsCard Icon="🏢" Value="@totalCompanies.ToString()" Label="Companies" />
+        </div>
+    </div>
+
+    <!-- Admin Management Sections -->
+    <div class="dashboard-content">
+        <div class="grid grid-cols-2">
+            <!-- Recent User Registrations -->
+            <div class="section-container">
+                <div class="section-header">
+                    <h3>Recent User Registrations</h3>
+                    <a href="/admin/users" class="btn btn-sm btn-secondary">View All Users</a>
+                </div>
+                @if (recentUsers?.Any() == true)
+                {
+                    <div class="users-list">
+                        @foreach (var user in recentUsers.Take(5))
+                        {
+                            <div class="user-item">
+                                <div class="user-info">
+                                    <h4>@user.Name</h4>
+                                    <p>@user.Email • @user.Role</p>
+                                    <span class="user-date">Registered @user.RegisteredDate.ToString("MMM dd")</span>
+                                </div>
+                                <div class="user-status">
+                                    <span class="status-badge status-@(user.IsActive ? "active" : "inactive")">
+                                        @(user.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </div>
+                                <div class="user-actions">
+                                    <button class="btn btn-sm btn-primary" @onclick="() => ViewUser(user.Id)">View</button>
+                                    <button class="btn btn-sm @(user.IsActive ? "btn-warning" : "btn-success")" 
+                                            @onclick="() => ToggleUserStatus(user.Id)">
+                                        @(user.IsActive ? "Suspend" : "Activate")
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <p>No recent user registrations.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Pending Job Approvals -->
+            <div class="section-container">
+                <div class="section-header">
+                    <h3>Pending Job Approvals</h3>
+                    <a href="/admin/jobs" class="btn btn-sm btn-secondary">View All Jobs</a>
+                </div>
+                @if (pendingJobs?.Any() == true)
+                {
+                    <div class="jobs-list">
+                        @foreach (var job in pendingJobs.Take(5))
+                        {
+                            <div class="job-item">
+                                <div class="job-info">
+                                    <h4>@job.Title</h4>
+                                    <p>@job.CompanyName • @job.Location</p>
+                                    <span class="job-date">Posted @job.PostedDate.ToString("MMM dd")</span>
+                                </div>
+                                <div class="job-actions">
+                                    <button class="btn btn-sm btn-success" @onclick="() => ApproveJob(job.Id)">Approve</button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => RejectJob(job.Id)">Reject</button>
+                                    <button class="btn btn-sm btn-secondary" @onclick="() => ViewJob(job.Id)">Review</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <p>No jobs pending approval.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Analytics -->
+    <div class="analytics-section">
+        <div class="section-container">
+            <h3>Platform Analytics</h3>
+            <div class="analytics-grid">
+                <!-- User Growth -->
+                <div class="analytics-card">
+                    <h4>User Growth</h4>
+                    <div class="growth-stats">
+                        <div class="growth-item">
+                            <span class="growth-label">This Week</span>
+                            <span class="growth-value positive">+@weeklyNewUsers</span>
+                        </div>
+                        <div class="growth-item">
+                            <span class="growth-label">This Month</span>
+                            <span class="growth-value positive">+@monthlyNewUsers</span>
+                        </div>
+                        <div class="growth-item">
+                            <span class="growth-label">Growth Rate</span>
+                            <span class="growth-value positive">@userGrowthRate.ToString("P1")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Statistics -->
+                <div class="analytics-card">
+                    <h4>Job Statistics</h4>
+                    <div class="job-breakdown">
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Active Jobs</span>
+                            <span class="breakdown-value">@activeJobs</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Expired Jobs</span>
+                            <span class="breakdown-value">@expiredJobs</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Avg. Applications</span>
+                            <span class="breakdown-value">@averageApplicationsPerJob.ToString("F1")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Platform Health -->
+                <div class="analytics-card">
+                    <h4>Platform Health</h4>
+                    <div class="health-metrics">
+                        <div class="health-item">
+                            <span class="health-label">System Status</span>
+                            <span class="health-status status-active">Online</span>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">Database</span>
+                            <span class="health-status status-active">Healthy</span>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">Response Time</span>
+                            <span class="health-value">@responseTime ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Quick Actions -->
+    <div class="admin-actions">
+        <div class="section-container">
+            <h3>Quick Actions</h3>
+            <div class="action-grid">
+                <a href="/admin/users" class="action-card">
+                    <div class="action-icon">👥</div>
+                    <h4>User Management</h4>
+                    <p>Manage user accounts and permissions</p>
+                </a>
+                <a href="/admin/jobs" class="action-card">
+                    <div class="action-icon">💼</div>
+                    <h4>Job Moderation</h4>
+                    <p>Review and approve job postings</p>
+                </a>
+                <a href="/admin/reports" class="action-card">
+                    <div class="action-icon">📊</div>
+                    <h4>Analytics Reports</h4>
+                    <p>View detailed platform analytics</p>
+                </a>
+                <a href="/admin/settings" class="action-card">
+                    <div class="action-icon">⚙️</div>
+                    <h4>Platform Settings</h4>
+                    <p>Configure system settings</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // Platform Statistics
+    private int totalUsers = 0;
+    private int totalJobs = 0;
+    private int totalApplications = 0;
+    private int totalCompanies = 0;
+    
+    // Growth Metrics
+    private int weeklyNewUsers = 0;
+    private int monthlyNewUsers = 0;
+    private decimal userGrowthRate = 0;
+    
+    // Job Metrics
+    private int activeJobs = 0;
+    private int expiredJobs = 0;
+    private decimal averageApplicationsPerJob = 0;
+    
+    // System Health
+    private int responseTime = 0;
+    
+    // Data Lists
+    private List<AdminUserModel>? recentUsers;
+    private List<AdminJobModel>? pendingJobs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAdminDashboardData();
+    }
+
+    private async Task LoadAdminDashboardData()
+    {
+        // Mock data for UI development
+        totalUsers = 1247;
+        totalJobs = 89;
+        totalApplications = 156;
+        totalCompanies = 34;
+        
+        weeklyNewUsers = 23;
+        monthlyNewUsers = 94;
+        userGrowthRate = 0.15m;
+        
+        activeJobs = 89;
+        expiredJobs = 12;
+        averageApplicationsPerJob = 8.7m;
+        
+        responseTime = 145;
+
+        // Mock recent users
+        recentUsers = new List<AdminUserModel>
+        {
+            new() { Id = 1, Name = "John Smith", Email = "john@example.com", Role = "JobSeeker", RegisteredDate = DateTime.Now.AddDays(-1), IsActive = true },
+            new() { Id = 2, Name = "TechCorp Inc", Email = "hr@techcorp.com", Role = "Employer", RegisteredDate = DateTime.Now.AddDays(-2), IsActive = true },
+            new() { Id = 3, Name = "Sarah Johnson", Email = "sarah@example.com", Role = "JobSeeker", RegisteredDate = DateTime.Now.AddDays(-3), IsActive = true },
+            new() { Id = 4, Name = "StartupX", Email = "jobs@startupx.com", Role = "Employer", RegisteredDate = DateTime.Now.AddDays(-4), IsActive = false }
+        };
+
+        // Mock pending jobs
+        pendingJobs = new List<AdminJobModel>
+        {
+            new() { Id = 1, Title = "Senior Developer", CompanyName = "TechCorp", Location = "Remote", PostedDate = DateTime.Now.AddHours(-2) },
+            new() { Id = 2, Title = "Product Manager", CompanyName = "StartupX", Location = "New York", PostedDate = DateTime.Now.AddHours(-5) },
+            new() { Id = 3, Title = "UX Designer", CompanyName = "DesignStudio", Location = "San Francisco", PostedDate = DateTime.Now.AddDays(-1) }
+        };
+
+        await Task.Delay(1); // Simulate async operation
+    }
+
+    private async Task ViewUser(int userId)
+    {
+        // Mock view user action
+        await Task.Delay(1);
+    }
+
+    private async Task ToggleUserStatus(int userId)
+    {
+        // Mock toggle user status
+        var user = recentUsers?.FirstOrDefault(u => u.Id == userId);
+        if (user != null)
+        {
+            user.IsActive = !user.IsActive;
+        }
+        await Task.Delay(1);
+    }
+
+    private async Task ApproveJob(int jobId)
+    {
+        // Mock approve job
+        pendingJobs?.RemoveAll(j => j.Id == jobId);
+        await Task.Delay(1);
+    }
+
+    private async Task RejectJob(int jobId)
+    {
+        // Mock reject job
+        pendingJobs?.RemoveAll(j => j.Id == jobId);
+        await Task.Delay(1);
+    }
+
+    private async Task ViewJob(int jobId)
+    {
+        // Mock view job action
+        await Task.Delay(1);
+    }
+
+    // Temporary models for UI development
+    public class AdminUserModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public DateTime RegisteredDate { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class AdminJobModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string CompanyName { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public DateTime PostedDate { get; set; }
+    }
+}

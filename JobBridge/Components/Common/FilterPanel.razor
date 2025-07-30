@@ -1,0 +1,290 @@
+<div class="filter-panel @(IsVisible ? "visible" : "")">
+    <div class="filter-header">
+        <h3 class="filter-title">
+            <span class="filter-icon">🎛️</span>
+            Advanced Filters
+        </h3>
+        <button class="close-filters" @onclick="CloseFilters">
+            <span class="close-icon">✕</span>
+        </button>
+    </div>
+
+    <div class="filter-content">
+        <!-- Employment Type Filter -->
+        <div class="filter-group">
+            <h4 class="filter-group-title">Employment Type</h4>
+            <div class="filter-options">
+                @foreach (var type in EmploymentTypes)
+                {
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" 
+                                class="filter-checkbox"
+                                @bind="type.IsSelected"
+                                @bind:event="onchange" />
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-text">@type.Name</span>
+                        <span class="option-count">(@type.Count)</span>
+                    </label>
+                }
+            </div>
+        </div>
+
+        <!-- Experience Level Filter -->
+        <div class="filter-group">
+            <h4 class="filter-group-title">Experience Level</h4>
+            <div class="filter-options">
+                @foreach (var level in ExperienceLevels)
+                {
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" 
+                                class="filter-checkbox"
+                                @bind="level.IsSelected" />
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-text">@level.Name</span>
+                        <span class="option-count">(@level.Count)</span>
+                    </label>
+                }
+            </div>
+        </div>
+
+        <!-- Salary Range Filter -->
+        <div class="filter-group">
+            <h4 class="filter-group-title">Salary Range</h4>
+            <div class="salary-range-container">
+                <div class="salary-inputs">
+                    <div class="salary-input-group">
+                        <label class="salary-label">Min</label>
+                        <input type="number" 
+                                class="salary-input"
+                                placeholder="$0"
+                                @bind="MinSalary" />
+                    </div>
+                    <div class="salary-separator">-</div>
+                    <div class="salary-input-group">
+                        <label class="salary-label">Max</label>
+                        <input type="number" 
+                                class="salary-input"
+                                placeholder="$200k+"
+                                @bind="MaxSalary" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Size Filter -->
+        <div class="filter-group">
+            <h4 class="filter-group-title">Company Size</h4>
+            <div class="filter-tags">
+                @foreach (var size in CompanySizes)
+                {
+                    <button class="filter-tag @(size.IsSelected ? "selected" : "")"
+                            @onclick="() => ToggleCompanySize(size)">
+                        @size.Name
+                        <span class="tag-count">@size.Count</span>
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Date Posted Filter -->
+        <div class="filter-group">
+            <h4 class="filter-group-title">Date Posted</h4>
+            <div class="date-filter-options">
+                @foreach (var date in DatePostedOptions)
+                {
+                    <label class="radio-label">
+                        <input type="radio" 
+                               name="datePosted"
+                               class="radio-input"
+                               value="@date.Value"
+                               @onchange="() => SelectDatePosted(date.Value)" />
+                        <span class="radio-custom"></span>
+                        <span class="radio-text">@date.Label</span>
+                    </label>
+                }
+            </div>
+        </div>
+
+        <!-- Remote Work Filter -->
+        <div class="filter-group">
+            <h4 class="filter-group-title">Work Arrangement</h4>
+            <div class="work-arrangement-toggles">
+                <label class="toggle-switch">
+                    <input type="checkbox" 
+                            class="toggle-input"
+                            @bind="RemoteOnly" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Remote Only</span>
+                </label>
+                <label class="toggle-switch">
+                    <input type="checkbox" 
+                            class="toggle-input"
+                            @bind="HybridIncluded" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Include Hybrid</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-footer">
+        <div class="active-filters-count">
+            @GetActiveFiltersCount() filters active
+        </div>
+        <div class="filter-actions">
+            <button class="btn-clear" @onclick="ClearAllFilters">
+                Clear All
+            </button>
+            <button class="btn-apply" @onclick="ApplyFilters">
+                Apply Filters
+                <span class="apply-icon">✓</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@if (IsVisible)
+{
+    <div class="filter-overlay" @onclick="CloseFilters"></div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; } = false;
+    [Parameter] public EventCallback<FilterModel> OnFiltersChanged { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private int? MinSalary { get; set; }
+    private int? MaxSalary { get; set; }
+    private bool RemoteOnly { get; set; } = false;
+    private bool HybridIncluded { get; set; } = false;
+    private string SelectedDatePosted { get; set; } = "any";
+
+    // Mock data for UI development
+    private List<FilterOption> EmploymentTypes = new()
+    {
+        new() { Name = "Full-time", Count = 1234, IsSelected = false },
+        new() { Name = "Part-time", Count = 456, IsSelected = false },
+        new() { Name = "Contract", Count = 789, IsSelected = false },
+        new() { Name = "Internship", Count = 234, IsSelected = false },
+        new() { Name = "Freelance", Count = 123, IsSelected = false }
+    };
+
+    private List<FilterOption> ExperienceLevels = new()
+    {
+        new() { Name = "Entry Level", Count = 567, IsSelected = false },
+        new() { Name = "Mid Level", Count = 890, IsSelected = false },
+        new() { Name = "Senior Level", Count = 678, IsSelected = false },
+        new() { Name = "Executive", Count = 123, IsSelected = false }
+    };
+
+    private List<FilterOption> CompanySizes = new()
+    {
+        new() { Name = "Startup (1-10)", Count = 234, IsSelected = false },
+        new() { Name = "Small (11-50)", Count = 456, IsSelected = false },
+        new() { Name = "Medium (51-200)", Count = 345, IsSelected = false },
+        new() { Name = "Large (201-1000)", Count = 567, IsSelected = false },
+        new() { Name = "Enterprise (1000+)", Count = 234, IsSelected = false }
+    };
+
+    private List<DateOption> DatePostedOptions = new()
+    {
+        new() { Label = "Any time", Value = "any" },
+        new() { Label = "Past 24 hours", Value = "1day" },
+        new() { Label = "Past week", Value = "1week" },
+        new() { Label = "Past month", Value = "1month" }
+    };
+
+    private async Task OnFilterChange()
+    {
+        await ApplyFilters();
+    }
+
+    private async Task ApplyFilters()
+    {
+        var filterModel = new FilterModel
+        {
+            EmploymentTypes = EmploymentTypes.Where(e => e.IsSelected).Select(e => e.Name).ToList(),
+            ExperienceLevels = ExperienceLevels.Where(e => e.IsSelected).Select(e => e.Name).ToList(),
+            CompanySizes = CompanySizes.Where(c => c.IsSelected).Select(c => c.Name).ToList(),
+            MinSalary = MinSalary,
+            MaxSalary = MaxSalary,
+            RemoteOnly = RemoteOnly,
+            HybridIncluded = HybridIncluded,
+            DatePosted = SelectedDatePosted
+        };
+
+        await OnFiltersChanged.InvokeAsync(filterModel);
+    }
+
+    private async Task ClearAllFilters()
+    {
+        // Reset all filters
+        foreach (var type in EmploymentTypes) type.IsSelected = false;
+        foreach (var level in ExperienceLevels) level.IsSelected = false;
+        foreach (var size in CompanySizes) size.IsSelected = false;
+        
+        MinSalary = null;
+        MaxSalary = null;
+        RemoteOnly = false;
+        HybridIncluded = false;
+        SelectedDatePosted = "any";
+
+        await ApplyFilters();
+    }
+
+    private async Task CloseFilters()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private void ToggleCompanySize(FilterOption size)
+    {
+        size.IsSelected = !size.IsSelected;
+        InvokeAsync(OnFilterChange);
+    }
+
+    private void SelectDatePosted(string value)
+    {
+        SelectedDatePosted = value;
+        InvokeAsync(OnFilterChange);
+    }
+
+    private int GetActiveFiltersCount()
+    {
+        int count = 0;
+        count += EmploymentTypes.Count(e => e.IsSelected);
+        count += ExperienceLevels.Count(e => e.IsSelected);
+        count += CompanySizes.Count(c => c.IsSelected);
+        if (MinSalary.HasValue || MaxSalary.HasValue) count++;
+        if (RemoteOnly) count++;
+        if (HybridIncluded) count++;
+        if (SelectedDatePosted != "any") count++;
+        return count;
+    }
+
+    // Mock models for UI development
+    public class FilterOption
+    {
+        public string Name { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public bool IsSelected { get; set; }
+    }
+
+    public class DateOption
+    {
+        public string Label { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+    }
+
+    public class FilterModel
+    {
+        public List<string> EmploymentTypes { get; set; } = new();
+        public List<string> ExperienceLevels { get; set; } = new();
+        public List<string> CompanySizes { get; set; } = new();
+        public int? MinSalary { get; set; }
+        public int? MaxSalary { get; set; }
+        public bool RemoteOnly { get; set; }
+        public bool HybridIncluded { get; set; }
+        public string DatePosted { get; set; } = "any";
+    }
+}
