@@ -1,6 +1,21 @@
-﻿@using JobBridge.Components.Pages
+﻿@using Microsoft.AspNetCore.Components.Routing
 
-<Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Home).Assembly, typeof(Login).Assembly, typeof(Register).Assembly, typeof(Profile).Assembly, typeof(Settings).Assembly, typeof(Dashboard).Assembly, typeof(JobDetails).Assembly, typeof(JobListings).Assembly }">
+<Router AppAssembly="@typeof(Program).Assembly" 
+        AdditionalAssemblies="new[] { 
+            typeof(Home).Assembly, 
+            typeof(Login).Assembly, 
+            typeof(Register).Assembly, 
+            typeof(Profile).Assembly, 
+            typeof(Settings).Assembly, 
+            typeof(Dashboard).Assembly, 
+            typeof(JobDetails).Assembly, 
+            typeof(JobListings).Assembly, 
+            typeof(JobSeekerDashboard).Assembly, 
+            typeof(EmployerDashboard).Assembly,
+            typeof(JobEdit).Assembly,
+            typeof(JobCreate).Assembly,
+            typeof(JobManagement).Assembly
+        }">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />

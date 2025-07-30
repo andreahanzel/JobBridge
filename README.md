@@ -18,8 +18,8 @@
 
 ## Project Idea: Add project idea
 
-Add project description after the first meeting
+Add project description after the second meeting
 
-### Features:
+### Features
 
-Add features after the first team meeting
+Add features after the second team meeting

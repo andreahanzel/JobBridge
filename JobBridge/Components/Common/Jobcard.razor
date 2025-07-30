@@ -1,0 +1,169 @@
+<div class="job-card" @onclick="() => NavigateToJob(Job.Id)">
+    <div class="job-card-header">
+        <div class="company-info">
+            <div class="company-logo">
+                @GetCompanyInitials(Job.CompanyName)
+            </div>
+            <div class="company-details">
+                <h3 class="job-title">@Job.Title</h3>
+                <p class="company-name">@Job.CompanyName</p>
+            </div>
+        </div>
+        <div class="job-actions">
+            <button class="btn-icon bookmark-btn @(Job.IsBookmarked ? "bookmarked" : "")" 
+                    @onclick:stopPropagation="true" 
+                    @onclick="() => ToggleBookmark(Job.Id)">
+                <span class="bookmark-icon">@(Job.IsBookmarked ? "❤️" : "🤍")</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="job-card-body">
+        <div class="job-meta">
+            <span class="job-location">
+                <span class="meta-icon">📍</span>
+                @Job.Location
+            </span>
+            <span class="job-type">
+                <span class="meta-icon">💼</span>
+                @Job.EmploymentType
+            </span>
+            <span class="job-experience">
+                <span class="meta-icon">⭐</span>
+                @Job.ExperienceLevel
+            </span>
+        </div>
+
+        <p class="job-description">
+            @GetTruncatedDescription(Job.Description)
+        </p>
+
+        @if (!string.IsNullOrEmpty(Job.SalaryRange))
+        {
+            <div class="salary-range">
+                <span class="salary-icon">💰</span>
+                <span class="salary-text">@Job.SalaryRange</span>
+            </div>
+        }
+
+        <div class="job-tags">
+            @foreach (var skill in GetSkillTags(Job.Description))
+            {
+                <span class="skill-tag">@skill</span>
+            }
+        </div>
+    </div>
+
+    <div class="job-card-footer">
+        <div class="job-timing">
+            <span class="posted-date">Posted @GetRelativeTime(Job.PostedDate)</span>
+        </div>
+        <div class="job-cta">
+            <button class="btn btn-primary btn-sm">
+                Apply Now
+                <span class="btn-arrow">→</span>
+            </button>
+        </div>
+    </div>
+
+    @if (Job.IsFeatured)
+    {
+        <div class="featured-badge">
+            <span class="featured-text">Featured</span>
+        </div>
+    }
+
+    @if (IsUrgent(Job.PostedDate))
+    {
+        <div class="urgent-badge">
+            <span class="urgent-text">Urgent</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public JobModel Job { get; set; } = new();
+    [Parameter] public EventCallback<int> OnBookmarkToggle { get; set; }
+    [Parameter] public EventCallback<int> OnJobClick { get; set; }
+
+    private async Task NavigateToJob(int jobId)
+    {
+        await OnJobClick.InvokeAsync(jobId);
+    }
+
+    private async Task ToggleBookmark(int jobId)
+    {
+        Job.IsBookmarked = !Job.IsBookmarked;
+        await OnBookmarkToggle.InvokeAsync(jobId);
+    }
+
+    private string GetCompanyInitials(string companyName)
+    {
+        if (string.IsNullOrEmpty(companyName)) return "?";
+        
+        var words = companyName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length >= 2)
+        {
+            return $"{words[0][0]}{words[1][0]}".ToUpper();
+        }
+        return companyName.Length >= 2 ? companyName.Substring(0, 2).ToUpper() : companyName.ToUpper();
+    }
+
+    private string GetTruncatedDescription(string description)
+    {
+        if (string.IsNullOrEmpty(description)) return "No description available.";
+        return description.Length > 120 ? description.Substring(0, 120) + "..." : description;
+    }
+
+    private List<string> GetSkillTags(string description)
+    {
+        // Mock skill extraction - in real app, this would be more sophisticated
+        var commonSkills = new List<string> { "React", "JavaScript", "Python", "C#", "SQL", "AWS", "Docker", "Git" };
+        var foundSkills = new List<string>();
+        
+        foreach (var skill in commonSkills)
+        {
+            if (description?.Contains(skill, StringComparison.OrdinalIgnoreCase) == true)
+            {
+                foundSkills.Add(skill);
+            }
+        }
+        
+        return foundSkills.Take(3).ToList();
+    }
+
+    private string GetRelativeTime(DateTime postedDate)
+    {
+        var timeSpan = DateTime.Now - postedDate;
+        
+        if (timeSpan.Days > 7)
+            return $"{timeSpan.Days / 7} week{(timeSpan.Days / 7 > 1 ? "s" : "")} ago";
+        if (timeSpan.Days > 0)
+            return $"{timeSpan.Days} day{(timeSpan.Days > 1 ? "s" : "")} ago";
+        if (timeSpan.Hours > 0)
+            return $"{timeSpan.Hours} hour{(timeSpan.Hours > 1 ? "s" : "")} ago";
+        
+        return "Recently posted";
+    }
+
+    private bool IsUrgent(DateTime postedDate)
+    {
+        return DateTime.Now - postedDate < TimeSpan.FromDays(1);
+    }
+
+    // Mock model for UI development
+    public class JobModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string CompanyName { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string EmploymentType { get; set; } = string.Empty;
+        public string ExperienceLevel { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string SalaryRange { get; set; } = string.Empty;
+        public DateTime PostedDate { get; set; }
+        public bool IsBookmarked { get; set; }
+        public bool IsFeatured { get; set; }
+    }
+}

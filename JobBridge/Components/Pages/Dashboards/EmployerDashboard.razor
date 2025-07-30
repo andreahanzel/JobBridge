@@ -1,0 +1,246 @@
+@page "/dashboard/employer"
+@* Add this line later: @attribute [Authorize(Roles = "Employer")] *@
+
+<PageTitle>Employer Dashboard - JobBridge</PageTitle>
+
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">Welcome, @GetCompanyName()!</h1>
+                <p class="hero-subtitle">Manage your job postings and track candidate engagement</p>
+                <div class="hero-buttons">
+                    <a href="/employer/job-create" class="btn btn-primary">Post New Job</a>
+                    <a href="/employer/profile" class="btn btn-secondary">Company Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Stats -->
+    <div class="dashboard-stats">
+        <div class="grid grid-cols-4">
+            <StatisticsCard Icon="📝" Value="@activeJobs.ToString()" Label="Active Jobs" />
+            <StatisticsCard Icon="👥" Value="@totalApplicants.ToString()" Label="Total Applicants" />
+            <StatisticsCard Icon="👀" Value="@jobViews.ToString()" Label="Job Views" />
+            <StatisticsCard Icon="📊" Value="@responseRate.ToString("P0")" Label="Response Rate" />
+        </div>
+    </div>
+
+    <!-- Job Management Section -->
+    <div class="dashboard-content">
+        <div class="grid grid-cols-2">
+            <!-- Recent Job Postings -->
+            <div class="section-container">
+                <div class="section-header">
+                    <h3>Recent Job Postings</h3>
+                    <a href="/employer/jobs" class="btn btn-sm btn-secondary">View All</a>
+                </div>
+                @if (recentJobs?.Any() == true)
+                {
+                    <div class="jobs-list">
+                        @foreach (var job in recentJobs.Take(5))
+                        {
+                            <div class="job-item">
+                                <div class="job-info">
+                                    <h4>@job.Title</h4>
+                                    <p>@job.Department • @job.Location</p>
+                                    <span class="job-date">Posted @job.PostedDate.ToString("MMM dd")</span>
+                                </div>
+                                <div class="job-stats">
+                                    <span class="stat-item">👥 @job.ApplicantCount</span>
+                                    <span class="stat-item">👀 @job.ViewCount</span>
+                                </div>
+                                <div class="job-actions">
+                                    <button class="btn btn-sm btn-primary" @onclick="() => EditJob(job.Id)">Edit</button>
+                                    <button class="btn btn-sm btn-toggle @(job.IsActive ? "active" : "")" 
+                                            @onclick="() => ToggleJobStatus(job.Id)">
+                                        @(job.IsActive ? "Active" : "Inactive")
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <p>No job postings yet. <a href="/employer/job-create">Create your first job posting</a></p>
+                    </div>
+                }
+            </div>
+
+            <!-- Recent Applications -->
+            <div class="section-container">
+                <div class="section-header">
+                    <h3>Recent Applications</h3>
+                    <a href="/employer/applications" class="btn btn-sm btn-secondary">View All</a>
+                </div>
+                @if (recentApplications?.Any() == true)
+                {
+                    <div class="applications-list">
+                        @foreach (var application in recentApplications.Take(5))
+                        {
+                            <div class="application-item">
+                                <div class="applicant-info">
+                                    <h4>@application.ApplicantName</h4>
+                                    <p>Applied for: @application.JobTitle</p>
+                                    <span class="application-date">@application.AppliedDate.ToString("MMM dd")</span>
+                                </div>
+                                <div class="application-actions">
+                                    <button class="btn btn-sm btn-primary" @onclick="() => ViewApplication(application.Id)">
+                                        View Profile
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <p>No recent applications.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Analytics -->
+    <div class="analytics-section">
+        <div class="section-container">
+            <h3>Performance Analytics</h3>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h4>Top Performing Jobs</h4>
+                    @if (topPerformingJobs?.Any() == true)
+                    {
+                        <div class="performance-list">
+                            @foreach (var job in topPerformingJobs)
+                            {
+                                <div class="performance-item">
+                                    <span class="job-title">@job.Title</span>
+                                    <span class="performance-metric">@job.ApplicantCount applicants</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+                
+                <div class="analytics-card">
+                    <h4>Application Trends</h4>
+                    <div class="trend-stats">
+                        <div class="trend-item">
+                            <span class="trend-label">This Week</span>
+                            <span class="trend-value">+@weeklyApplications</span>
+                        </div>
+                        <div class="trend-item">
+                            <span class="trend-label">This Month</span>
+                            <span class="trend-value">+@monthlyApplications</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int activeJobs = 0;
+    private int totalApplicants = 0;
+    private int jobViews = 0;
+    private decimal responseRate = 0;
+    private int weeklyApplications = 0;
+    private int monthlyApplications = 0;
+    
+    private List<EmployerJobModel>? recentJobs;
+    private List<EmployerApplicationModel>? recentApplications;
+    private List<EmployerJobModel>? topPerformingJobs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        // Mock data for UI development
+        activeJobs = 5;
+        totalApplicants = 23;
+        jobViews = 156;
+        responseRate = 0.68m;
+        weeklyApplications = 8;
+        monthlyApplications = 34;
+
+        // Mock recent jobs
+        recentJobs = new List<EmployerJobModel>
+        {
+            new() { Id = 1, Title = "Software Engineer", Department = "Engineering", Location = "Remote", PostedDate = DateTime.Now.AddDays(-3), ApplicantCount = 12, ViewCount = 45, IsActive = true },
+            new() { Id = 2, Title = "Product Manager", Department = "Product", Location = "New York", PostedDate = DateTime.Now.AddDays(-7), ApplicantCount = 8, ViewCount = 32, IsActive = true },
+            new() { Id = 3, Title = "UX Designer", Department = "Design", Location = "San Francisco", PostedDate = DateTime.Now.AddDays(-10), ApplicantCount = 15, ViewCount = 67, IsActive = false }
+        };
+
+        // Mock recent applications
+        recentApplications = new List<EmployerApplicationModel>
+        {
+            new() { Id = 1, ApplicantName = "John Smith", JobTitle = "Software Engineer", AppliedDate = DateTime.Now.AddDays(-1) },
+            new() { Id = 2, ApplicantName = "Sarah Johnson", JobTitle = "Product Manager", AppliedDate = DateTime.Now.AddDays(-2) },
+            new() { Id = 3, ApplicantName = "Mike Chen", JobTitle = "UX Designer", AppliedDate = DateTime.Now.AddDays(-3) }
+        };
+
+        // Mock top performing jobs
+        topPerformingJobs = recentJobs?.OrderByDescending(j => j.ApplicantCount).Take(3).ToList();
+
+        await Task.Delay(1); // Simulate async operation
+    }
+
+    private string GetCompanyName()
+    {
+        return "TechCorp"; // Mock company name
+    }
+
+    private async Task EditJob(int jobId)
+    {
+        // Mock edit job action
+        await Task.Delay(1);
+    }
+
+    private async Task ToggleJobStatus(int jobId)
+    {
+        // Mock toggle job status
+        var job = recentJobs?.FirstOrDefault(j => j.Id == jobId);
+        if (job != null)
+        {
+            job.IsActive = !job.IsActive;
+        }
+        await Task.Delay(1);
+    }
+
+    private async Task ViewApplication(int applicationId)
+    {
+        // Mock view application action
+        await Task.Delay(1);
+    }
+
+    // Temporary models for UI development
+    public class EmployerJobModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public DateTime PostedDate { get; set; }
+        public int ApplicantCount { get; set; }
+        public int ViewCount { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class EmployerApplicationModel
+    {
+        public int Id { get; set; }
+        public string ApplicantName { get; set; } = string.Empty;
+        public string JobTitle { get; set; } = string.Empty;
+        public DateTime AppliedDate { get; set; }
+    }
+}

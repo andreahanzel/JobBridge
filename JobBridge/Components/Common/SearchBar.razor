@@ -1,0 +1,190 @@
+<div class="search-bar-container">
+    <div class="search-bar-wrapper">
+        <div class="search-input-group">
+            <div class="search-icon">
+                <span class="icon">🔍</span>
+            </div>
+            <input type="text" 
+                    class="search-input" 
+                    placeholder="@Placeholder"
+                    @bind="SearchTerm"
+                    @onkeypress="HandleKeyPress"
+                    @onfocus="OnSearchFocus"
+                    @onblur="OnSearchBlur" />
+            
+            @if (!string.IsNullOrEmpty(SearchTerm))
+            {
+                <button class="clear-button" @onclick="ClearSearch">
+                    <span class="clear-icon">✕</span>
+                </button>
+            }
+        </div>
+
+        <div class="location-input-group">
+            <div class="location-icon">
+                <span class="icon">📍</span>
+            </div>
+            <input type="text" 
+                    class="location-input" 
+                    placeholder="Location"
+                    @bind="LocationTerm"
+                    @onkeypress="HandleKeyPress"
+                    @onfocus="OnLocationFocus"
+                    @onblur="OnLocationBlur" />
+        </div>
+
+        <button class="search-button" @onclick="PerformSearch">
+            <span class="search-btn-icon">🔍</span>
+            <span class="search-btn-text">Search</span>
+        </button>
+    </div>
+
+    <!-- Advanced Search Toggle -->
+    <div class="advanced-search-toggle">
+        <button class="toggle-btn" @onclick="ToggleAdvancedSearch">
+            <span class="toggle-icon">@(ShowAdvancedSearch ? "▲" : "▼")</span>
+            <span class="toggle-text">@(ShowAdvancedSearch ? "Hide" : "Show") Advanced Filters</span>
+        </button>
+    </div>
+
+    <!-- Quick Search Suggestions -->
+    @if (IsFocused && QuickSearches.Any())
+    {
+        <div class="quick-searches">
+            <h4 class="quick-searches-title">Popular Searches</h4>
+            <div class="quick-search-tags">
+                @foreach (var search in QuickSearches)
+                {
+                    <button class="quick-search-tag" @onclick="() => ApplyQuickSearch(search)">
+                        @search
+                    </button>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Recent Searches -->
+    @if (IsFocused && RecentSearches.Any())
+    {
+        <div class="recent-searches">
+            <h4 class="recent-searches-title">Recent Searches</h4>
+            <div class="recent-search-list">
+                @foreach (var search in RecentSearches.Take(5))
+                {
+                    <button class="recent-search-item" @onclick="() => ApplyRecentSearch(search)">
+                        <span class="recent-icon">🕒</span>
+                        <span class="recent-text">@search</span>
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Placeholder { get; set; } = "Search for jobs, companies, or keywords...";
+    [Parameter] public EventCallback<SearchModel> OnSearch { get; set; }
+    [Parameter] public EventCallback OnAdvancedToggle { get; set; }
+
+    private string SearchTerm { get; set; } = string.Empty;
+    private string LocationTerm { get; set; } = string.Empty;
+    private bool ShowAdvancedSearch { get; set; } = false;
+    private bool IsFocused { get; set; } = false;
+
+    // Mock data for UI development
+    private List<string> QuickSearches = new()
+    {
+        "Software Engineer", "Remote Jobs", "Frontend Developer", "Data Scientist", 
+        "Product Manager", "UX Designer", "Full Stack", "React Developer"
+    };
+
+    private List<string> RecentSearches = new()
+    {
+        "React Developer Remote", "Product Manager NYC", "Data Scientist", 
+        "UX Designer San Francisco", "Software Engineer"
+    };
+
+    private async Task PerformSearch()
+    {
+        var searchModel = new SearchModel
+        {
+            SearchTerm = SearchTerm,
+            Location = LocationTerm,
+            Timestamp = DateTime.Now
+        };
+
+        // Add to recent searches
+        if (!string.IsNullOrEmpty(SearchTerm) && !RecentSearches.Contains(SearchTerm))
+        {
+            RecentSearches.Insert(0, SearchTerm);
+            if (RecentSearches.Count > 10)
+            {
+                RecentSearches.RemoveAt(RecentSearches.Count - 1);
+            }
+        }
+
+        await OnSearch.InvokeAsync(searchModel);
+        IsFocused = false;
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await PerformSearch();
+        }
+    }
+
+    private async Task ToggleAdvancedSearch()
+    {
+        ShowAdvancedSearch = !ShowAdvancedSearch;
+        await OnAdvancedToggle.InvokeAsync();
+    }
+
+    private async Task ApplyQuickSearch(string searchTerm)
+    {
+        SearchTerm = searchTerm;
+        await PerformSearch();
+    }
+
+    private async Task ApplyRecentSearch(string searchTerm)
+    {
+        SearchTerm = searchTerm;
+        await PerformSearch();
+    }
+
+    private void OnSearchFocus()
+    {
+        IsFocused = true;
+    }
+
+    private void OnLocationFocus()
+    {
+        IsFocused = true;
+    }
+
+    private void OnSearchBlur()
+    {
+        // Delay to allow click events on suggestions
+        Task.Delay(200).ContinueWith(t => InvokeAsync(() => { IsFocused = false; StateHasChanged(); }));
+    }
+
+    private void OnLocationBlur()
+    {
+        Task.Delay(200).ContinueWith(t => InvokeAsync(() => { IsFocused = false; StateHasChanged(); }));
+    }
+
+    private async Task ClearSearch()
+    {
+        SearchTerm = string.Empty;
+        await PerformSearch();
+    }
+
+    // Mock model for UI development
+    public class SearchModel
+    {
+        public string SearchTerm { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+    }
+}

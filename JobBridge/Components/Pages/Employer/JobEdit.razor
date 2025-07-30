@@ -1,0 +1,355 @@
+@page "/employer/jobs/edit/{id:int}"
+@using JobBridge.Components.Common
+
+<div class="job-edit-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">Edit Job Posting</h1>
+            <p class="page-subtitle">Update your job posting to attract the right candidates</p>
+        </div>
+        
+        <div class="header-actions">
+            <a href="/employer/jobs" class="btn btn-secondary">
+                ← Back to Jobs
+            </a>
+            <a href="/jobs/@Id" class="btn btn-outline" target="_blank">
+                View Live Job
+            </a>
+        </div>
+    </div>
+
+    <!-- Job Status Banner -->
+    <div class="status-banner active">
+        <div class="status-info">
+            <div class="status-indicator"></div>
+            <div class="status-content">
+                <h3 class="status-title">Job is Currently Active</h3>
+                <p class="status-description">This job is live and accepting applications</p>
+            </div>
+        </div>
+        <div class="status-actions">
+            <button class="btn btn-outline btn-sm">Pause Job</button>
+        </div>
+    </div>
+
+    <!-- Job Statistics -->
+    <div class="job-stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👁️</div>
+            <div class="stat-content">
+                <div class="stat-number">1,234</div>
+                <div class="stat-label">Views</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📄</div>
+            <div class="stat-content">
+                <div class="stat-number">89</div>
+                <div class="stat-label">Applications</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-content">
+                <div class="stat-number">45</div>
+                <div class="stat-label">Bookmarked</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+                <div class="stat-number">12%</div>
+                <div class="stat-label">Application Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="form-container">
+        <form class="job-form" @onsubmit="HandleSubmit" @onsubmit:preventDefault="true">
+            
+            <!-- Job Basics Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">Job Basics</h2>
+                    <p class="section-description">Update the essential information about this position</p>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group span-2">
+                        <label class="form-label required">Job Title</label>
+                        <input type="text" class="form-control" value="Senior Software Engineer" />
+                        <div class="form-hint">Be specific and clear about the role</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">Department</label>
+                        <select class="form-control">
+                            <option value="engineering" selected>Engineering</option>
+                            <option value="product">Product</option>
+                            <option value="design">Design</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="sales">Sales</option>
+                            <option value="hr">Human Resources</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">Employment Type</label>
+                        <select class="form-control">
+                            <option value="full-time" selected>Full-time</option>
+                            <option value="part-time">Part-time</option>
+                            <option value="contract">Contract</option>
+                            <option value="internship">Internship</option>
+                            <option value="freelance">Freelance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">Experience Level</label>
+                        <select class="form-control">
+                            <option value="entry">Entry Level</option>
+                            <option value="mid">Mid Level</option>
+                            <option value="senior" selected>Senior Level</option>
+                            <option value="lead">Lead/Principal</option>
+                            <option value="executive">Executive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">Work Arrangement</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="workArrangement" value="onsite" />
+                                <span class="radio-label">On-site</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="workArrangement" value="remote" />
+                                <span class="radio-label">Remote</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="workArrangement" value="hybrid" checked />
+                                <span class="radio-label">Hybrid</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location & Compensation Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">Location & Compensation</h2>
+                    <p class="section-description">Update location and compensation details</p>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label required">Location</label>
+                        <input type="text" class="form-control" value="San Francisco, CA" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Timezone</label>
+                        <select class="form-control">
+                            <option value="pst" selected>PST (Pacific)</option>
+                            <option value="mst">MST (Mountain)</option>
+                            <option value="cst">CST (Central)</option>
+                            <option value="est">EST (Eastern)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Minimum Salary</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" class="form-control" value="120000" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Maximum Salary</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" class="form-control" value="180000" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-group span-2">
+                        <label class="form-label">Additional Compensation</label>
+                        <input type="text" class="form-control" value="Equity package, annual bonus, comprehensive benefits" />
+                        <div class="form-hint">Mention equity, bonuses, or other benefits</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Description Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">Job Description</h2>
+                    <p class="section-description">Update the role description and requirements</p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required">Job Summary</label>
+                    <textarea class="form-control textarea-large" rows="4">We are looking for an experienced Senior Software Engineer to join our dynamic team. You will be responsible for designing, developing, and maintaining scalable web applications using modern technologies.</textarea>
+                    <div class="form-hint">Keep it engaging and highlight key aspects of the role</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required">Key Responsibilities</label>
+                    <textarea class="form-control textarea-large" rows="6">• Design and develop high-quality software solutions
+• Collaborate with cross-functional teams to define and implement new features
+• Write clean, maintainable, and efficient code
+• Participate in code reviews and mentor junior developers
+• Troubleshoot and debug applications</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required">Required Qualifications</label>
+                    <textarea class="form-control textarea-large" rows="6">• 5+ years of experience in software development
+• Proficiency in JavaScript, React, and Node.js
+• Experience with databases (SQL and NoSQL)
+• Knowledge of cloud platforms (AWS, Azure)
+• Strong problem-solving and communication skills</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Preferred Qualifications</label>
+                    <textarea class="form-control textarea-large" rows="4">• Bachelor's degree in Computer Science or related field
+• Experience with microservices architecture
+• Knowledge of DevOps practices and CI/CD pipelines
+• Previous experience in a leadership role</textarea>
+                </div>
+            </div>
+
+            <!-- Skills & Requirements Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">Skills & Requirements</h2>
+                    <p class="section-description">Update specific skills and technologies for this role</p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Required Skills</label>
+                    <div class="skills-input">
+                        <input type="text" class="form-control" placeholder="Type a skill and press Enter" />
+                        <div class="skills-container">
+                            <span class="skill-tag">JavaScript <button type="button" class="remove-skill">×</button></span>
+                            <span class="skill-tag">React <button type="button" class="remove-skill">×</button></span>
+                            <span class="skill-tag">Node.js <button type="button" class="remove-skill">×</button></span>
+                            <span class="skill-tag">TypeScript <button type="button" class="remove-skill">×</button></span>
+                            <span class="skill-tag">PostgreSQL <button type="button" class="remove-skill">×</button></span>
+                        </div>
+                    </div>
+                    <div class="form-hint">Press Enter to add each skill</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Nice-to-Have Skills</label>
+                    <div class="skills-input">
+                        <input type="text" class="form-control" placeholder="Type a skill and press Enter" />
+                        <div class="skills-container">
+                            <span class="skill-tag optional">Python <button type="button" class="remove-skill">×</button></span>
+                            <span class="skill-tag optional">AWS <button type="button" class="remove-skill">×</button></span>
+                            <span class="skill-tag optional">Docker <button type="button" class="remove-skill">×</button></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Settings Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">Application Settings</h2>
+                    <p class="section-description">Update application settings and deadlines</p>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label required">Application Method</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="applicationMethod" value="internal" checked />
+                                <span class="radio-label">JobBridge Application System</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="applicationMethod" value="external" />
+                                <span class="radio-label">External Link/Email</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">External Application URL</label>
+                        <input type="url" class="form-control" placeholder="https://company.com/careers/apply" />
+                        <div class="form-hint">Only required if using external application method</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Application Deadline</label>
+                        <input type="date" class="form-control" value="2025-09-15" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Job Posting Expires</label>
+                        <input type="date" class="form-control" value="2025-10-30" />
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <label class="checkbox-option">
+                            <input type="checkbox" checked />
+                            <span class="checkbox-label">This is a featured job posting</span>
+                            <span class="checkbox-hint">Featured jobs get higher visibility</span>
+                        </label>
+                        
+                        <label class="checkbox-option">
+                            <input type="checkbox" />
+                            <span class="checkbox-label">This is an urgent hiring need</span>
+                            <span class="checkbox-hint">Shows an "urgent" badge to attract faster applications</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <div class="actions-left">
+                    <button type="button" class="btn btn-outline">
+                        Save as Draft
+                    </button>
+                    <button type="button" class="btn btn-danger-outline">
+                        Delete Job
+                    </button>
+                </div>
+                
+                <div class="actions-right">
+                    <button type="button" class="btn btn-secondary">
+                        Preview Changes
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Update Job
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load job data for editing when data layer is ready
+        await Task.CompletedTask;
+    }
+
+    private void HandleSubmit()
+    {
+        // Form submission logic will be implemented when data layer is ready
+    }
+}
