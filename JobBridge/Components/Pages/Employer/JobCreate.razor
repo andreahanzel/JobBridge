@@ -45,12 +45,12 @@
                         <label class="form-label required">Department</label>
                         <select class="form-control" @bind="jobPost.Department">
                             <option value="">Select Department</option>
-                            <option value="engineering">Engineering</option>
-                            <option value="product">Product</option>
-                            <option value="design">Design</option>
-                            <option value="marketing">Marketing</option>
-                            <option value="sales">Sales</option>
-                            <option value="hr">Human Resources</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Product">Product</option>
+                            <option value="Design">Design</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Human Resources">Human Resources</option>
                         </select>
                         <ValidationMessage For="@(() => jobPost.Department)" class="text-danger" />
                     </div>
@@ -59,11 +59,11 @@
                         <label class="form-label required">Employment Type</label>
                         <select class="form-control" @bind="jobPost.EmploymentType">
                             <option value="">Select Type</option>
-                            <option value="full-time">Full-time</option>
-                            <option value="part-time">Part-time</option>
-                            <option value="contract">Contract</option>
-                            <option value="internship">Internship</option>
-                            <option value="freelance">Freelance</option>
+                            <option value="Full-Time">Full-Time</option>
+                            <option value="Part-Time">Part-Time</option>
+                            <option value="Contract">Contract</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Freelance">Freelance</option>
                         </select>
                         <ValidationMessage For="@(() => jobPost.EmploymentType)" class="text-danger" />
                     </div>
@@ -72,11 +72,11 @@
                         <label class="form-label required">Experience Level</label>
                         <select class="form-control" @bind="jobPost.ExperienceLevel">
                             <option value="">Select Level</option>
-                            <option value="entry">Entry Level</option>
-                            <option value="mid">Mid Level</option>
-                            <option value="senior">Senior Level</option>
-                            <option value="lead">Lead/Principal</option>
-                            <option value="executive">Executive</option>
+                            <option value="Entry Level">Entry Level</option>
+                            <option value="Mid Level">Mid Level</option>
+                            <option value="Senior Level">Senior Level</option>
+                            <option value="Lead/Principal">Lead/Principal</option>
+                            <option value="Executive">Executive</option>
                         </select>
                         <ValidationMessage For="@(() => jobPost.ExperienceLevel)" class="text-danger" />
                     </div>
@@ -85,9 +85,9 @@
                         <label class="form-label required">Work Arrangement</label>
                         <select class="form-control" @bind="jobPost.WorkArrangement">
                             <option value="">Select Work Arrangement</option>
-                            <option value="onsite">On-site</option>
-                            <option value="remote">Remote</option>
-                            <option value="hybrid">Hybrid</option>
+                            <option value="On-site">On-site</option>
+                            <option value="Remote">Remote</option>
+                            <option value="Hybrid">Hybrid</option>
                         </select>
                         <ValidationMessage For="@(() => jobPost.WorkArrangement)" class="text-danger" />
                     </div>
@@ -113,10 +113,10 @@
                         <label class="form-label">Timezone</label>
                         <select class="form-control" @bind="jobPost.Timezone">
                             <option value="">Select Timezone</option>
-                            <option value="pst">PST (Pacific)</option>
-                            <option value="mst">MST (Mountain)</option>
-                            <option value="cst">CST (Central)</option>
-                            <option value="est">EST (Eastern)</option>
+                            <option value="PST (Pacific)">PST (Pacific)</option>
+                            <option value="MST (Mountain)">MST (Mountain)</option>
+                            <option value="CST (Central)">CST (Central)</option>
+                            <option value="EST (Eastern)">EST (Eastern)</option>
                         </select>
                     </div>
 
@@ -219,8 +219,8 @@
                         <label class="form-label required">Application Method</label>
                         <select class="form-control" @bind="jobPost.ApplicationMethod">
                             <option value="">Select Application Method</option>
-                            <option value="internal">JobBridge Application System</option>
-                            <option value="external">External Link/Email</option>
+                            <option value="JobBridge Application System">JobBridge Application System</option>
+                            <option value="External Link/Email">External Link/Email</option>
                         </select>
                         <ValidationMessage For="@(() => jobPost.ApplicationMethod)" class="text-danger" />
                     </div>
@@ -252,13 +252,13 @@
                 <div class="form-group">
                     <div class="checkbox-group">
                         <label class="checkbox-option">
-                            <input type="checkbox" @bind="jobPost.Featured" />
+                            <input type="checkbox" @bind="jobPost.IsFeatured" />
                             <span class="checkbox-label">This is a featured job posting</span>
                             <span class="checkbox-hint">Featured jobs get higher visibility</span>
                         </label>
 
                         <label class="checkbox-option">
-                            <input type="checkbox" @bind="jobPost.Urgent" />
+                            <input type="checkbox" @bind="jobPost.IsUrgent" />
                             <span class="checkbox-label">This is an urgent hiring need</span>
                             <span class="checkbox-hint">Shows an "urgent" badge to attract faster applications</span>
                         </label>
@@ -312,7 +312,7 @@
         try
         {
             // Set the default values for the new job post
-            jobPost.PostDate = DateTime.UtcNow;
+            jobPost.PostedDate = DateTime.UtcNow;
             jobPost.CreatedAt = DateTime.UtcNow;
             jobPost.UpdatedAt = DateTime.UtcNow;
             jobPost.NumberOfApplicants = 0;

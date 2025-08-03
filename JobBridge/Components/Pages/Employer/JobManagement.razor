@@ -114,17 +114,17 @@
                             <span class="meta-separator">•</span>
                             <span class="meta-item">@jobPost.Location</span>
                             <span class="meta-separator">•</span>
-                            <span class="meta-item">Posted on @jobPost.PostDate.ToString("MMMM dd, yyyy")</span>
+                            <span class="meta-item">Posted on @jobPost.PostedDate.ToString("MMMM dd, yyyy")</span>
                         </div>
                     </div>
                 </div>
                 <div class="job-card-footer">
                     <div class="status-badges">
-                        @if (jobPost.Urgent)
+                        @if (jobPost.IsUrgent)
                         {
                             <span class="status-badge">Urgent</span>
                         }
-                        @if (jobPost.Featured)
+                        @if (jobPost.IsFeatured)
                         {
                             <span class="feature-badge">Featured</span>
                         }

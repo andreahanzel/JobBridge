@@ -57,7 +57,7 @@
 
     <div class="job-card-footer">
         <div class="job-timing">
-            <span class="posted-date">Posted @GetRelativeTime(JobPost.PostDate)</span>
+            <span class="posted-date">Posted @GetRelativeTime(JobPost.PostedDate)</span>
         </div>
         <div class="job-cta">
             <button class="btn btn-primary btn-sm">
@@ -67,14 +67,14 @@
         </div>
     </div>
 
-    @if (JobPost.Featured)
+    @if (JobPost.IsFeatured)
     {
         <div class="featured-badge">
             <span class="featured-text">Featured</span>
         </div>
     }
 
-    @if (JobPost.Urgent)
+    @if (JobPost.IsUrgent)
     {
         <div class="urgent-badge">
             <span class="urgent-text">Urgent</span>

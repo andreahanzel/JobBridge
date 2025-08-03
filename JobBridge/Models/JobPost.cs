@@ -45,11 +45,12 @@ namespace JobBridge.Data
 
         [Url(ErrorMessage = "Please enter a valid URL starting with http:// or https://")]
         public string? ExternalApplicationUrl { get; set; }
-        public DateTime PostDate { get; set; }
+        public DateTime PostedDate { get; set; }
         public DateTime ApplicationDeadline { get; set; }
         public DateTime PostExpirationDate { get; set; }
-        public bool Featured { get; set; } = false;
-        public bool Urgent { get; set; } = false;
+        public bool IsFeatured { get; set; } = false;
+        public bool IsUrgent { get; set; } = false;
+        public bool IsActive { get; set; } = true;
         public int NumberOfApplicants { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
