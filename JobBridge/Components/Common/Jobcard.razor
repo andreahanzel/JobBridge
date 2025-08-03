@@ -1,53 +1,54 @@
-<div class="job-card" @onclick="() => NavigateToJob(Job.Id)">
+@using JobBridge.Data
+<div class="job-card" @onclick="() => NavigateToJob(JobPost.Id)">
     <div class="job-card-header">
         <div class="company-info">
             <div class="company-logo">
-                @GetCompanyInitials(Job.CompanyName)
+                @GetCompanyInitials(JobPost.Employer.Name)
             </div>
             <div class="company-details">
-                <h3 class="job-title">@Job.Title</h3>
-                <p class="company-name">@Job.CompanyName</p>
+                <h3 class="job-title">@JobPost.JobTitle</h3>
+                <p class="company-name">@JobPost.Employer.Name</p>
             </div>
         </div>
-        <div class="job-actions">
-            <button class="btn-icon bookmark-btn @(Job.IsBookmarked ? "bookmarked" : "")" 
+        @* <div class="job-actions">
+            <button class="btn-icon bookmark-btn @(JobPost.IsBookmarked ? "bookmarked" : "")" 
                     @onclick:stopPropagation="true" 
-                    @onclick="() => ToggleBookmark(Job.Id)">
-                <span class="bookmark-icon">@(Job.IsBookmarked ? "❤️" : "🤍")</span>
+                    @onclick="() => ToggleBookmark(JobPost.Id)">
+                <span class="bookmark-icon">@(JobPost.IsBookmarked ? "❤️" : "🤍")</span>
             </button>
-        </div>
+        </div> *@
     </div>
 
     <div class="job-card-body">
         <div class="job-meta">
             <span class="job-location">
                 <span class="meta-icon">📍</span>
-                @Job.Location
+                @JobPost.Location
             </span>
             <span class="job-type">
                 <span class="meta-icon">💼</span>
-                @Job.EmploymentType
+                @JobPost.EmploymentType
             </span>
             <span class="job-experience">
                 <span class="meta-icon">⭐</span>
-                @Job.ExperienceLevel
+                @JobPost.ExperienceLevel
             </span>
         </div>
 
         <p class="job-description">
-            @GetTruncatedDescription(Job.Description)
+            @GetTruncatedDescription(JobPost.JobSummary)
         </p>
 
-        @if (!string.IsNullOrEmpty(Job.SalaryRange))
+        @if (@JobPost.minimumSalary > 0 && @JobPost.maximumSalary > 0)
         {
             <div class="salary-range">
                 <span class="salary-icon">💰</span>
-                <span class="salary-text">@Job.SalaryRange</span>
+                <span class="salary-text">@JobPost.minimumSalary.ToString("N0") - @JobPost.maximumSalary</span>
             </div>
         }
 
         <div class="job-tags">
-            @foreach (var skill in GetSkillTags(Job.Description))
+            @foreach (var skill in GetSkillTags(JobPost.RequiredSkills))
             {
                 <span class="skill-tag">@skill</span>
             }
@@ -56,7 +57,7 @@
 
     <div class="job-card-footer">
         <div class="job-timing">
-            <span class="posted-date">Posted @GetRelativeTime(Job.PostedDate)</span>
+            <span class="posted-date">Posted @GetRelativeTime(JobPost.PostDate)</span>
         </div>
         <div class="job-cta">
             <button class="btn btn-primary btn-sm">
@@ -66,14 +67,14 @@
         </div>
     </div>
 
-    @if (Job.IsFeatured)
+    @if (JobPost.Featured)
     {
         <div class="featured-badge">
             <span class="featured-text">Featured</span>
         </div>
     }
 
-    @if (IsUrgent(Job.PostedDate))
+    @if (JobPost.Urgent)
     {
         <div class="urgent-badge">
             <span class="urgent-text">Urgent</span>
@@ -82,7 +83,7 @@
 </div>
 
 @code {
-    [Parameter] public JobModel Job { get; set; } = new();
+    [Parameter] public JobPost JobPost { get; set; } = new JobPost();
     [Parameter] public EventCallback<int> OnBookmarkToggle { get; set; }
     [Parameter] public EventCallback<int> OnJobClick { get; set; }
 
@@ -91,11 +92,11 @@
         await OnJobClick.InvokeAsync(jobId);
     }
 
-    private async Task ToggleBookmark(int jobId)
+    @* private async Task ToggleBookmark(int jobId)
     {
-        Job.IsBookmarked = !Job.IsBookmarked;
+        JobPost.IsBookmarked = !JobPost.IsBookmarked;
         await OnBookmarkToggle.InvokeAsync(jobId);
-    }
+    } *@
 
     private string GetCompanyInitials(string companyName)
     {
@@ -144,26 +145,5 @@
             return $"{timeSpan.Hours} hour{(timeSpan.Hours > 1 ? "s" : "")} ago";
         
         return "Recently posted";
-    }
-
-    private bool IsUrgent(DateTime postedDate)
-    {
-        return DateTime.Now - postedDate < TimeSpan.FromDays(1);
-    }
-
-    // Mock model for UI development
-    public class JobModel
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string CompanyName { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public string EmploymentType { get; set; } = string.Empty;
-        public string ExperienceLevel { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string SalaryRange { get; set; } = string.Empty;
-        public DateTime PostedDate { get; set; }
-        public bool IsBookmarked { get; set; }
-        public bool IsFeatured { get; set; }
     }
 }
