@@ -46,6 +46,7 @@ namespace JobBridge.Data
         [Url(ErrorMessage = "Please enter a valid URL starting with http:// or https://")]
         public string? ExternalApplicationUrl { get; set; }
         public DateTime PostedDate { get; set; }
+        [Required(ErrorMessage = "Application deadline is required")]
         public DateTime ApplicationDeadline { get; set; }
         public DateTime PostExpirationDate { get; set; }
         public bool IsFeatured { get; set; } = false;

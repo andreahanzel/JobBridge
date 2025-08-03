@@ -150,23 +150,17 @@
 
 @code {
     private List<JobPost> jobPosts = new();
-    private bool isLoading = true;
     private string? errorMessage = null;
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            isLoading = true;
             jobPosts = await DbContext.JobPosts
             .ToListAsync();
         }
         catch (Exception ex)
         {
             errorMessage = $"Failed to load job listings: {ex.Message}";
-        }
-        finally
-        {
-            isLoading = false;
         }
 
         // Load employer's jobs when data layer is ready
