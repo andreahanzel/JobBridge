@@ -1,4 +1,9 @@
 @page "/employer/jobs/create"
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Forms
+@inject JobBridgeContext DbContext
+@inject NavigationManager Navigation
 
 
 <div class="job-create-container">
@@ -8,7 +13,7 @@
             <h1 class="page-title">Create New Job Posting</h1>
             <p class="page-subtitle">Attract the best talent with a compelling job description</p>
         </div>
-        
+
         <div class="header-actions">
             <a href="/employer/jobs" class="btn btn-secondary">
                 ← Back to Jobs
@@ -18,25 +23,27 @@
 
     <!-- Job Creation Form -->
     <div class="form-container">
-        <form class="job-form" @onsubmit="HandleSubmit" @onsubmit:preventDefault="true">
-            
+        <EditForm Model="jobPost" OnValidSubmit="HandleSubmit" class="job-form">
+
             <!-- Job Basics Section -->
             <div class="form-section">
                 <div class="section-header">
                     <h2 class="section-title">Job Basics</h2>
                     <p class="section-description">Start with the essential information about this position</p>
                 </div>
-                
+
                 <div class="form-grid">
                     <div class="form-group span-2">
                         <label class="form-label required">Job Title</label>
-                        <input type="text" class="form-control" placeholder="e.g. Senior Software Engineer" />
+                        <input type="text" class="form-control" placeholder="e.g. Senior Software Engineer"
+                            @bind="jobPost.JobTitle" />
+                        <ValidationMessage For="@(() => jobPost.JobTitle)" class="text-danger" />
                         <div class="form-hint">Be specific and clear about the role</div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label required">Department</label>
-                        <select class="form-control">
+                        <select class="form-control" @bind="jobPost.Department">
                             <option value="">Select Department</option>
                             <option value="engineering">Engineering</option>
                             <option value="product">Product</option>
@@ -45,11 +52,12 @@
                             <option value="sales">Sales</option>
                             <option value="hr">Human Resources</option>
                         </select>
+                        <ValidationMessage For="@(() => jobPost.Department)" class="text-danger" />
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label required">Employment Type</label>
-                        <select class="form-control">
+                        <select class="form-control" @bind="jobPost.EmploymentType">
                             <option value="">Select Type</option>
                             <option value="full-time">Full-time</option>
                             <option value="part-time">Part-time</option>
@@ -57,11 +65,12 @@
                             <option value="internship">Internship</option>
                             <option value="freelance">Freelance</option>
                         </select>
+                        <ValidationMessage For="@(() => jobPost.EmploymentType)" class="text-danger" />
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label required">Experience Level</label>
-                        <select class="form-control">
+                        <select class="form-control" @bind="jobPost.ExperienceLevel">
                             <option value="">Select Level</option>
                             <option value="entry">Entry Level</option>
                             <option value="mid">Mid Level</option>
@@ -69,24 +78,18 @@
                             <option value="lead">Lead/Principal</option>
                             <option value="executive">Executive</option>
                         </select>
+                        <ValidationMessage For="@(() => jobPost.ExperienceLevel)" class="text-danger" />
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label required">Work Arrangement</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="workArrangement" value="onsite" />
-                                <span class="radio-label">On-site</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="workArrangement" value="remote" />
-                                <span class="radio-label">Remote</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="workArrangement" value="hybrid" />
-                                <span class="radio-label">Hybrid</span>
-                            </label>
-                        </div>
+                        <select class="form-control" @bind="jobPost.WorkArrangement">
+                            <option value="">Select Work Arrangement</option>
+                            <option value="onsite">On-site</option>
+                            <option value="remote">Remote</option>
+                            <option value="hybrid">Hybrid</option>
+                        </select>
+                        <ValidationMessage For="@(() => jobPost.WorkArrangement)" class="text-danger" />
                     </div>
                 </div>
             </div>
@@ -97,16 +100,18 @@
                     <h2 class="section-title">Location & Compensation</h2>
                     <p class="section-description">Specify where the work will be done and compensation details</p>
                 </div>
-                
+
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label required">Location</label>
-                        <input type="text" class="form-control" placeholder="e.g. San Francisco, CA" />
+                        <input type="text" class="form-control" placeholder="e.g. San Francisco, CA"
+                            @bind="jobPost.Location" />
+                        <ValidationMessage For="@(() => jobPost.Location)" class="text-danger" />
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">Timezone</label>
-                        <select class="form-control">
+                        <select class="form-control" @bind="jobPost.Timezone">
                             <option value="">Select Timezone</option>
                             <option value="pst">PST (Pacific)</option>
                             <option value="mst">MST (Mountain)</option>
@@ -114,26 +119,29 @@
                             <option value="est">EST (Eastern)</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">Minimum Salary</label>
                         <div class="input-group">
                             <span class="input-prefix">$</span>
-                            <input type="number" class="form-control" placeholder="80,000" />
+                            <input type="number" class="form-control" placeholder="80,000"
+                                @bind="jobPost.MinimumSalary" />
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">Maximum Salary</label>
                         <div class="input-group">
                             <span class="input-prefix">$</span>
-                            <input type="number" class="form-control" placeholder="120,000" />
+                            <input type="number" class="form-control" placeholder="120,000"
+                                @bind="jobPost.MaximumSalary" />
                         </div>
                     </div>
-                    
+
                     <div class="form-group span-2">
                         <label class="form-label">Additional Compensation</label>
-                        <input type="text" class="form-control" placeholder="e.g. Equity, bonuses, benefits..." />
+                        <input type="text" class="form-control" placeholder="e.g. Equity, bonuses, benefits..."
+                            @bind="jobPost.AdditionalCompensation" />
                         <div class="form-hint">Mention equity, bonuses, or other benefits</div>
                     </div>
                 </div>
@@ -145,30 +153,37 @@
                     <h2 class="section-title">Job Description</h2>
                     <p class="section-description">Describe the role, responsibilities, and what makes it exciting</p>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label required">Job Summary</label>
-                    <textarea class="form-control textarea-large" rows="4" 
-                              placeholder="Write a compelling summary of the role and what the candidate will do..."></textarea>
+                    <textarea class="form-control textarea-large" rows="4"
+                        placeholder="Write a compelling summary of the role and what the candidate will do..."
+                        @bind="jobPost.JobSummary"></textarea>
+                    <ValidationMessage For="@(() => jobPost.JobSummary)" class="text-danger" />
                     <div class="form-hint">Keep it engaging and highlight key aspects of the role</div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label required">Key Responsibilities</label>
-                    <textarea class="form-control textarea-large" rows="6" 
-                              placeholder="• List the main responsibilities and duties&#10;• Use bullet points for clarity&#10;• Focus on day-to-day activities"></textarea>
+                    <textarea class="form-control textarea-large" rows="6"
+                        placeholder="• List the main responsibilities and duties&#10;• Use bullet points for clarity&#10;• Focus on day-to-day activities"
+                        @bind="jobPost.KeyResponsibilities"></textarea>
+                    <ValidationMessage For="@(() => jobPost.KeyResponsibilities)" class="text-danger" />
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label required">Required Qualifications</label>
-                    <textarea class="form-control textarea-large" rows="6" 
-                              placeholder="• List essential skills and experience&#10;• Include education requirements if necessary&#10;• Mention years of experience needed"></textarea>
+                    <textarea class="form-control textarea-large" rows="6"
+                        placeholder="• List essential skills and experience&#10;• Include education requirements if necessary&#10;• Mention years of experience needed"
+                        @bind="jobPost.RequiredQualifications"></textarea>
+                    <ValidationMessage For="@(() => jobPost.RequiredQualifications)" class="text-danger" />
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Preferred Qualifications</label>
-                    <textarea class="form-control textarea-large" rows="4" 
-                              placeholder="• Nice-to-have skills and experience&#10;• Additional certifications or qualifications"></textarea>
+                    <textarea class="form-control textarea-large" rows="4"
+                        placeholder="• Nice-to-have skills and experience&#10;• Additional certifications or qualifications"
+                        @bind="jobPost.PreferredQualifications"></textarea>
                 </div>
             </div>
 
@@ -178,30 +193,17 @@
                     <h2 class="section-title">Skills & Requirements</h2>
                     <p class="section-description">Add specific skills and technologies required for this role</p>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Required Skills</label>
-                    <div class="skills-input">
-                        <input type="text" class="form-control" placeholder="Type a skill and press Enter" 
-                               @onkeypress="HandleSkillInput" />
-                        <div class="skills-container">
-                            <span class="skill-tag">JavaScript <button type="button" class="remove-skill">×</button></span>
-                            <span class="skill-tag">React <button type="button" class="remove-skill">×</button></span>
-                            <span class="skill-tag">Node.js <button type="button" class="remove-skill">×</button></span>
-                        </div>
-                    </div>
-                    <div class="form-hint">Press Enter to add each skill</div>
+                    <textarea class="form-control textarea-large" rows="4" placeholder="Javascript, React, Node.js"
+                        @bind="jobPost.RequiredSkills"></textarea>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Nice-to-Have Skills</label>
-                    <div class="skills-input">
-                        <input type="text" class="form-control" placeholder="Type a skill and press Enter" />
-                        <div class="skills-container">
-                            <span class="skill-tag optional">Python <button type="button" class="remove-skill">×</button></span>
-                            <span class="skill-tag optional">AWS <button type="button" class="remove-skill">×</button></span>
-                        </div>
-                    </div>
+                    <textarea class="form-control textarea-large" rows="4" placeholder="Python, AWS, etc."
+                        @bind="jobPost.NiceToHaveSkills"></textarea>
                 </div>
             </div>
 
@@ -211,54 +213,52 @@
                     <h2 class="section-title">Application Settings</h2>
                     <p class="section-description">Configure how candidates can apply and deadlines</p>
                 </div>
-                
+
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label required">Application Method</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="applicationMethod" value="internal" />
-                                <span class="radio-label">JobBridge Application System</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="applicationMethod" value="external" />
-                                <span class="radio-label">External Link/Email</span>
-                            </label>
-                        </div>
+                        <select class="form-control" @bind="jobPost.ApplicationMethod">
+                            <option value="">Select Application Method</option>
+                            <option value="internal">JobBridge Application System</option>
+                            <option value="external">External Link/Email</option>
+                        </select>
+                        <ValidationMessage For="@(() => jobPost.ApplicationMethod)" class="text-danger" />
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">External Application URL</label>
-                        <input type="url" class="form-control" placeholder="https://company.com/careers/apply" />
+                        <InputText type="url" class="form-control" placeholder="https://company.com/careers/apply"
+                            @bind-Value="jobPost.ExternalApplicationUrl" />
+                        <ValidationMessage For="@(() => jobPost.ExternalApplicationUrl)" class="text-danger" />
                         <div class="form-hint">Only required if using external application method</div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">Application Deadline</label>
-                        <input type="date" class="form-control" />
+                        <input type="date" class="form-control" @bind="jobPost.ApplicationDeadline" />
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">Job Posting Duration</label>
-                        <select class="form-control">
-                            <option value="30">30 days</option>
+                        <select class="form-control" @bind="postDuration">
+                            <option value="30" selected>30 days</option>
                             <option value="60">60 days</option>
                             <option value="90">90 days</option>
-                            <option value="custom">Custom</option>
+                            <option value="180">180 days</option>
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <div class="checkbox-group">
                         <label class="checkbox-option">
-                            <input type="checkbox" />
+                            <input type="checkbox" @bind="jobPost.Featured" />
                             <span class="checkbox-label">This is a featured job posting</span>
                             <span class="checkbox-hint">Featured jobs get higher visibility</span>
                         </label>
-                        
+
                         <label class="checkbox-option">
-                            <input type="checkbox" />
+                            <input type="checkbox" @bind="jobPost.Urgent" />
                             <span class="checkbox-label">This is an urgent hiring need</span>
                             <span class="checkbox-hint">Shows an "urgent" badge to attract faster applications</span>
                         </label>
@@ -266,35 +266,79 @@
                 </div>
             </div>
 
+            <!-- Error Message -->
+            <DataAnnotationsValidator />
+            <ValidationSummary class="validation-summary" />
+
             <!-- Form Actions -->
             <div class="form-actions">
                 <div class="actions-left">
-                    <button type="button" class="btn btn-outline">
+                    <button type="button" class="btn btn-outline" disabled="@isSubmitting">
                         Save as Draft
                     </button>
                 </div>
-                
+
                 <div class="actions-right">
-                    <button type="button" class="btn btn-secondary">
+                    <button type="button" class="btn btn-secondary" disabled="@isSubmitting">
                         Preview Job
                     </button>
-                    <button type="submit" class="btn btn-primary">
-                        Publish Job
+                    <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span>Publishing...</span>
+                        }
+                        else
+                        {
+                            <span>Publish Job</span>
+                        }
                     </button>
                 </div>
             </div>
-        </form>
+        </EditForm>
     </div>
 </div>
 
 @code {
-    private void HandleSubmit()
-    {
-        // Form submission logic will be implemented when data layer is ready
-    }
+    private JobPost jobPost = new JobPost();
+    private int postDuration = 30; // Default to 30 days
+    private bool isSubmitting = false;
+    private string? errorMessage = null;
 
-    private void HandleSkillInput(KeyboardEventArgs e)
+    private async Task HandleSubmit()
     {
-        // Skill input handling will be implemented when data layer is ready
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            // Set the default values for the new job post
+            jobPost.PostDate = DateTime.UtcNow;
+            jobPost.CreatedAt = DateTime.UtcNow;
+            jobPost.UpdatedAt = DateTime.UtcNow;
+            jobPost.NumberOfApplicants = 0;
+
+            // Set expiration date (30 days from now by default)
+            jobPost.PostExpirationDate = DateTime.UtcNow.AddDays(postDuration);
+
+            // TODO: Set EmployerId and FieldId based on current user and selected field
+            // For now, using placeholder values
+            jobPost.EmployerId = 1; // This should come from the current logged-in employer
+            jobPost.FieldId = 1; // This should be selected in the form or determined from department
+
+            // Add the job post to the database
+            DbContext.JobPosts.Add(jobPost);
+            await DbContext.SaveChangesAsync();
+
+            // Navigate back to the jobs list page
+            Navigation.NavigateTo("/employer/jobs");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred while creating the job post: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
     }
 }
