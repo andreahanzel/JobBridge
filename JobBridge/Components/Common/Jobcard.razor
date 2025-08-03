@@ -39,11 +39,11 @@
             @GetTruncatedDescription(JobPost.JobSummary)
         </p>
 
-        @if (@JobPost.minimumSalary > 0 && @JobPost.maximumSalary > 0)
+        @if (@JobPost.MinimumSalary > 0 && @JobPost.MaximumSalary > 0)
         {
             <div class="salary-range">
                 <span class="salary-icon">💰</span>
-                <span class="salary-text">@JobPost.minimumSalary.ToString("N0") - @JobPost.maximumSalary</span>
+                <span class="salary-text">@JobPost.MinimumSalary.ToString("N0") - @JobPost.MaximumSalary.ToString("N0")</span>
             </div>
         }
 
