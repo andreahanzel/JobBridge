@@ -16,8 +16,7 @@
 
         <!-- Search Section -->
         <div class="search-section">
-            <SearchBar Placeholder="Search for jobs, companies, or keywords..."
-                        OnSearch="HandleSearch"
+            <SearchBar Placeholder="Search for jobs, companies, or keywords..." OnSearch="HandleSearch"
                 OnAdvancedToggle="ToggleFilters" />
         </div>
 
@@ -198,8 +197,7 @@
 </div>
 
 <!-- Advanced Filter Panel -->
-    <FilterPanel IsVisible="@showAdvancedFilters" 
-                OnClose="CloseAdvancedFilters" />
+<FilterPanel IsVisible="@showAdvancedFilters" OnClose="CloseAdvancedFilters" />
 
 @code {
     private bool showAdvancedFilters = false;
@@ -214,6 +212,7 @@
             isLoading = true;
             jobs = await DbContext.JobPosts
             .Include(j => j.Employer)
+            .Where(j => j.IsActive)
             .ToListAsync();
         }
         catch (Exception ex)

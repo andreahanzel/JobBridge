@@ -1,4 +1,8 @@
 @page "/dashboard/employer"
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@inject JobBridgeContext DbContext
+@inject NavigationManager NavigationManager
 @* Add this line later: @attribute [Authorize(Roles = "Employer")] *@
 
 <PageTitle>Employer Dashboard - JobBridge</PageTitle>
@@ -11,7 +15,7 @@
                 <h1 class="hero-title">Welcome, @GetCompanyName()!</h1>
                 <p class="hero-subtitle">Manage your job postings and track candidate engagement</p>
                 <div class="hero-buttons">
-                    <a href="/employer/job-create" class="btn btn-primary">Post New Job</a>
+                    <a href="/employer/jobs/create" class="btn btn-primary">Post New Job</a>
                     <a href="/employer/profile" class="btn btn-secondary">Company Profile</a>
                 </div>
             </div>
@@ -44,13 +48,12 @@
                         {
                             <div class="job-item">
                                 <div class="job-info">
-                                    <h4>@job.Title</h4>
+                                    <h4>@job.JobTitle</h4>
                                     <p>@job.Department • @job.Location</p>
                                     <span class="job-date">Posted @job.PostedDate.ToString("MMM dd")</span>
                                 </div>
                                 <div class="job-stats">
-                                    <span class="stat-item">👥 @job.ApplicantCount</span>
-                                    <span class="stat-item">👀 @job.ViewCount</span>
+                                    <span class="stat-item">👥 @job.NumberOfApplicants</span>
                                 </div>
                                 <div class="job-actions">
                                     <button class="btn btn-sm btn-primary" @onclick="() => EditJob(job.Id)">Edit</button>
@@ -120,8 +123,8 @@
                             @foreach (var job in topPerformingJobs)
                             {
                                 <div class="performance-item">
-                                    <span class="job-title">@job.Title</span>
-                                    <span class="performance-metric">@job.ApplicantCount applicants</span>
+                                    <span class="job-title">@job.JobTitle</span>
+                                    <span class="performance-metric">@job.NumberOfApplicants applicants</span>
                                 </div>
                             }
                         </div>
@@ -153,10 +156,11 @@
     private decimal responseRate = 0;
     private int weeklyApplications = 0;
     private int monthlyApplications = 0;
+    private List<JobPost> jobPosts = new List<JobPost>();
     
-    private List<EmployerJobModel>? recentJobs;
+    private List<JobPost>? recentJobs;
     private List<EmployerApplicationModel>? recentApplications;
-    private List<EmployerJobModel>? topPerformingJobs;
+    private List<JobPost>? topPerformingJobs;
 
     protected override async Task OnInitializedAsync()
     {
@@ -165,21 +169,18 @@
 
     private async Task LoadDashboardData()
     {
+        jobPosts = await DbContext.JobPosts.ToListAsync();
+
         // Mock data for UI development
-        activeJobs = 5;
-        totalApplicants = 23;
+        activeJobs = jobPosts.Count(j => j.IsActive);
+        totalApplicants = jobPosts.Sum(j => j.NumberOfApplicants);
         jobViews = 156;
         responseRate = 0.68m;
         weeklyApplications = 8;
         monthlyApplications = 34;
 
         // Mock recent jobs
-        recentJobs = new List<EmployerJobModel>
-        {
-            new() { Id = 1, Title = "Software Engineer", Department = "Engineering", Location = "Remote", PostedDate = DateTime.Now.AddDays(-3), ApplicantCount = 12, ViewCount = 45, IsActive = true },
-            new() { Id = 2, Title = "Product Manager", Department = "Product", Location = "New York", PostedDate = DateTime.Now.AddDays(-7), ApplicantCount = 8, ViewCount = 32, IsActive = true },
-            new() { Id = 3, Title = "UX Designer", Department = "Design", Location = "San Francisco", PostedDate = DateTime.Now.AddDays(-10), ApplicantCount = 15, ViewCount = 67, IsActive = false }
-        };
+        recentJobs = jobPosts.OrderByDescending(j => j.PostedDate).Take(3).ToList();
 
         // Mock recent applications
         recentApplications = new List<EmployerApplicationModel>
@@ -190,7 +191,7 @@
         };
 
         // Mock top performing jobs
-        topPerformingJobs = recentJobs?.OrderByDescending(j => j.ApplicantCount).Take(3).ToList();
+        topPerformingJobs = jobPosts.OrderByDescending(j => j.PostedDate).Take(3).ToList();
 
         await Task.Delay(1); // Simulate async operation
     }
@@ -202,19 +203,23 @@
 
     private async Task EditJob(int jobId)
     {
-        // Mock edit job action
-        await Task.Delay(1);
+        // Navigate to job edit page
+        NavigationManager.NavigateTo($"/employer/jobs/edit/{jobId}");
+        await Task.CompletedTask;
     }
 
     private async Task ToggleJobStatus(int jobId)
     {
-        // Mock toggle job status
         var job = recentJobs?.FirstOrDefault(j => j.Id == jobId);
         if (job != null)
         {
             job.IsActive = !job.IsActive;
+
+            // Update the job status in the database
+            DbContext.JobPosts.Update(job);
+            await DbContext.SaveChangesAsync();
+            await LoadDashboardData(); // Refresh data after toggling status
         }
-        await Task.Delay(1);
     }
 
     private async Task ViewApplication(int applicationId)

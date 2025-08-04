@@ -14,6 +14,9 @@
         </div>
 
         <div class="header-actions">
+            <a href="/dashboard/employer" class="btn btn-secondary">
+                Employer Dashboard
+            </a>
             <a href="/employer/jobs/create" class="btn btn-primary">
                 + Create New Job
             </a>
@@ -25,7 +28,7 @@
         <div class="stat-card">
             <div class="stat-icon">📝</div>
             <div class="stat-content">
-                <div class="stat-number">@jobPosts.Count</div>
+                <div class="stat-number">@jobPosts.Count(j => j.IsActive)</div>
                 <div class="stat-label">Active Jobs</div>
             </div>
         </div>
@@ -131,6 +134,10 @@
                     </div>
 
                     <div class="quick-actions">
+                        <button class="btn btn-sm btn-toggle @(jobPost.IsActive ? "active" : "")"
+                            @onclick="() => ToggleJobStatus(jobPost.Id)">
+                            @(jobPost.IsActive ? "Active" : "Inactive")
+                        </button>
                         <a href="/employer/jobs/edit/@jobPost.Id" class="btn btn-primary btn-sm">Edit</a>
                         <button class="btn btn-danger btn-sm" @onclick="() => HandleDelete(jobPost.Id)">Delete</button>
                     </div>
@@ -166,6 +173,19 @@
 
         // Load employer's jobs when data layer is ready
         await Task.CompletedTask;
+    }
+
+    private async Task ToggleJobStatus(int jobId)
+    {
+        var job = jobPosts?.FirstOrDefault(j => j.Id == jobId);
+        if (job != null)
+        {
+            job.IsActive = !job.IsActive;
+        }
+        // Update the job status in the database
+        DbContext.JobPosts.Update(job);
+        await DbContext.SaveChangesAsync();
+        StateHasChanged();
     }
 
     private async Task HandleDelete(int jobPostId)
