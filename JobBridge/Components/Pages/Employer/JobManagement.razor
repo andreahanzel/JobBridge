@@ -132,7 +132,7 @@
 
                     <div class="quick-actions">
                         <a href="/employer/jobs/edit/@jobPost.Id" class="btn btn-primary btn-sm">Edit</a>
-                        <button class="btn btn-danger btn-sm">Delete</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => HandleDelete(jobPost.Id)">Delete</button>
                     </div>
                 </div>
             </div>
@@ -151,6 +151,7 @@
 @code {
     private List<JobPost> jobPosts = new();
     private string? errorMessage = null;
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -165,5 +166,17 @@
 
         // Load employer's jobs when data layer is ready
         await Task.CompletedTask;
+    }
+
+    private async Task HandleDelete(int jobPostId)
+    {
+        var jobToRemove = jobPosts.FirstOrDefault(j => j.Id == jobPostId);
+        if (jobToRemove != null)
+        {
+            jobPosts.Remove(jobToRemove);
+            DbContext.JobPosts.Remove(jobToRemove);
+            await DbContext.SaveChangesAsync();
+            StateHasChanged();
+        }
     }
 }
