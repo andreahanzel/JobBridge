@@ -1,4 +1,4 @@
-@page "/employer/jobs/edit/{id:int}"
+@page "/employer/{employerId:int}/jobs/edit/{jobId:int}"
 @using JobBridge.Components.Common
 @using JobBridge.Data
 @using Microsoft.EntityFrameworkCore
@@ -15,10 +15,10 @@
         </div>
 
         <div class="header-actions">
-            <a href="/employer/jobs" class="btn btn-secondary">
+            <a href="/employer/@EmployerId/jobs" class="btn btn-secondary">
                 ← Back to Jobs
             </a>
-            <a href="/jobs/@Id" class="btn btn-outline" target="_blank">
+            <a href="/jobs/@JobId" class="btn btn-outline" target="_blank">
                 View Live Job
             </a>
         </div>
@@ -39,7 +39,7 @@
                     <div class="form-group span-2">
                         <label class="form-label required">Job Title</label>
                         <input type="text" class="form-control" @bind="jobPost.JobTitle" />
-                        <ValidationMessage For="@(() => jobPost.JobTitle)" class="text-danger"/>
+                        <ValidationMessage For="@(() => jobPost.JobTitle)" class="text-danger" />
                         <div class="form-hint">Be specific and clear about the role</div>
                     </div>
 
@@ -53,7 +53,7 @@
                             <option value="Sales">Sales</option>
                             <option value="Human Resources">Human Resources</option>
                         </select>
-                        <ValidationMessage For="@(() => jobPost.Department)" class="text-danger"/>
+                        <ValidationMessage For="@(() => jobPost.Department)" class="text-danger" />
                     </div>
 
                     <div class="form-group">
@@ -65,7 +65,7 @@
                             <option value="Internship">Internship</option>
                             <option value="Freelance">Freelance</option>
                         </select>
-                        <ValidationMessage For="@(() => jobPost.EmploymentType)" class="text-danger"/>
+                        <ValidationMessage For="@(() => jobPost.EmploymentType)" class="text-danger" />
                     </div>
 
                     <div class="form-group">
@@ -77,7 +77,7 @@
                             <option value="Lead/Principal">Lead/Principal</option>
                             <option value="Executive">Executive</option>
                         </select>
-                        <ValidationMessage For="@(() => jobPost.ExperienceLevel)" class="text-danger"/>
+                        <ValidationMessage For="@(() => jobPost.ExperienceLevel)" class="text-danger" />
                     </div>
 
                     <div class="form-group">
@@ -88,7 +88,7 @@
                             <option value="Remote">Remote</option>
                             <option value="Hybrid">Hybrid</option>
                         </select>
-                        <ValidationMessage For="@(() => jobPost.WorkArrangement)" class="text-danger"/>
+                        <ValidationMessage For="@(() => jobPost.WorkArrangement)" class="text-danger" />
                     </div>
                 </div>
             </div>
@@ -104,7 +104,7 @@
                     <div class="form-group">
                         <label class="form-label required">Location</label>
                         <input type="text" class="form-control" @bind="jobPost.Location" />
-                        <ValidationMessage For="@(() => jobPost.Location)" class="text-danger"/>
+                        <ValidationMessage For="@(() => jobPost.Location)" class="text-danger" />
                     </div>
 
                     <div class="form-group">
@@ -151,7 +151,7 @@
                 <div class="form-group">
                     <label class="form-label required">Job Summary</label>
                     <textarea class="form-control textarea-large" rows="4" @bind="jobPost.JobSummary"></textarea>
-                    <ValidationMessage For="@(() => jobPost.JobSummary)" class="text-danger"/>
+                    <ValidationMessage For="@(() => jobPost.JobSummary)" class="text-danger" />
                     <div class="form-hint">Keep it engaging and highlight key aspects of the role</div>
                 </div>
 
@@ -159,14 +159,14 @@
                     <label class="form-label required">Key Responsibilities</label>
                     <textarea class="form-control textarea-large" rows="6"
                         @bind="jobPost.KeyResponsibilities"></textarea>
-                    <ValidationMessage For="@(() => jobPost.KeyResponsibilities)" class="text-danger"/>
+                    <ValidationMessage For="@(() => jobPost.KeyResponsibilities)" class="text-danger" />
                 </div>
 
                 <div class="form-group">
                     <label class="form-label required">Required Qualifications</label>
                     <textarea class="form-control textarea-large" rows="6"
                         @bind="jobPost.RequiredQualifications"></textarea>
-                    <ValidationMessage For="@(() => jobPost.RequiredQualifications)" class="text-danger"/>
+                    <ValidationMessage For="@(() => jobPost.RequiredQualifications)" class="text-danger" />
                 </div>
 
                 <div class="form-group">
@@ -211,7 +211,7 @@
                             <option value="JobBridge Application System">JobBridge Application System</option>
                             <option value="External Link/Email">External Link/Email</option>
                         </select>
-                        <ValidationMessage For="@(() => jobPost.ApplicationMethod)" class="text-danger"/>
+                        <ValidationMessage For="@(() => jobPost.ApplicationMethod)" class="text-danger" />
                     </div>
 
                     <div class="form-group">
@@ -281,7 +281,8 @@
 </div>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public int EmployerId { get; set; }
+    [Parameter] public int JobId { get; set; }
     private JobPost jobPost = new();
     private bool isSubmitting = false;
     private string? errorMessage = null;
@@ -292,7 +293,7 @@
         var foundJob = await DbContext.JobPosts
         .Include(j => j.Employer)
         .Include(j => j.Field)
-        .FirstOrDefaultAsync(j => j.Id == Id);
+        .FirstOrDefaultAsync(j => j.Id == JobId && j.EmployerId == EmployerId);
 
         if (foundJob != null)
         {
@@ -325,7 +326,7 @@
             await DbContext.SaveChangesAsync();
 
             // Navigate back to the job details page
-            NavigationManager.NavigateTo("/employer/jobs");
+            NavigationManager.NavigateTo($"/employer/{EmployerId}/jobs");
         }
         catch (Exception ex)
         {

@@ -1,4 +1,4 @@
-@page "/employer/jobs/create"
+@page "/employer/{id:int}/jobs/create"
 @using JobBridge.Data
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Forms
@@ -15,7 +15,7 @@
         </div>
 
         <div class="header-actions">
-            <a href="/employer/jobs" class="btn btn-secondary">
+            <a href="/employer/@Id/jobs" class="btn btn-secondary">
                 ← Back to Jobs
             </a>
         </div>
@@ -296,6 +296,7 @@
 </div>
 
 @code {
+    [Parameter] public int Id { get; set; }
     private JobPost jobPost = new JobPost()
     {
         ApplicationDeadline = DateTime.UtcNow.AddDays(30) // Default to 30 days from now
@@ -306,7 +307,7 @@
 
     private void HandleCancel()
     {
-        Navigation.NavigateTo("/employer/jobs");
+        Navigation.NavigateTo($"/employer/{Id}/jobs");
     }
 
     private async Task HandleSubmit()
@@ -327,7 +328,7 @@
 
             // TODO: Set EmployerId and FieldId based on current user and selected field
             // For now, using placeholder values
-            jobPost.EmployerId = 1; // This should come from the current logged-in employer
+            jobPost.EmployerId = Id; // This should come from the current logged-in employer
             jobPost.FieldId = 1; // This should be selected in the form or determined from department
 
             // Add the job post to the database
@@ -335,7 +336,7 @@
             await DbContext.SaveChangesAsync();
 
             // Navigate back to the jobs list page
-            Navigation.NavigateTo("/employer/jobs");
+            Navigation.NavigateTo($"/employer/{Id}/jobs");
         }
         catch (Exception ex)
         {

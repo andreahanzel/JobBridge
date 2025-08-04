@@ -1,23 +1,24 @@
-@page "/employer/jobs"
-@page "/employer/jobs/management"
+@page "/employer/{id:int}/jobs"
+@page "/employer/{id:int}/jobs/management"
 @using JobBridge.Components.Common
 @using JobBridge.Data
 @using Microsoft.EntityFrameworkCore
 @inject JobBridgeContext DbContext
+@inject NavigationManager NavigationManager
 
 <div class="job-management-container">
     <!-- Page Header -->
     <div class="page-header">
         <div class="header-content">
-            <h1 class="page-title">Job Management</h1>
+            <h1 class="page-title">@employer?.Name - Job Management</h1>
             <p class="page-subtitle">Manage your job postings and track their performance</p>
         </div>
 
         <div class="header-actions">
-            <a href="/dashboard/employer" class="btn btn-secondary">
+            <a href="/dashboard/employer/@Id" class="btn btn-secondary">
                 Employer Dashboard
             </a>
-            <a href="/employer/jobs/create" class="btn btn-primary">
+            <a href="/employer/@Id/jobs/create" class="btn btn-primary">
                 + Create New Job
             </a>
         </div>
@@ -138,7 +139,7 @@
                             @onclick="() => ToggleJobStatus(jobPost.Id)">
                             @(jobPost.IsActive ? "Active" : "Inactive")
                         </button>
-                        <a href="/employer/jobs/edit/@jobPost.Id" class="btn btn-primary btn-sm">Edit</a>
+                        <button class="btn btn-primary btn-sm" @onclick="() => NavigateToEdit(jobPost.Id)">Edit</button>
                         <button class="btn btn-danger btn-sm" @onclick="() => HandleDelete(jobPost.Id)">Delete</button>
                     </div>
                 </div>
@@ -147,15 +148,20 @@
     </div>
 
     <!-- Empty State (hidden when there are jobs) -->
-    <div class="empty-state" style="display: none;">
-        <div class="empty-icon">📝</div>
-        <h3 class="empty-title">No Job Postings Yet</h3>
-        <p class="empty-description">Create your first job posting to start attracting top talent</p>
-        <a href="/employer/jobs/create" class="btn btn-primary">Create Your First Job</a>
-    </div>
+    @if (jobPosts.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h3 class="empty-title">No Job Postings Yet</h3>
+            <p class="empty-description">Create your first job posting to start attracting top talent</p>
+            <a href="/employer/@Id/jobs/create" class="btn btn-primary">Create Your First Job</a>
+        </div>
+    }
 </div>
 
 @code {
+    [Parameter] public int Id { get; set; }
+    private Employers? employer = new Employers();
     private List<JobPost> jobPosts = new();
     private string? errorMessage = null;
 
@@ -163,7 +169,11 @@
     {
         try
         {
+            employer = await DbContext.Employers
+            .FirstOrDefaultAsync(e => e.Id == Id);
+
             jobPosts = await DbContext.JobPosts
+            .Where(j => j.EmployerId == Id)
             .ToListAsync();
         }
         catch (Exception ex)
@@ -181,11 +191,16 @@
         if (job != null)
         {
             job.IsActive = !job.IsActive;
+            // Update the job status in the database
+            DbContext.JobPosts.Update(job);
+            await DbContext.SaveChangesAsync();
+            StateHasChanged();
         }
-        // Update the job status in the database
-        DbContext.JobPosts.Update(job);
-        await DbContext.SaveChangesAsync();
-        StateHasChanged();
+    }
+
+    private void NavigateToEdit(int jobId)
+    {
+        NavigationManager.NavigateTo($"/employer/{Id}/jobs/edit/{jobId}");
     }
 
     private async Task HandleDelete(int jobPostId)

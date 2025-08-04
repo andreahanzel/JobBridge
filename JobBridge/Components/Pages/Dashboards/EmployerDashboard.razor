@@ -1,4 +1,4 @@
-@page "/dashboard/employer"
+@page "/dashboard/employer/{id:int}"
 @using JobBridge.Data
 @using Microsoft.EntityFrameworkCore
 @inject JobBridgeContext DbContext
@@ -12,10 +12,10 @@
     <div class="dashboard-header">
         <div class="hero-section">
             <div class="hero-content">
-                <h1 class="hero-title">Welcome, @GetCompanyName()!</h1>
+                <h1 class="hero-title">Welcome, @(employer?.Name ?? "Employer")!</h1>
                 <p class="hero-subtitle">Manage your job postings and track candidate engagement</p>
                 <div class="hero-buttons">
-                    <a href="/employer/jobs/create" class="btn btn-primary">Post New Job</a>
+                    <a href="/employer/@Id/jobs/create" class="btn btn-primary">Post New Job</a>
                     <a href="/employer/profile" class="btn btn-secondary">Company Profile</a>
                 </div>
             </div>
@@ -39,7 +39,7 @@
             <div class="section-container">
                 <div class="section-header">
                     <h3>Recent Job Postings</h3>
-                    <a href="/employer/jobs" class="btn btn-sm btn-secondary">View All</a>
+                    <a href="/employer/@Id/jobs" class="btn btn-sm btn-secondary">View All</a>
                 </div>
                 @if (recentJobs?.Any() == true)
                 {
@@ -56,11 +56,11 @@
                                     <span class="stat-item">👥 @job.NumberOfApplicants</span>
                                 </div>
                                 <div class="job-actions">
-                                    <button class="btn btn-sm btn-primary" @onclick="() => EditJob(job.Id)">Edit</button>
-                                    <button class="btn btn-sm btn-toggle @(job.IsActive ? "active" : "")" 
-                                            @onclick="() => ToggleJobStatus(job.Id)">
+                                    <button class="btn btn-sm btn-toggle @(job.IsActive ? "active" : "")"
+                                        @onclick="() => ToggleJobStatus(job.Id)">
                                         @(job.IsActive ? "Active" : "Inactive")
                                     </button>
+                                    <button class="btn btn-sm btn-primary" @onclick="() => EditJob(job.Id)">Edit</button>
                                 </div>
                             </div>
                         }
@@ -69,7 +69,7 @@
                 else
                 {
                     <div class="empty-state">
-                        <p>No job postings yet. <a href="/employer/job-create">Create your first job posting</a></p>
+                        <p>No job postings yet. <a href="/employer/@Id/jobs/create">Create your first job posting</a></p>
                     </div>
                 }
             </div>
@@ -130,7 +130,7 @@
                         </div>
                     }
                 </div>
-                
+
                 <div class="analytics-card">
                     <h4>Application Trends</h4>
                     <div class="trend-stats">
@@ -150,6 +150,8 @@
 </div>
 
 @code {
+    [Parameter] public int Id { get; set; }
+    private Employers? employer = new Employers();
     private int activeJobs = 0;
     private int totalApplicants = 0;
     private int jobViews = 0;
@@ -157,7 +159,7 @@
     private int weeklyApplications = 0;
     private int monthlyApplications = 0;
     private List<JobPost> jobPosts = new List<JobPost>();
-    
+
     private List<JobPost>? recentJobs;
     private List<EmployerApplicationModel>? recentApplications;
     private List<JobPost>? topPerformingJobs;
@@ -169,7 +171,14 @@
 
     private async Task LoadDashboardData()
     {
-        jobPosts = await DbContext.JobPosts.ToListAsync();
+        // Load employer data
+        employer = await DbContext.Employers.FindAsync(Id);
+
+        // Load job posts for the employer
+        jobPosts = await DbContext.JobPosts
+        .Where(j => j.EmployerId == Id)
+        .Include(j => j.Employer)
+        .ToListAsync();
 
         // Mock data for UI development
         activeJobs = jobPosts.Count(j => j.IsActive);
@@ -196,15 +205,10 @@
         await Task.Delay(1); // Simulate async operation
     }
 
-    private string GetCompanyName()
-    {
-        return "TechCorp"; // Mock company name
-    }
-
     private async Task EditJob(int jobId)
     {
         // Navigate to job edit page
-        NavigationManager.NavigateTo($"/employer/jobs/edit/{jobId}");
+        NavigationManager.NavigateTo($"/employer/{Id}/jobs/edit/{jobId}");
         await Task.CompletedTask;
     }
 

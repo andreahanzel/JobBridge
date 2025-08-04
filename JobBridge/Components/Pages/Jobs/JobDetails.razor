@@ -4,217 +4,251 @@
 @using Microsoft.EntityFrameworkCore
 @inject JobBridgeContext DbContext
 
-<div class="job-details-container">
-    <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb-nav">
-        <a href="/jobs" class="breadcrumb-link">Jobs</a>
-        <span class="breadcrumb-separator">→</span>
-        <span class="breadcrumb-current">Software Engineer</span>
+@if (isLoading)
+{
+    <div class="loading-container">
+        <p>Loading job details...</p>
     </div>
-
-    <!-- Job Header -->
-    <div class="job-header">
-        <div class="job-header-content">
-            <div class="company-info">
-                <div class="company-logo">TC</div>
-                <div class="company-details">
-                    <h1 class="job-title">@jobPost.JobTitle</h1>
-                    <p class="company-name">@jobPost.Employer.Name</p>
-                    <div class="job-meta">
-                        <span class="meta-item">@jobPost.Location</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">@jobPost.EmploymentType</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">Posted on @jobPost.PostedDate.ToString("MMMM dd, yyyy")</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="job-actions">
-                <button class="btn btn-secondary bookmark-btn">
-                    <span class="bookmark-icon">♡</span>
-                    Save Job
-                </button>
-                <button class="btn btn-primary apply-btn">
-                    <span class="apply-icon">→</span>
-                    Apply Now
-                </button>
-            </div>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="error-container">
+        <h2>Job Missing 👀</h2>
+        <p>@errorMessage</p>
+        <a href="/jobs" class="btn btn-primary">Back to Jobs</a>
+    </div>
+}
+else if (jobPost != null)
+{
+    <div class="job-details-container">
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb-nav">
+            <a href="/jobs" class="breadcrumb-link">Jobs</a>
+            <span class="breadcrumb-separator">→</span>
+            <span class="breadcrumb-current">@jobPost.JobTitle</span>
         </div>
 
-        <!-- Job Stats -->
-        <div class="job-stats-bar">
-            <div class="stat-item">
-                <span class="stat-label">Salary Range</span>
-                <span class="stat-value">$@jobPost.MinimumSalary.ToString("N0") - $@jobPost.MaximumSalary.ToString("N0")</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Experience</span>
-                <span class="stat-value">@jobPost.ExperienceLevel</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Job Type</span>
-                <span class="stat-value">@jobPost.EmploymentType</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="job-content">
-        <!-- Left Column -->
-        <div class="content-main">
-            <!-- Job Description -->
-            <section class="content-section">
-                <h2 class="section-title">Job Description</h2>
-                <div class="section-content">
-                    <p>@jobPost.JobSummary</p>  
-
-                    <h3>Key Responsibilities</h3>
-                    <p>@jobPost.KeyResponsibilities</p>
-                </div>
-            </section>
-
-            <!-- Requirements -->
-            <section class="content-section">
-                <h2 class="section-title">Requirements</h2>
-                <div class="section-content">
-                    <h3>Required Skills</h3>
-                    <p>@jobPost.RequiredSkills</p>
-
-                    <h3>Preferred Qualifications</h3>
-                    <p>@jobPost.PreferredQualifications</p>
-                </div>
-            </section>
-
-            <!-- Benefits -->
-            <section class="content-section">
-                <h2 class="section-title">Benefits & Perks</h2>
-                <div class="section-content">
-                    <div class="benefits-grid">
-                        <div class="benefit-item">
-                            <div class="benefit-icon">💰</div>
-                            <div class="benefit-content">
-                                <h4>Competitive Salary</h4>
-                                <p>Market-leading compensation package</p>
-                            </div>
-                        </div>
-                        <div class="benefit-item">
-                            <div class="benefit-icon">🏥</div>
-                            <div class="benefit-content">
-                                <h4>Health Insurance</h4>
-                                <p>Comprehensive health, dental, and vision</p>
-                            </div>
-                        </div>
-                        <div class="benefit-item">
-                            <div class="benefit-icon">🏠</div>
-                            <div class="benefit-content">
-                                <h4>Remote Work</h4>
-                                <p>Flexible hybrid work arrangements</p>
-                            </div>
-                        </div>
-                        <div class="benefit-item">
-                            <div class="benefit-icon">📚</div>
-                            <div class="benefit-content">
-                                <h4>Learning Budget</h4>
-                                <p>Annual budget for courses and conferences</p>
-                            </div>
+        <!-- Job Header -->
+        <div class="job-header">
+            <div class="job-header-content">
+                <div class="company-info">
+                    <div class="company-logo">TC</div>
+                    <div class="company-details">
+                        <h1 class="job-title">@jobPost.JobTitle</h1>
+                        <p class="company-name">@jobPost.Employer.Name</p>
+                        <div class="job-meta">
+                            <span class="meta-item">@jobPost.Location</span>
+                            <span class="meta-separator">•</span>
+                            <span class="meta-item">@jobPost.EmploymentType</span>
+                            <span class="meta-separator">•</span>
+                            <span class="meta-item">Posted on @jobPost.PostedDate.ToString("MMMM dd, yyyy")</span>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- Skills Required -->
-            <section class="content-section">
-                <h2 class="section-title">Skills & Technologies</h2>
-                <div class="section-content">
+                <div class="job-actions">
+                    <button class="btn btn-secondary bookmark-btn">
+                        <span class="bookmark-icon">♡</span>
+                        Save Job
+                    </button>
+                    <button class="btn btn-primary apply-btn">
+                        <span class="apply-icon">→</span>
+                        Apply Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Job Stats -->
+            <div class="job-stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Salary Range</span>
+                    <span class="stat-value">$@jobPost.MinimumSalary.ToString("N0") -
+                        $@jobPost.MaximumSalary.ToString("N0")</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Experience</span>
+                    <span class="stat-value">@jobPost.ExperienceLevel</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Job Type</span>
+                    <span class="stat-value">@jobPost.EmploymentType</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="job-content">
+            <!-- Left Column -->
+            <div class="content-main">
+                <!-- Job Description -->
+                <section class="content-section">
+                    <h2 class="section-title">Job Description</h2>
+                    <div class="section-content">
+                        <p>@jobPost.JobSummary</p>
+
+                        <h3>Key Responsibilities</h3>
+                        <p>@jobPost.KeyResponsibilities</p>
+                    </div>
+                </section>
+
+                <!-- Requirements -->
+                <section class="content-section">
+                    <h2 class="section-title">Requirements</h2>
+                    <div class="section-content">
+                        <h3>Required Skills</h3>
+                        <p>@jobPost.RequiredSkills</p>
+
+                        <h3>Preferred Qualifications</h3>
+                        <p>@jobPost.PreferredQualifications</p>
+                    </div>
+                </section>
+
+                <!-- Benefits -->
+                <section class="content-section">
+                    <h2 class="section-title">Benefits & Perks</h2>
+                    <div class="section-content">
+                        <div class="benefits-grid">
+                            <div class="benefit-item">
+                                <div class="benefit-icon">💰</div>
+                                <div class="benefit-content">
+                                    <h4>Competitive Salary</h4>
+                                    <p>Market-leading compensation package</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon">🏥</div>
+                                <div class="benefit-content">
+                                    <h4>Health Insurance</h4>
+                                    <p>Comprehensive health, dental, and vision</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon">🏠</div>
+                                <div class="benefit-content">
+                                    <h4>Remote Work</h4>
+                                    <p>Flexible hybrid work arrangements</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon">📚</div>
+                                <div class="benefit-content">
+                                    <h4>Learning Budget</h4>
+                                    <p>Annual budget for courses and conferences</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Skills Required -->
+                <section class="content-section">
+                    <h2 class="section-title">Skills & Technologies</h2>
+                    <div class="section-content">
                         <h3>Required Skills</h3>
                         <p>@jobPost.RequiredSkills</p>
 
                         <h3>Nice to Have Skills</h3>
                         <p>@jobPost.NiceToHaveSkills</p>
-                </div>
-            </section>
-        </div>
-
-        <!-- Right Sidebar -->
-        <div class="content-sidebar">
-            <!-- Apply Card -->
-            <div class="apply-card">
-                <h3 class="apply-title">Ready to Apply?</h3>
-                <p class="apply-description">Join our team and make an impact</p>
-                <button class="btn btn-primary btn-large apply-main-btn">
-                    Apply for this Position
-                </button>
-                <div class="apply-meta">
-                    <p class="apply-note">You will be redirected to the company's application page</p>
-                </div>
+                    </div>
+                </section>
             </div>
 
-            <!-- Company Info -->
-            <div class="company-card">
-                <div class="company-card-header">
-                    <div class="company-logo-large">TC</div>
-                    <div class="company-info-text">
-                        <h3 class="company-card-name">TechCorp Inc.</h3>
-                        <p class="company-size">500-1000 employees</p>
+            <!-- Right Sidebar -->
+            <div class="content-sidebar">
+                <!-- Apply Card -->
+                <div class="apply-card">
+                    <h3 class="apply-title">Ready to Apply?</h3>
+                    <p class="apply-description">Join our team and make an impact</p>
+                    <button class="btn btn-primary btn-large apply-main-btn">
+                        Apply for this Position
+                    </button>
+                    <div class="apply-meta">
+                        <p class="apply-note">You will be redirected to the company's application page</p>
                     </div>
                 </div>
-                
-                <div class="company-description">
-                    <p>TechCorp is a leading technology company specializing in innovative software solutions for enterprise clients worldwide.</p>
-                </div>
-                
-                <div class="company-stats">
-                    <div class="company-stat">
-                        <span class="stat-number">50+</span>
-                        <span class="stat-label">Open Positions</span>
-                    </div>
-                    <div class="company-stat">
-                        <span class="stat-number">4.8</span>
-                        <span class="stat-label">Company Rating</span>
-                    </div>
-                </div>
-                
-                <a href="#" class="company-link">View Company Profile</a>
-            </div>
 
-            <!-- Similar Jobs -->
-            <div class="similar-jobs-card">
-                <h3 class="similar-title">Similar Jobs</h3>
-                <div class="similar-jobs-list">
-                    <div class="similar-job-item">
-                        <h4 class="similar-job-title">Frontend Developer</h4>
-                        <p class="similar-job-company">InnovateCo</p>
-                        <p class="similar-job-location">New York, NY</p>
+                <!-- Company Info -->
+                <div class="company-card">
+                    <div class="company-card-header">
+                        <div class="company-logo-large">TC</div>
+                        <div class="company-info-text">
+                            <h3 class="company-card-name">TechCorp Inc.</h3>
+                            <p class="company-size">500-1000 employees</p>
+                        </div>
                     </div>
-                    <div class="similar-job-item">
-                        <h4 class="similar-job-title">Full Stack Engineer</h4>
-                        <p class="similar-job-company">DataDrive</p>
-                        <p class="similar-job-location">Austin, TX</p>
+
+                    <div class="company-description">
+                        <p>TechCorp is a leading technology company specializing in innovative software solutions for
+                            enterprise clients worldwide.</p>
                     </div>
-                    <div class="similar-job-item">
-                        <h4 class="similar-job-title">Backend Developer</h4>
-                        <p class="similar-job-company">CloudFirst</p>
-                        <p class="similar-job-location">Remote</p>
+
+                    <div class="company-stats">
+                        <div class="company-stat">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">Open Positions</span>
+                        </div>
+                        <div class="company-stat">
+                            <span class="stat-number">4.8</span>
+                            <span class="stat-label">Company Rating</span>
+                        </div>
                     </div>
+
+                    <a href="#" class="company-link">View Company Profile</a>
                 </div>
-                <a href="/jobs" class="view-all-link">View All Similar Jobs</a>
+
+                <!-- Similar Jobs -->
+                <div class="similar-jobs-card">
+                    <h3 class="similar-title">Similar Jobs</h3>
+                    <div class="similar-jobs-list">
+                        <div class="similar-job-item">
+                            <h4 class="similar-job-title">Frontend Developer</h4>
+                            <p class="similar-job-company">InnovateCo</p>
+                            <p class="similar-job-location">New York, NY</p>
+                        </div>
+                        <div class="similar-job-item">
+                            <h4 class="similar-job-title">Full Stack Engineer</h4>
+                            <p class="similar-job-company">DataDrive</p>
+                            <p class="similar-job-location">Austin, TX</p>
+                        </div>
+                        <div class="similar-job-item">
+                            <h4 class="similar-job-title">Backend Developer</h4>
+                            <p class="similar-job-company">CloudFirst</p>
+                            <p class="similar-job-location">Remote</p>
+                        </div>
+                    </div>
+                    <a href="/jobs" class="view-all-link">View All Similar Jobs</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
+}
 
 @code {
     [Parameter] public int Id { get; set; }
-    private JobPost? jobPost = new JobPost();
+    private JobPost? jobPost;
+    private bool isLoading = true;
+    private string? errorMessage;
+
     protected override async Task OnInitializedAsync()
     {
-        jobPost = await DbContext.JobPosts
+        try
+        {
+            jobPost = await DbContext.JobPosts
             .Include(j => j.Employer)
             .FirstOrDefaultAsync(j => j.Id == Id);
-        if (jobPost == null)
+
+            if (jobPost == null)
+            {
+                errorMessage = "Post not found";
+            }
+        }
+        catch (Exception ex)
         {
-            throw new Exception("Job post not found");
+            errorMessage = $"Error loading job details: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 }
