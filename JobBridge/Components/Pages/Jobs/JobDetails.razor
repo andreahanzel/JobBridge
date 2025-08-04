@@ -1,5 +1,8 @@
 @page "/jobs/{id:int}"
 @page "/job-listings/{id:int}"
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@inject JobBridgeContext DbContext
 
 <div class="job-details-container">
     <!-- Breadcrumb Navigation -->
@@ -15,14 +18,14 @@
             <div class="company-info">
                 <div class="company-logo">TC</div>
                 <div class="company-details">
-                    <h1 class="job-title">Senior Software Engineer</h1>
-                    <p class="company-name">TechCorp Inc.</p>
+                    <h1 class="job-title">@jobPost.JobTitle</h1>
+                    <p class="company-name">@jobPost.Employer.Name</p>
                     <div class="job-meta">
-                        <span class="meta-item">San Francisco, CA</span>
+                        <span class="meta-item">@jobPost.Location</span>
                         <span class="meta-separator">•</span>
-                        <span class="meta-item">Full-time</span>
+                        <span class="meta-item">@jobPost.EmploymentType</span>
                         <span class="meta-separator">•</span>
-                        <span class="meta-item">Posted 2 days ago</span>
+                        <span class="meta-item">Posted on @jobPost.PostedDate.ToString("MMMM dd, yyyy")</span>
                     </div>
                 </div>
             </div>
@@ -43,19 +46,15 @@
         <div class="job-stats-bar">
             <div class="stat-item">
                 <span class="stat-label">Salary Range</span>
-                <span class="stat-value">$120,000 - $180,000</span>
+                <span class="stat-value">$@jobPost.MinimumSalary.ToString("N0") - $@jobPost.MaximumSalary.ToString("N0")</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Experience</span>
-                <span class="stat-value">5+ years</span>
+                <span class="stat-value">@jobPost.ExperienceLevel</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Job Type</span>
-                <span class="stat-value">Full-time</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Remote</span>
-                <span class="stat-value">Hybrid</span>
+                <span class="stat-value">@jobPost.EmploymentType</span>
             </div>
         </div>
     </div>
@@ -68,16 +67,10 @@
             <section class="content-section">
                 <h2 class="section-title">Job Description</h2>
                 <div class="section-content">
-                    <p>We are looking for an experienced Senior Software Engineer to join our dynamic team. You will be responsible for designing, developing, and maintaining scalable web applications using modern technologies.</p>
-                    
+                    <p>@jobPost.JobSummary</p>  
+
                     <h3>Key Responsibilities</h3>
-                    <ul>
-                        <li>Design and develop high-quality software solutions</li>
-                        <li>Collaborate with cross-functional teams to define and implement new features</li>
-                        <li>Write clean, maintainable, and efficient code</li>
-                        <li>Participate in code reviews and mentor junior developers</li>
-                        <li>Troubleshoot and debug applications</li>
-                    </ul>
+                    <p>@jobPost.KeyResponsibilities</p>
                 </div>
             </section>
 
@@ -86,21 +79,10 @@
                 <h2 class="section-title">Requirements</h2>
                 <div class="section-content">
                     <h3>Required Skills</h3>
-                    <ul>
-                        <li>5+ years of experience in software development</li>
-                        <li>Proficiency in JavaScript, React, and Node.js</li>
-                        <li>Experience with databases (SQL and NoSQL)</li>
-                        <li>Knowledge of cloud platforms (AWS, Azure)</li>
-                        <li>Strong problem-solving and communication skills</li>
-                    </ul>
-                    
+                    <p>@jobPost.RequiredSkills</p>
+
                     <h3>Preferred Qualifications</h3>
-                    <ul>
-                        <li>Bachelor's degree in Computer Science or related field</li>
-                        <li>Experience with microservices architecture</li>
-                        <li>Knowledge of DevOps practices and CI/CD pipelines</li>
-                        <li>Previous experience in a leadership role</li>
-                    </ul>
+                    <p>@jobPost.PreferredQualifications</p>
                 </div>
             </section>
 
@@ -145,18 +127,11 @@
             <section class="content-section">
                 <h2 class="section-title">Skills & Technologies</h2>
                 <div class="section-content">
-                    <div class="skills-container">
-                        <span class="skill-tag required">JavaScript</span>
-                        <span class="skill-tag required">React</span>
-                        <span class="skill-tag required">Node.js</span>
-                        <span class="skill-tag required">TypeScript</span>
-                        <span class="skill-tag">Python</span>
-                        <span class="skill-tag">AWS</span>
-                        <span class="skill-tag">Docker</span>
-                        <span class="skill-tag">PostgreSQL</span>
-                        <span class="skill-tag">GraphQL</span>
-                        <span class="skill-tag">Redis</span>
-                    </div>
+                        <h3>Required Skills</h3>
+                        <p>@jobPost.RequiredSkills</p>
+
+                        <h3>Nice to Have Skills</h3>
+                        <p>@jobPost.NiceToHaveSkills</p>
                 </div>
             </section>
         </div>
@@ -231,10 +206,15 @@
 
 @code {
     [Parameter] public int Id { get; set; }
-
-    protected override Task OnInitializedAsync()
+    private JobPost? jobPost = new JobPost();
+    protected override async Task OnInitializedAsync()
     {
-        // Job details will be loaded when data layer is ready
-        return Task.CompletedTask;
+        jobPost = await DbContext.JobPosts
+            .Include(j => j.Employer)
+            .FirstOrDefaultAsync(j => j.Id == Id);
+        if (jobPost == null)
+        {
+            throw new Exception("Job post not found");
+        }
     }
 }

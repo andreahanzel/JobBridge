@@ -23,15 +23,15 @@
         <!-- Job Stats -->
         <div class="job-stats">
             <div class="stat-card">
-                <div class="stat-number">1,847</div>
+                <div class="stat-number">@jobs.Count(j => j.IsActive)</div>
                 <div class="stat-label">Available Jobs</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">23</div>
+                <div class="stat-number">@jobs.Count(j => j.PostedDate.Date == DateTime.Today)</div>
                 <div class="stat-label">New Today</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">156</div>
+                <div class="stat-number">@jobs.Count(j => j.IsFeatured)</div>
                 <div class="stat-label">Featured</div>
             </div>
         </div>

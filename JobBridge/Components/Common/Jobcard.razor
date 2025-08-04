@@ -1,4 +1,6 @@
 @using JobBridge.Data
+@inject NavigationManager Navigation
+
 <div class="job-card" @onclick="() => NavigateToJob(JobPost.Id)">
     <div class="job-card-header">
         <div class="company-info">
@@ -43,7 +45,8 @@
         {
             <div class="salary-range">
                 <span class="salary-icon">💰</span>
-                <span class="salary-text">@JobPost.MinimumSalary.ToString("N0") - @JobPost.MaximumSalary.ToString("N0")</span>
+                <span class="salary-text">@JobPost.MinimumSalary.ToString("N0") -
+                    @JobPost.MaximumSalary.ToString("N0")</span>
             </div>
         }
 
@@ -87,9 +90,9 @@
     [Parameter] public EventCallback<int> OnBookmarkToggle { get; set; }
     [Parameter] public EventCallback<int> OnJobClick { get; set; }
 
-    private async Task NavigateToJob(int jobId)
+    private void NavigateToJob(int jobId)
     {
-        await OnJobClick.InvokeAsync(jobId);
+        Navigation.NavigateTo($"/jobs/{jobId}");
     }
 
     @* private async Task ToggleBookmark(int jobId)
@@ -101,7 +104,7 @@
     private string GetCompanyInitials(string companyName)
     {
         if (string.IsNullOrEmpty(companyName)) return "?";
-        
+
         var words = companyName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (words.Length >= 2)
         {
@@ -121,7 +124,7 @@
         // Mock skill extraction - in real app, this would be more sophisticated
         var commonSkills = new List<string> { "React", "JavaScript", "Python", "C#", "SQL", "AWS", "Docker", "Git" };
         var foundSkills = new List<string>();
-        
+
         foreach (var skill in commonSkills)
         {
             if (description?.Contains(skill, StringComparison.OrdinalIgnoreCase) == true)
@@ -129,21 +132,21 @@
                 foundSkills.Add(skill);
             }
         }
-        
+
         return foundSkills.Take(3).ToList();
     }
 
     private string GetRelativeTime(DateTime postedDate)
     {
         var timeSpan = DateTime.Now - postedDate;
-        
+
         if (timeSpan.Days > 7)
             return $"{timeSpan.Days / 7} week{(timeSpan.Days / 7 > 1 ? "s" : "")} ago";
         if (timeSpan.Days > 0)
             return $"{timeSpan.Days} day{(timeSpan.Days > 1 ? "s" : "")} ago";
         if (timeSpan.Hours > 0)
             return $"{timeSpan.Hours} hour{(timeSpan.Hours > 1 ? "s" : "")} ago";
-        
+
         return "Recently posted";
     }
 }
