@@ -108,10 +108,9 @@ var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
 using (var scope = scopeFactory.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<JobBridgeContext>();
-    if (db.Database.EnsureCreated())
-    {
-        SeedData.Initialize(db);
-    }
+    db.Database.Migrate();  // Applies all migrations
+
+    SeedData.Initialize(db); // Seed data
 
 }
 

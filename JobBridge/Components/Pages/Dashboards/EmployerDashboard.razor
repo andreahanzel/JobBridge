@@ -170,40 +170,50 @@
     }
 
     private async Task LoadDashboardData()
+{
+    // Load the employer including User data and their JobPosts
+    employer = await DbContext.Employers
+        .Include(e => e.User) // Load personal details from the User table
+        .Include(e => e.JobPosts) // Load all job posts from this employer
+        .FirstOrDefaultAsync(e => e.Id == Id);
+
+    // Handle case when employer is not found
+    if (employer == null)
     {
-        // Load employer data
-        employer = await DbContext.Employers.FindAsync(Id);
-
-        // Load job posts for the employer
-        jobPosts = await DbContext.JobPosts
-        .Where(j => j.EmployerId == Id)
-        .Include(j => j.Employer)
-        .ToListAsync();
-
-        // Mock data for UI development
-        activeJobs = jobPosts.Count(j => j.IsActive);
-        totalApplicants = jobPosts.Sum(j => j.NumberOfApplicants);
-        jobViews = 156;
-        responseRate = 0.68m;
-        weeklyApplications = 8;
-        monthlyApplications = 34;
-
-        // Mock recent jobs
-        recentJobs = jobPosts.OrderByDescending(j => j.PostedDate).Take(3).ToList();
-
-        // Mock recent applications
-        recentApplications = new List<EmployerApplicationModel>
-        {
-            new() { Id = 1, ApplicantName = "John Smith", JobTitle = "Software Engineer", AppliedDate = DateTime.Now.AddDays(-1) },
-            new() { Id = 2, ApplicantName = "Sarah Johnson", JobTitle = "Product Manager", AppliedDate = DateTime.Now.AddDays(-2) },
-            new() { Id = 3, ApplicantName = "Mike Chen", JobTitle = "UX Designer", AppliedDate = DateTime.Now.AddDays(-3) }
-        };
-
-        // Mock top performing jobs
-        topPerformingJobs = jobPosts.OrderByDescending(j => j.PostedDate).Take(3).ToList();
-
-        await Task.Delay(1); // Simulate async operation
+        jobPosts = new List<JobPost>();
+        recentJobs = new List<JobPost>();
+        recentApplications = new List<EmployerApplicationModel>();
+        topPerformingJobs = new List<JobPost>();
+        return;
     }
+
+    // Convert JobPosts to a list
+    jobPosts = employer.JobPosts.ToList();
+
+    // Calculate basic stats
+    activeJobs = jobPosts.Count(j => j.IsActive);
+    totalApplicants = jobPosts.Sum(j => j.NumberOfApplicants);
+    
+    // Temporary mock values (replace with real data later)
+    jobViews = 156;
+    responseRate = 0.68m;
+    weeklyApplications = 8;
+    monthlyApplications = 34;
+
+    // Recent job posts
+    recentJobs = jobPosts.OrderByDescending(j => j.PostedDate).Take(3).ToList();
+
+    // Temporary mock data for recent applications
+    recentApplications = new List<EmployerApplicationModel>
+    {
+        new() { Id = 1, ApplicantName = "John Smith", JobTitle = "Software Engineer", AppliedDate = DateTime.Now.AddDays(-1) },
+        new() { Id = 2, ApplicantName = "Sarah Johnson", JobTitle = "Product Manager", AppliedDate = DateTime.Now.AddDays(-2) },
+        new() { Id = 3, ApplicantName = "Mike Chen", JobTitle = "UX Designer", AppliedDate = DateTime.Now.AddDays(-3) }
+    };
+
+    // Top performing jobs (mock data for now)
+    topPerformingJobs = jobPosts.OrderByDescending(j => j.PostedDate).Take(3).ToList();
+}
 
     private async Task EditJob(int jobId)
     {

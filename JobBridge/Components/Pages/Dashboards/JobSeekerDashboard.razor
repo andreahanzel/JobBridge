@@ -1,5 +1,7 @@
-@page "/dashboard/jobseeker"
-@* Add this line later: @attribute [Authorize(Roles = "JobSeeker")] *@
+@page "/dashboard/jobseeker/{id:int}"
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@inject JobBridgeContext DbContext
 
 <PageTitle>Job Seeker Dashboard - JobBridge</PageTitle>
 
@@ -8,7 +10,7 @@
     <div class="dashboard-header">
         <div class="hero-section">
             <div class="hero-content">
-                <h1 class="hero-title">Welcome back, @GetUserName()!</h1>
+                <h1 class="hero-title">Welcome back, @(jobSeeker?.User.FirstName ?? "Job Seeker")!</h1>
                 <p class="hero-subtitle">Find your next opportunity and track your progress</p>
                 <div class="hero-buttons">
                     <a href="/job-listings" class="btn btn-primary">Browse Jobs</a>
@@ -28,25 +30,24 @@
         </div>
     </div>
 
-    <!-- Recent Activity Section -->
+    <!-- Recent Applications -->
     <div class="dashboard-content">
         <div class="grid grid-cols-2">
-            <!-- Recent Applications -->
             <div class="section-container">
                 <h3>Recent Applications</h3>
                 @if (recentApplications?.Any() == true)
                 {
                     <div class="application-list">
-                        @foreach (var application in recentApplications.Take(5))
+                        @foreach (var application in recentApplications)
                         {
                             <div class="application-item">
                                 <div class="application-info">
-                                    <h4>@application.JobTitle</h4>
-                                    <p>@application.CompanyName</p>
+                                    <h4>@application.JobPost.JobTitle</h4>
+                                    <p>@application.JobPost.Employer.Name</p>
                                     <span class="application-date">Applied @application.AppliedDate.ToString("MMM dd")</span>
                                 </div>
                                 <div class="application-status">
-                                    <span class="status-badge status-@application.Status.ToLower()">@application.Status</span>
+                                    <span class="status-badge status-@application.Status.ToString().ToLower()">@application.Status</span>
                                 </div>
                             </div>
                         }
@@ -66,12 +67,12 @@
                 @if (savedJobsList?.Any() == true)
                 {
                     <div class="saved-jobs-list">
-                        @foreach (var job in savedJobsList.Take(5))
+                        @foreach (var job in savedJobsList)
                         {
                             <div class="job-item">
                                 <div class="job-info">
-                                    <h4>@job.Title</h4>
-                                    <p>@job.CompanyName</p>
+                                    <h4>@job.JobTitle</h4>
+                                    <p>@job.Employer.Name</p>
                                     <span class="job-location">📍 @job.Location</span>
                                 </div>
                                 <div class="job-actions">
@@ -90,45 +91,18 @@
             </div>
         </div>
     </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <div class="section-container">
-            <h3>Quick Actions</h3>
-            <div class="action-grid">
-                <a href="/job-listings" class="action-card">
-                    <div class="action-icon">🔍</div>
-                    <h4>Search Jobs</h4>
-                    <p>Find new opportunities</p>
-                </a>
-                <a href="/profile" class="action-card">
-                    <div class="action-icon">👤</div>
-                    <h4>Update Profile</h4>
-                    <p>Keep your profile current</p>
-                </a>
-                <a href="/bookmarks" class="action-card">
-                    <div class="action-icon">💾</div>
-                    <h4>Saved Jobs</h4>
-                    <p>View all saved positions</p>
-                </a>
-                <a href="/applications" class="action-card">
-                    <div class="action-icon">📋</div>
-                    <h4>Applications</h4>
-                    <p>Track your progress</p>
-                </a>
-            </div>
-        </div>
-    </div>
 </div>
 
 @code {
+    [Parameter] public int Id { get; set; }
+    private JobSeeker? jobSeeker;
     private int totalApplications = 0;
     private int savedJobs = 0;
-    private int profileViews = 0;
-    private int activeSearches = 0;
-    
-    private List<ApplicationModel>? recentApplications;
-    private List<JobListing>? savedJobsList;
+    private int profileViews = 0; // Placeholder
+    private int activeSearches = 0; // Placeholder
+
+    private List<Application>? recentApplications;
+    private List<JobPost>? savedJobsList;
 
     protected override async Task OnInitializedAsync()
     {
@@ -137,56 +111,65 @@
 
     private async Task LoadDashboardData()
     {
-        // Mock data for UI development
-        totalApplications = 12;
-        savedJobs = 8;
-        profileViews = 45;
-        activeSearches = 3;
+        // Load JobSeeker with related data
+        jobSeeker = await DbContext.JobSeekers
+            .Include(js => js.User)
+            .Include(js => js.Applications)
+                .ThenInclude(a => a.JobPost)
+                    .ThenInclude(jp => jp.Employer)
+            .Include(js => js.Bookmarks)
+                .ThenInclude(b => b.JobPost)
+                    .ThenInclude(jp => jp.Employer)
+            .FirstOrDefaultAsync(js => js.Id == Id);
 
-        // Mock recent applications
-        recentApplications = new List<ApplicationModel>
-        {
-            new() { JobTitle = "Software Developer", CompanyName = "TechCorp", AppliedDate = DateTime.Now.AddDays(-2), Status = "Pending" },
-            new() { JobTitle = "Frontend Developer", CompanyName = "WebSolutions", AppliedDate = DateTime.Now.AddDays(-5), Status = "Reviewed" },
-            new() { JobTitle = "Full Stack Engineer", CompanyName = "StartupX", AppliedDate = DateTime.Now.AddDays(-7), Status = "Interview" }
-        };
+        if (jobSeeker == null)
+            return;
 
-        // Mock saved jobs
-        savedJobsList = new List<JobListing>
-        {
-            new() { Id = 1, Title = "React Developer", CompanyName = "InnovateTech", Location = "Remote" },
-            new() { Id = 2, Title = "UX Designer", CompanyName = "DesignStudio", Location = "New York" },
-            new() { Id = 3, Title = "Product Manager", CompanyName = "ProductCo", Location = "San Francisco" }
-        };
+        // Stats
+        totalApplications = jobSeeker.Applications.Count;
+        savedJobs = jobSeeker.Bookmarks.Count;
 
-        await Task.Delay(1); // Simulate async operation
-    }
+        // Recent applications (last 5)
+        recentApplications = jobSeeker.Applications
+            .OrderByDescending(a => a.AppliedDate)
+            .Take(5)
+            .ToList();
 
-    private string GetUserName()
-    {
-        return "John Doe"; // Mock user name
+        // Saved jobs (from bookmarks)
+        savedJobsList = jobSeeker.Bookmarks
+            .Select(b => b.JobPost)
+            .OrderByDescending(jp => jp.PostedDate)
+            .Take(5)
+            .ToList();
     }
 
     private async Task ApplyToJob(int jobId)
     {
-        // Mock job application action
-        await Task.Delay(1);
+        if (jobSeeker != null)
+        {
+            bool alreadyApplied = await DbContext.Applications
+                .AnyAsync(a => a.JobSeekerId == jobSeeker.Id && a.JobPostId == jobId);
+
+            if (alreadyApplied)
+            {
+                applicationMessage = "You have already applied to this job.";
+                return;
+            }
+
+            var newApplication = new Application
+            {
+                JobSeekerId = jobSeeker.Id,
+                JobPostId = jobId,
+                Status = ApplicationStatus.Pending,
+                AppliedDate = DateTime.UtcNow
+            };
+
+            DbContext.Applications.Add(newApplication);
+            await DbContext.SaveChangesAsync();
+            await LoadDashboardData();
+
+        }
     }
 
-    // Temporary models for UI development
-    public class ApplicationModel
-    {
-        public string JobTitle { get; set; } = string.Empty;
-        public string CompanyName { get; set; } = string.Empty;
-        public DateTime AppliedDate { get; set; }
-        public string Status { get; set; } = "Pending";
-    }
 
-    public class JobListing
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string CompanyName { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-    }
 }
