@@ -18,6 +18,6 @@ public class JobPostController : Controller
     [HttpGet]
     public async Task<ActionResult<List<JobPost>>> GetJobPosts()
     {
-        return await _db.JobPosts.OrderByDescending(jp => jp.DatePosted).ToListAsync();
+        return await _db.JobPosts.OrderByDescending(jp => jp.CreatedAt).ToListAsync();
     }
 }

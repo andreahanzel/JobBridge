@@ -1,17 +1,24 @@
-@page "/employer/jobs"
-@page "/employer/jobs/management"
+@page "/employer/{id:int}/jobs"
+@page "/employer/{id:int}/jobs/management"
 @using JobBridge.Components.Common
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@inject JobBridgeContext DbContext
+@inject NavigationManager NavigationManager
 
 <div class="job-management-container">
     <!-- Page Header -->
     <div class="page-header">
         <div class="header-content">
-            <h1 class="page-title">Job Management</h1>
+            <h1 class="page-title">@employer?.Name - Job Management</h1>
             <p class="page-subtitle">Manage your job postings and track their performance</p>
         </div>
-        
+
         <div class="header-actions">
-            <a href="/employer/jobs/create" class="btn btn-primary">
+            <a href="/dashboard/employer/@Id" class="btn btn-secondary">
+                Employer Dashboard
+            </a>
+            <a href="/employer/@Id/jobs/create" class="btn btn-primary">
                 + Create New Job
             </a>
         </div>
@@ -22,7 +29,7 @@
         <div class="stat-card">
             <div class="stat-icon">📝</div>
             <div class="stat-content">
-                <div class="stat-number">12</div>
+                <div class="stat-number">@jobPosts.Count(j => j.IsActive)</div>
                 <div class="stat-label">Active Jobs</div>
             </div>
         </div>
@@ -56,7 +63,7 @@
                 <input type="text" class="search-input" placeholder="Search your jobs..." />
                 <span class="search-icon">🔍</span>
             </div>
-            
+
             <div class="filter-dropdown">
                 <select class="filter-select">
                     <option value="all">All Jobs</option>
@@ -66,7 +73,7 @@
                     <option value="draft">Draft</option>
                 </select>
             </div>
-            
+
             <div class="filter-dropdown">
                 <select class="filter-select">
                     <option value="all">All Departments</option>
@@ -77,7 +84,7 @@
                 </select>
             </div>
         </div>
-        
+
         <div class="view-controls">
             <div class="sort-dropdown">
                 <select class="sort-select">
@@ -87,7 +94,7 @@
                     <option value="most-applications">Most Applications</option>
                 </select>
             </div>
-            
+
             <div class="view-toggle">
                 <button class="view-btn active">Grid</button>
                 <button class="view-btn">List</button>
@@ -97,280 +104,114 @@
 
     <!-- Jobs Grid -->
     <div class="jobs-grid">
-        <!-- Active Job Card -->
-        <div class="job-management-card">
-            <div class="job-status-indicator active"></div>
-            
-            <div class="job-card-header">
-                <div class="job-basic-info">
-                    <h3 class="job-card-title">Senior Software Engineer</h3>
-                    <p class="job-card-department">Engineering</p>
-                    <div class="job-card-meta">
-                        <span class="meta-item">Full-time</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">San Francisco, CA</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">Posted 3 days ago</span>
-                    </div>
-                </div>
-                
-                <div class="job-card-actions">
-                    <div class="dropdown">
-                        <button class="dropdown-toggle">⋯</button>
-                        <div class="dropdown-menu">
-                            <a href="/employer/jobs/edit/1" class="dropdown-item">Edit Job</a>
-                            <a href="/jobs/1" class="dropdown-item" target="_blank">View Live</a>
-                            <button class="dropdown-item">Pause Job</button>
-                            <button class="dropdown-item">Duplicate</button>
-                            <button class="dropdown-item danger">Delete</button>
+        @foreach (var jobPost in jobPosts)
+        {
+            <div class="job-management-card">
+                <div class="job-status-indicator active"></div>
+
+                <div class="job-card-header">
+                    <div class="job-basic-info">
+                        <h3 class="job-card-title">@jobPost.JobTitle</h3>
+                        <p class="job-card-department">@jobPost.Department</p>
+                        <div class="job-card-meta">
+                            <span class="meta-item">@jobPost.EmploymentType</span>
+                            <span class="meta-separator">•</span>
+                            <span class="meta-item">@jobPost.Location</span>
+                            <span class="meta-separator">•</span>
+                            <span class="meta-item">Posted on @jobPost.PostedDate.ToString("MMMM dd, yyyy")</span>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="job-stats-row">
-                <div class="job-stat">
-                    <span class="stat-value">1,234</span>
-                    <span class="stat-label">Views</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">89</span>
-                    <span class="stat-label">Applications</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">7.2%</span>
-                    <span class="stat-label">Apply Rate</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">45</span>
-                    <span class="stat-label">Bookmarked</span>
-                </div>
-            </div>
-            
-            <div class="job-card-footer">
-                <div class="status-badges">
-                    <span class="status-badge active">Active</span>
-                    <span class="feature-badge">Featured</span>
-                </div>
-                
-                <div class="quick-actions">
-                    <button class="btn btn-outline btn-sm">View Applications</button>
-                    <a href="/employer/jobs/edit/1" class="btn btn-primary btn-sm">Edit</a>
-                </div>
-            </div>
-        </div>
+                <div class="job-card-footer">
+                    <div class="status-badges">
+                        @if (jobPost.IsUrgent)
+                        {
+                            <span class="status-badge">Urgent</span>
+                        }
+                        @if (jobPost.IsFeatured)
+                        {
+                            <span class="feature-badge">Featured</span>
+                        }
+                    </div>
 
-        <!-- Paused Job Card -->
-        <div class="job-management-card">
-            <div class="job-status-indicator paused"></div>
-            
-            <div class="job-card-header">
-                <div class="job-basic-info">
-                    <h3 class="job-card-title">Product Manager</h3>
-                    <p class="job-card-department">Product</p>
-                    <div class="job-card-meta">
-                        <span class="meta-item">Full-time</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">Remote</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">Posted 1 week ago</span>
-                    </div>
-                </div>
-                
-                <div class="job-card-actions">
-                    <div class="dropdown">
-                        <button class="dropdown-toggle">⋯</button>
-                        <div class="dropdown-menu">
-                            <a href="/employer/jobs/edit/2" class="dropdown-item">Edit Job</a>
-                            <button class="dropdown-item">Resume Job</button>
-                            <button class="dropdown-item">Duplicate</button>
-                            <button class="dropdown-item danger">Delete</button>
-                        </div>
+                    <div class="quick-actions">
+                        <button class="btn btn-sm btn-toggle @(jobPost.IsActive ? "active" : "")"
+                            @onclick="() => ToggleJobStatus(jobPost.Id)">
+                            @(jobPost.IsActive ? "Active" : "Inactive")
+                        </button>
+                        <button class="btn btn-primary btn-sm" @onclick="() => NavigateToEdit(jobPost.Id)">Edit</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => HandleDelete(jobPost.Id)">Delete</button>
                     </div>
                 </div>
             </div>
-            
-            <div class="job-stats-row">
-                <div class="job-stat">
-                    <span class="stat-value">856</span>
-                    <span class="stat-label">Views</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">34</span>
-                    <span class="stat-label">Applications</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">4.0%</span>
-                    <span class="stat-label">Apply Rate</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">23</span>
-                    <span class="stat-label">Bookmarked</span>
-                </div>
-            </div>
-            
-            <div class="job-card-footer">
-                <div class="status-badges">
-                    <span class="status-badge paused">Paused</span>
-                </div>
-                
-                <div class="quick-actions">
-                    <button class="btn btn-outline btn-sm">View Applications</button>
-                    <button class="btn btn-secondary btn-sm">Resume</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Draft Job Card -->
-        <div class="job-management-card">
-            <div class="job-status-indicator draft"></div>
-            
-            <div class="job-card-header">
-                <div class="job-basic-info">
-                    <h3 class="job-card-title">UX Designer</h3>
-                    <p class="job-card-department">Design</p>
-                    <div class="job-card-meta">
-                        <span class="meta-item">Full-time</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">New York, NY</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">Draft saved 2 days ago</span>
-                    </div>
-                </div>
-                
-                <div class="job-card-actions">
-                    <div class="dropdown">
-                        <button class="dropdown-toggle">⋯</button>
-                        <div class="dropdown-menu">
-                            <a href="/employer/jobs/edit/3" class="dropdown-item">Continue Editing</a>
-                            <button class="dropdown-item">Duplicate</button>
-                            <button class="dropdown-item danger">Delete</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="job-stats-row">
-                <div class="job-stat">
-                    <span class="stat-value">—</span>
-                    <span class="stat-label">Views</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">—</span>
-                    <span class="stat-label">Applications</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">—</span>
-                    <span class="stat-label">Apply Rate</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">—</span>
-                    <span class="stat-label">Bookmarked</span>
-                </div>
-            </div>
-            
-            <div class="job-card-footer">
-                <div class="status-badges">
-                    <span class="status-badge draft">Draft</span>
-                </div>
-                
-                <div class="quick-actions">
-                    <a href="/employer/jobs/edit/3" class="btn btn-outline btn-sm">Continue Editing</a>
-                    <button class="btn btn-primary btn-sm">Publish</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Expired Job Card -->
-        <div class="job-management-card">
-            <div class="job-status-indicator expired"></div>
-            
-            <div class="job-card-header">
-                <div class="job-basic-info">
-                    <h3 class="job-card-title">DevOps Engineer</h3>
-                    <p class="job-card-department">Engineering</p>
-                    <div class="job-card-meta">
-                        <span class="meta-item">Full-time</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">Austin, TX</span>
-                        <span class="meta-separator">•</span>
-                        <span class="meta-item">Expired 5 days ago</span>
-                    </div>
-                </div>
-                
-                <div class="job-card-actions">
-                    <div class="dropdown">
-                        <button class="dropdown-toggle">⋯</button>
-                        <div class="dropdown-menu">
-                            <button class="dropdown-item">Renew Job</button>
-                            <button class="dropdown-item">Duplicate</button>
-                            <button class="dropdown-item">Archive</button>
-                            <button class="dropdown-item danger">Delete</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="job-stats-row">
-                <div class="job-stat">
-                    <span class="stat-value">2,145</span>
-                    <span class="stat-label">Views</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">156</span>
-                    <span class="stat-label">Applications</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">7.3%</span>
-                    <span class="stat-label">Apply Rate</span>
-                </div>
-                <div class="job-stat">
-                    <span class="stat-value">78</span>
-                    <span class="stat-label">Bookmarked</span>
-                </div>
-            </div>
-            
-            <div class="job-card-footer">
-                <div class="status-badges">
-                    <span class="status-badge expired">Expired</span>
-                </div>
-                
-                <div class="quick-actions">
-                    <button class="btn btn-outline btn-sm">View Applications</button>
-                    <button class="btn btn-secondary btn-sm">Renew</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination-container">
-        <div class="pagination">
-            <button class="page-btn disabled">Previous</button>
-            <button class="page-btn active">1</button>
-            <button class="page-btn">2</button>
-            <button class="page-btn">3</button>
-            <button class="page-btn">Next</button>
-        </div>
-        
-        <div class="pagination-info">
-            Showing 1-12 of 47 jobs
-        </div>
+        }
     </div>
 
     <!-- Empty State (hidden when there are jobs) -->
-    <div class="empty-state" style="display: none;">
-        <div class="empty-icon">📝</div>
-        <h3 class="empty-title">No Job Postings Yet</h3>
-        <p class="empty-description">Create your first job posting to start attracting top talent</p>
-        <a href="/employer/jobs/create" class="btn btn-primary">Create Your First Job</a>
-    </div>
+    @if (jobPosts.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h3 class="empty-title">No Job Postings Yet</h3>
+            <p class="empty-description">Create your first job posting to start attracting top talent</p>
+            <a href="/employer/@Id/jobs/create" class="btn btn-primary">Create Your First Job</a>
+        </div>
+    }
 </div>
 
 @code {
+    [Parameter] public int Id { get; set; }
+    private Employers? employer = new Employers();
+    private List<JobPost> jobPosts = new();
+    private string? errorMessage = null;
+
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            employer = await DbContext.Employers
+            .FirstOrDefaultAsync(e => e.Id == Id);
+
+            jobPosts = await DbContext.JobPosts
+            .Where(j => j.EmployerId == Id)
+            .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load job listings: {ex.Message}";
+        }
+
         // Load employer's jobs when data layer is ready
         await Task.CompletedTask;
+    }
+
+    private async Task ToggleJobStatus(int jobId)
+    {
+        var job = jobPosts?.FirstOrDefault(j => j.Id == jobId);
+        if (job != null)
+        {
+            job.IsActive = !job.IsActive;
+            // Update the job status in the database
+            DbContext.JobPosts.Update(job);
+            await DbContext.SaveChangesAsync();
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateToEdit(int jobId)
+    {
+        NavigationManager.NavigateTo($"/employer/{Id}/jobs/edit/{jobId}");
+    }
+
+    private async Task HandleDelete(int jobPostId)
+    {
+        var jobToRemove = jobPosts.FirstOrDefault(j => j.Id == jobPostId);
+        if (jobToRemove != null)
+        {
+            jobPosts.Remove(jobToRemove);
+            DbContext.JobPosts.Remove(jobToRemove);
+            await DbContext.SaveChangesAsync();
+            StateHasChanged();
+        }
     }
 }

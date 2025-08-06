@@ -226,6 +226,27 @@
     box-shadow: var(--shadow-sm);
 }
 
+/* Toggle Button - Employer Specific */
+.btn-toggle {
+    background: var(--gray-200);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+}
+
+.btn-toggle.active {
+    background: var(--success-500);
+    color: white;
+    border-color: var(--success-500);
+}
+
+.btn-toggle:hover {
+    background: var(--gray-300);
+}
+
+.btn-toggle.active:hover {
+    background: var(--success-600);
+}
+
 /* Jobs Grid */
 .jobs-grid {
     display: grid;

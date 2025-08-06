@@ -1,6 +1,9 @@
 @page "/jobs"
 @page "/job-listings"
 @using JobBridge.Components.Common
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@inject JobBridgeContext DbContext
 
 
 <div class="job-listings-container">
@@ -10,26 +13,25 @@
             <h1 class="page-title">Find Your Dream Job</h1>
             <p class="page-subtitle">Discover opportunities that match your skills and career goals</p>
         </div>
-        
+
         <!-- Search Section -->
         <div class="search-section">
-            <SearchBar Placeholder="Search for jobs, companies, or keywords..."
-                        OnSearch="HandleSearch"
-                        OnAdvancedToggle="ToggleFilters" />
+            <SearchBar Placeholder="Search for jobs, companies, or keywords..." OnSearch="HandleSearch"
+                OnAdvancedToggle="ToggleFilters" />
         </div>
 
         <!-- Job Stats -->
         <div class="job-stats">
             <div class="stat-card">
-                <div class="stat-number">1,847</div>
+                <div class="stat-number">@jobs.Count(j => j.IsActive)</div>
                 <div class="stat-label">Available Jobs</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">23</div>
+                <div class="stat-number">@jobs.Count(j => j.PostedDate.Date == DateTime.Today)</div>
                 <div class="stat-label">New Today</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">156</div>
+                <div class="stat-number">@jobs.Count(j => j.IsFeatured)</div>
                 <div class="stat-label">Featured</div>
             </div>
         </div>
@@ -43,7 +45,7 @@
                 <h3>Refine Your Search</h3>
                 <button class="clear-all-btn" @onclick="ClearAllFilters">Clear All</button>
             </div>
-            
+
             <!-- Quick Filters -->
             <div class="quick-filters">
                 <h4 class="filter-section-title">Quick Filters</h4>
@@ -135,10 +137,9 @@
             <!-- Results Header -->
             <div class="results-header">
                 <div class="results-info">
-                    <h2 class="results-title">1,247 Jobs Found</h2>
-                    <p class="results-subtitle">Showing 1-12 of 1,247 jobs</p>
+                    <h2 class="results-title">@jobs.Count Jobs Found</h2>
                 </div>
-                
+
                 <div class="results-controls">
                     <div class="sort-dropdown">
                         <select class="sort-select">
@@ -149,7 +150,7 @@
                             <option value="company">Company A-Z</option>
                         </select>
                     </div>
-                    
+
                     <div class="view-toggle">
                         <button class="view-btn active">Grid</button>
                         <button class="view-btn">List</button>
@@ -159,27 +160,31 @@
 
             <!-- Job Cards Grid -->
             <div class="job-cards-container grid">
-                <!-- Job cards will be populated by JobCard component -->
-                <div class="job-cards-placeholder">
-                    <p>Job cards will be displayed here using the JobCard component</p>
-                </div>
-            </div>
-
-            <!-- Pagination -->
-            <div class="pagination-container">
-                <div class="pagination">
-                    <button class="page-btn disabled">Previous</button>
-                    <button class="page-btn active">1</button>
-                    <button class="page-btn">2</button>
-                    <button class="page-btn">3</button>
-                    <button class="page-btn">4</button>
-                    <button class="page-btn">5</button>
-                    <button class="page-btn">Next</button>
-                </div>
-                
-                <div class="pagination-info">
-                    Page 1 of 104
-                </div>
+                @if (isLoading)
+                {
+                    <div class="loading-message">
+                        <p>Loading job listings...</p>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="error-message">
+                        <p>@errorMessage</p>
+                    </div>
+                }
+                else if (jobs.Count == 0)
+                {
+                    <div class="no-jobs-message">
+                        <p>No job listings found.</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var job in jobs)
+                    {
+                        <JobCard JobPost="@job" />
+                    }
+                }
             </div>
         </div>
     </div>
@@ -192,11 +197,35 @@
 </div>
 
 <!-- Advanced Filter Panel -->
-    <FilterPanel IsVisible="@showAdvancedFilters" 
-                OnClose="CloseAdvancedFilters" />
+<FilterPanel IsVisible="@showAdvancedFilters" OnClose="CloseAdvancedFilters" />
 
 @code {
     private bool showAdvancedFilters = false;
+    private List<JobPost> jobs = new();
+    private bool isLoading = true;
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+            jobs = await DbContext.JobPosts
+            .Include(j => j.Employer)
+            .Where(j => j.IsActive)
+            .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load job listings: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+
 
     private void HandleSearch(object searchModel)
     {

@@ -167,9 +167,6 @@
     border-radius: var(--radius-2xl);
     box-shadow: var(--shadow-lg);
     overflow: hidden;
-}
-
-.job-form {
     padding: var(--space-8);
 }
 
