@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobBridge.Migrations
 {
     [DbContext(typeof(JobBridgeContext))]
-    [Migration("20250806145424_InitialCreate")]
+    [Migration("20250807193941_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,31 +20,56 @@ namespace JobBridge.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.7");
 
-            modelBuilder.Entity("JobBridge.Data.Models.Bookmarks", b =>
+            modelBuilder.Entity("Bookmark", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<int>("JobPostId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("JobSeekerId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobPostId");
+
+                    b.HasIndex("JobSeekerId");
+
+                    b.ToTable("Bookmarks");
+                });
+
+            modelBuilder.Entity("JobBridge.Data.Application", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("AppliedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("JobPostId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("UserId")
+                    b.Property<int>("JobSeekerId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("JobPostId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("JobSeekerId");
 
-                    b.ToTable("Bookmarks");
+                    b.ToTable("Applications");
                 });
 
-            modelBuilder.Entity("JobBridge.Data.Models.Employers", b =>
+            modelBuilder.Entity("JobBridge.Data.Employers", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -53,10 +78,19 @@ namespace JobBridge.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Industry")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("NumberOfEmployees")
@@ -65,12 +99,18 @@ namespace JobBridge.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Employers");
                 });
 
-            modelBuilder.Entity("JobBridge.Data.Models.Field", b =>
+            modelBuilder.Entity("JobBridge.Data.Field", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -84,55 +124,151 @@ namespace JobBridge.Migrations
                     b.ToTable("Fields");
                 });
 
-            modelBuilder.Entity("JobBridge.Data.Models.JobPost", b =>
+            modelBuilder.Entity("JobBridge.Data.JobPost", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ApplicationLink")
+                    b.Property<string>("AdditionalCompensation")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ApplicationDeadline")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApplicationMethod")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("DatePosted")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
+                    b.Property<string>("Department")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("EmployerId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("EmployersId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("EmploymentType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExperienceLevel")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExternalApplicationUrl")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("FieldId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("NumberOfApplications")
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsUrgent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("JobSummary")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("KeyResponsibilities")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("MaximumSalary")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("MinimumSalary")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NiceToHaveSkills")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("NumberOfApplicants")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("PostExpirationDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Requirements")
+                    b.Property<DateTime>("PostedDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("Salary")
+                    b.Property<string>("PreferredQualifications")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("RequiredQualifications")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RequiredSkills")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Timezone")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WorkArrangement")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EmployerId");
 
+                    b.HasIndex("EmployersId");
+
                     b.HasIndex("FieldId");
 
                     b.ToTable("JobPosts");
+                });
+
+            modelBuilder.Entity("JobBridge.Data.JobSeeker", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("RememberMe")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ResumeUrl")
+                        .HasMaxLength(2083)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("JobSeekers");
                 });
 
             modelBuilder.Entity("JobBridge.Data.User", b =>
@@ -348,32 +484,68 @@ namespace JobBridge.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("JobBridge.Data.Models.Bookmarks", b =>
+            modelBuilder.Entity("Bookmark", b =>
                 {
-                    b.HasOne("JobBridge.Data.Models.JobPost", "JobPost")
+                    b.HasOne("JobBridge.Data.JobPost", "JobPost")
                         .WithMany()
                         .HasForeignKey("JobPostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("JobBridge.Data.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                    b.HasOne("JobBridge.Data.JobSeeker", "JobSeeker")
+                        .WithMany("Bookmarks")
+                        .HasForeignKey("JobSeekerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("JobPost");
+
+                    b.Navigation("JobSeeker");
+                });
+
+            modelBuilder.Entity("JobBridge.Data.Application", b =>
+                {
+                    b.HasOne("JobBridge.Data.JobPost", "JobPost")
+                        .WithMany()
+                        .HasForeignKey("JobPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JobBridge.Data.JobSeeker", "JobSeeker")
+                        .WithMany("Applications")
+                        .HasForeignKey("JobSeekerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("JobPost");
+
+                    b.Navigation("JobSeeker");
+                });
+
+            modelBuilder.Entity("JobBridge.Data.Employers", b =>
+                {
+                    b.HasOne("JobBridge.Data.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("JobBridge.Data.Models.JobPost", b =>
+            modelBuilder.Entity("JobBridge.Data.JobPost", b =>
                 {
-                    b.HasOne("JobBridge.Data.Models.Employers", "Employer")
+                    b.HasOne("JobBridge.Data.Employers", "Employer")
                         .WithMany()
                         .HasForeignKey("EmployerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("JobBridge.Data.Models.Field", "Field")
+                    b.HasOne("JobBridge.Data.Employers", null)
+                        .WithMany("JobPosts")
+                        .HasForeignKey("EmployersId");
+
+                    b.HasOne("JobBridge.Data.Field", "Field")
                         .WithMany("JobPosts")
                         .HasForeignKey("FieldId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -382,6 +554,17 @@ namespace JobBridge.Migrations
                     b.Navigation("Employer");
 
                     b.Navigation("Field");
+                });
+
+            modelBuilder.Entity("JobBridge.Data.JobSeeker", b =>
+                {
+                    b.HasOne("JobBridge.Data.User", "User")
+                        .WithOne()
+                        .HasForeignKey("JobBridge.Data.JobSeeker", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -435,9 +618,21 @@ namespace JobBridge.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("JobBridge.Data.Models.Field", b =>
+            modelBuilder.Entity("JobBridge.Data.Employers", b =>
                 {
                     b.Navigation("JobPosts");
+                });
+
+            modelBuilder.Entity("JobBridge.Data.Field", b =>
+                {
+                    b.Navigation("JobPosts");
+                });
+
+            modelBuilder.Entity("JobBridge.Data.JobSeeker", b =>
+                {
+                    b.Navigation("Applications");
+
+                    b.Navigation("Bookmarks");
                 });
 #pragma warning restore 612, 618
         }

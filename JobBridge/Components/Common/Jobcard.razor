@@ -101,7 +101,7 @@
         await OnBookmarkToggle.InvokeAsync(jobId);
     } *@
 
-    private string GetCompanyInitials(string companyName)
+    private string GetCompanyInitials(string? companyName)
     {
         if (string.IsNullOrEmpty(companyName)) return "?";
 

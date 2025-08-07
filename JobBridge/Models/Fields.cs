@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace JobBridge.Data.Models
+namespace JobBridge.Data
 {
     public class Field
     {

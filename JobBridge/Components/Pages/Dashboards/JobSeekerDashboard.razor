@@ -111,9 +111,10 @@
     private int savedJobs = 0;
     private int profileViews = 0; // Placeholder
     private int activeSearches = 0; // Placeholder
+    private string applicationMessage = "";
 
     private List<Application>? recentApplications;
-    private List<JobPost>? savedJobsList;
+    private List<JobPost>? savedJobsList;    
 
     protected override async Task OnInitializedAsync()
     {

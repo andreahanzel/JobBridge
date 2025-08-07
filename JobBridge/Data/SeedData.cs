@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 using JobBridge.Data;
 using JobBridge.Data.Models;
 
@@ -60,6 +61,11 @@ namespace JobBridge.Data
                 }
             }
             await db.SaveChangesAsync();
+            var usersList = new List<User>
+            {
+                await userManager.FindByEmailAsync("john.doe@example.com"),
+                await userManager.FindByEmailAsync("jane.smith@example.com")
+            };
 
             // Seed Employers
             if (!db.Employers.Any())
@@ -212,7 +218,7 @@ namespace JobBridge.Data
                     }
                 };
                 db.JobPosts.AddRange(jobPosts);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
 
             // Seed Job Seekers
@@ -228,7 +234,7 @@ namespace JobBridge.Data
                     }
                 };
                 db.JobSeekers.AddRange(jobSeekers);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
 
             // Get existing job seekers for applications
@@ -256,7 +262,7 @@ namespace JobBridge.Data
                     }
                 };
                 db.Applications.AddRange(applications);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
         }
     }

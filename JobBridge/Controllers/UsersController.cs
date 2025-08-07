@@ -28,7 +28,7 @@ namespace JobBridge.Controllers
 
         // GET /users/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<User>> GetUser(string id)
         {
             var user = await _db.Users.FindAsync(id);
 
@@ -56,7 +56,7 @@ namespace JobBridge.Controllers
 
         // PUT /users/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] User user)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -74,8 +74,6 @@ namespace JobBridge.Controllers
             existingUser.LastName = user.LastName;
             existingUser.Email = user.Email;
             existingUser.Phone = user.Phone;
-            existingUser.Password = user.Password;
-            existingUser.RememberMe = user.RememberMe;
             existingUser.UpdatedAt = DateTime.UtcNow;
 
             _db.Users.Update(existingUser);
@@ -86,7 +84,7 @@ namespace JobBridge.Controllers
 
         // DELETE /users/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(string id)
         {
             var user = await _db.Users.FindAsync(id);
             if (user == null)

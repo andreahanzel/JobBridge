@@ -10,10 +10,10 @@ namespace JobBridge.Data
 
         [Required(ErrorMessage = "Name is required")]
         [StringLength(100, ErrorMessage = "Name max length is 100 characters")]
-        public string Name { get; set; }
-
+        public string? Name { get; set; }
+        [Required(ErrorMessage = "Location is required")]
         [StringLength(200, ErrorMessage = "Location max length is 200 characters")]
-        public string Location { get; set; }
+        public string? Location { get; set; }
 
         [Required(ErrorMessage = "Industry is required")]
         [StringLength(100, ErrorMessage = "Industry max length is 100 characters")]
@@ -28,7 +28,8 @@ namespace JobBridge.Data
 
         // User relation
         [Required(ErrorMessage = "UserId is required")]
-        public int UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
+
 
         public User User { get; set; } = null!;
 
