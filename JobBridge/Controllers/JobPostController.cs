@@ -5,7 +5,7 @@ using JobBridge.Data.Models;
 
 namespace JobBridge.Controllers;
 
-[Route("jobposts")]
+[Route("api/[controller]")]
 [ApiController]
 public class JobPostController : Controller
 {

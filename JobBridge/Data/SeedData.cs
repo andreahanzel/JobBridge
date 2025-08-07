@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using JobBridge.Data;
 using JobBridge.Data.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JobBridge.Data
 {
@@ -12,8 +13,13 @@ namespace JobBridge.Data
     {
         public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
-            using var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            using var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+            // Use a service scope to get required services.
+            using var scope = serviceProvider.CreateScope();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var db = scope.ServiceProvider.GetRequiredService<JobBridgeContext>();
+
+            // Seed roles if they don't exist.
             string[] roles = { "JobSeeker", "Employer", "Admin" };
             foreach (var role in roles)
             {
@@ -22,12 +28,9 @@ namespace JobBridge.Data
                     await roleManager.CreateAsync(new IdentityRole(role));
                 }
             }
-
-            using var db = serviceProvider.GetRequiredService<JobBridgeContext>();
-            if (db.Users.Any() || db.Employers.Any() || db.JobPosts.Any()) return;
-
-            // Users
-            var users = new User[]
+            
+            // Define users to be seeded.
+            var usersToSeed = new User[]
             {
                 new User
                 {
@@ -52,20 +55,47 @@ namespace JobBridge.Data
                     UpdatedAt = DateTime.UtcNow
                 }
             };
-            foreach (var user in users)
+            
+            // List to hold the User objects after creation/retrieval.
+            var createdUsers = new List<User>();
+
+            // Create users if they don't exist and add them to the createdUsers list.
+            foreach (var user in usersToSeed)
             {
-                var result = await userManager.CreateAsync(user, "Password123!");
-                if (result.Succeeded && user.Role != null)
+                var existingUser = await userManager.FindByEmailAsync(user.Email);
+                if (existingUser == null)
                 {
-                    await userManager.AddToRoleAsync(user, user.Role);
+                    var result = await userManager.CreateAsync(user, "Password123!");
+                    if (!result.Succeeded)
+                    {
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        throw new Exception($"Error while creating user {user.Email}: {errors}");
+                    }
+                    if (user.Role != null)
+                    {
+                        await userManager.AddToRoleAsync(user, user.Role);
+                    }
+                    // Add the newly created user object directly to the list.
+                    createdUsers.Add(user);
+                }
+                else
+                {
+                    // If the user already exists, add the existing object to the list.
+                    createdUsers.Add(existingUser);
                 }
             }
-            await db.SaveChangesAsync();
-            var usersList = new List<User>
+
+            // Get the specific user objects from the list.
+            var john = createdUsers.FirstOrDefault(u => u.Email == "john.doe@example.com");
+            var jane = createdUsers.FirstOrDefault(u => u.Email == "jane.smith@example.com");
+
+            if (john == null || jane == null)
             {
-                await userManager.FindByEmailAsync("john.doe@example.com"),
-                await userManager.FindByEmailAsync("jane.smith@example.com")
-            };
+                // This check is now a safety net, as the logic above should prevent this.
+                throw new Exception("User not found after creation/retrieval.");
+            }
+
+            var usersList = new List<User> { john, jane };
 
             // Seed Employers
             if (!db.Employers.Any())
@@ -79,7 +109,7 @@ namespace JobBridge.Data
                         NumberOfEmployees = 150,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                        UserId = usersList[0].Id // Associate to John Doe user
+                        UserId = john.Id // Associate to John Doe user using the retrieved object
                     },
                     new Employers
                     {
@@ -88,7 +118,7 @@ namespace JobBridge.Data
                         NumberOfEmployees = 50,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                        UserId = usersList[1].Id // Associate to Jane Smith user
+                        UserId = jane.Id // Associate to Jane Smith user using the retrieved object
                     }
                 };
                 db.Employers.AddRange(employers);
@@ -199,7 +229,7 @@ namespace JobBridge.Data
                         JobSummary = "Join our team as a Senior Backend Developer to build scalable APIs and microservices using .NET Core.",
                         KeyResponsibilities = "• Design and implement RESTful APIs\n• Work with databases and data modeling\n• Optimize application performance\n• Mentor junior developers",
                         RequiredQualifications = "• 5+ years of experience with C# and .NET Core\n• Strong knowledge of Entity Framework\n• Experience with SQL databases\n• Experience with cloud platforms (Azure preferred)",
-                        PreferredQualifications = "• Experience with microservices architecture\n• Knowledge of Docker and Kubernetes\n• Experience with DevOps practices",
+                        PreferredQualifications = "• Experience with microservices architecture\n• Knowledge of Docker and Kubernetes\n• Familiarity with DevOps practices",
                         RequiredSkills = "C#, .NET Core, Entity Framework, SQL, Azure",
                         NiceToHaveSkills = "Docker, Kubernetes, Redis, RabbitMQ",
                         ApplicationMethod = "External Link/Email",
@@ -228,7 +258,7 @@ namespace JobBridge.Data
                 {
                     new JobSeeker
                     {
-                        UserId = usersList[1].Id, // Reference to Jane Smith
+                        UserId = jane.Id, // Reference to Jane Smith
                         ResumeUrl = "https://example.com/resume/jane-smith.pdf",
                         RememberMe = true
                     }

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobBridge.Migrations
 {
     [DbContext(typeof(JobBridgeContext))]
-    [Migration("20250807193941_InitialCreate")]
+    [Migration("20250807200659_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

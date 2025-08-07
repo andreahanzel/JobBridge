@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using JobBridge.Services;
 using JobBridge.Identity;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Text.Json.Serialization; // Adicione esta linha de importação
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Esta linha é a correção para o ciclo de objeto.
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton(builder.Configuration);
 
@@ -27,7 +34,7 @@ builder.Services.AddSqlite<JobBridgeContext>("Data Source=jobbridge.db");
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentity<User, IdentityRole>(options => 
+builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 })
@@ -68,8 +75,7 @@ builder.Services.AddScoped<ApplicationService>();
 
 var app = builder.Build();
 
-
-
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();

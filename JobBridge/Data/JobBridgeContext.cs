@@ -10,7 +10,7 @@ public class JobBridgeContext : IdentityDbContext<User>
     {
     }
 
-    public new DbSet<User> Users { get; set; }
+  //  public new DbSet<User> Users { get; set; }
     public DbSet<JobSeeker> JobSeekers { get; set; } // Added
     public DbSet<Employers> Employers { get; set; }
     public DbSet<JobPost> JobPosts { get; set; }
