@@ -1,17 +1,14 @@
-namespace JobBridge.Data;
+using System;
 
-public class Employers
+namespace JobBridge.Data.Models
 {
-    public int Id { get; set; }
-
-    public string Name { get; set; }
-
-    public string Location { get; set; }
-
-    public int NumberOfEmployees { get; set; }
-
-    public  DateTime CreatedAt { get; set; }
-
-    public  DateTime UpdatedAt { get; set; }
+    public class Employers
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public int NumberOfEmployees { get; set; }
+        public string? Location { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
 }
-

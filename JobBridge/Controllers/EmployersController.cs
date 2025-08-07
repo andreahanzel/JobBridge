@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobBridge.Data;
+using JobBridge.Data.Models;
 
 namespace JobBridge.Controllers;
 

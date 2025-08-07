@@ -1,14 +1,15 @@
-namespace JobBridge.Data;
+using JobBridge.Data;
+using System;
 
-public class Bookmark
+namespace JobBridge.Data.Models
 {
-    public int Id { get; set; }
-   
-    // Foreign Keys
-    public int UserId { get; set; }
-    public User User { get; set; }
-
-    public int JobPostId { get; set; }
-    public JobPost JobPost { get; set; }
-
+    public class Bookmarks
+    {
+        public int Id { get; set; }
+        public string? UserId { get; set; }
+        public User? User { get; set; }
+        public int JobPostId { get; set; }
+        public JobPost? JobPost { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
 }

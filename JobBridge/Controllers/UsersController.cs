@@ -1,23 +1,28 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobBridge.Data;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace JobBridge.Controllers;
-
-[Route("users")]
-[ApiController]
-public class UsersController : Controller
+namespace JobBridge.Controllers
 {
-    private readonly JobBridgeContext _db;
-
-    public UsersController(JobBridgeContext db)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UsersController : ControllerBase
     {
-        _db = db;
-    }
+        private readonly JobBridgeContext _context;
 
-    [HttpGet]
-    public async Task<ActionResult<List<User>>> GetUsers()
-    {
-        return (await _db.Users.ToListAsync()).OrderByDescending(u => u.LastName).ToList();
+        public UsersController(JobBridgeContext context)
+        {
+            _context = context;
+        }
+
+        // GET: api/Users
+        [HttpGet]
+        public async Task<ActionResult<List<User>>> GetUsers()
+        {
+            var users = await _context.Users.ToListAsync();
+            return Ok(users);
+        }
     }
 }

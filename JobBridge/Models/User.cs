@@ -1,22 +1,16 @@
-namespace JobBridge.Data;
+using Microsoft.AspNetCore.Identity;
+using System;
 
-public class User
+namespace JobBridge.Data
 {
-    public int Id { get; set; }
-    
-    public required string Role { get; set; }
-    
-    public required string FirstName { get; set; }
-
-    public string LastName { get; set; }
-    
-    public required string Email { get; set; }
-
-    public string Phone { get; set; }
-
-    public string Password { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime UpdatedAt { get; set; }
+    public class User : IdentityUser
+    {
+        public required string Role { get; set; }
+        public required string FirstName { get; set; }
+        public string? LastName { get; set; }
+        public new required string Email { get; set; }
+        public string? Phone { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
 }

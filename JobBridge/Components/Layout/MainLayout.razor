@@ -1,9 +1,29 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using JobBridge.Services
+@using Microsoft.JSInterop
+@inject SessionAuthService SessionAuth
+@inject IJSRuntime JSRuntime
 
 <div class="page-layout-horizontal">
     <header class="top-navbar-container">
         <NavMenu />
     </header>
+
+    <AuthorizeView>
+        <Authorized>
+            <div class="welcome-message bg-light border-bottom py-2">
+                <div class="container">
+                    <div class="text-center text-success">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        Welcome back, <strong>@context.User.FindFirst(ClaimTypes.GivenName)?.Value</strong>! 
+                        <span class="text-muted">You are logged in as @context.User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value</span>
+                    </div>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
 
     <main class="main-content-horizontal">
         <article class="content px-4">
@@ -19,3 +39,13 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await SessionAuth.InitializeAsync(JSRuntime);
+        }
+    }
+}

@@ -1,40 +1,38 @@
 using System.Threading.Tasks;
-using JobBridge.Data.Models; // Needed to reference ApplicationUser model
+using JobBridge.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace JobBridge.Services
 {
     public class UserService
     {
-        // You will likely inject UserManager<ApplicationUser> or a custom DbContext here later
-        // private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UserManager<User> _userManager;
 
-        public UserService(/* UserManager<ApplicationUser> userManager */)
+        public UserService(UserManager<User> userManager)
         {
-            // _userManager = userManager;
+            _userManager = userManager;
         }
 
-        public async Task<ApplicationUser?> GetUserProfileAsync(string userId)
+        public async Task<User?> GetUserProfileAsync(string userId)
         {
-            Console.WriteLine($"Getting profile for user ID: {userId}");
-            await Task.Delay(100); // Simulate async operation
-            // Replace with actual database/Identity lookup
-            return new ApplicationUser { Id = userId, UserName = "TestUser", Email = "test@example.com", PhoneNumber = "123-456-7890" }; // Placeholder
+            return await _userManager.FindByIdAsync(userId);
         }
 
-        public async Task<bool> UpdateUserProfileAsync(ApplicationUser user)
+        public async Task<bool> UpdateUserProfileAsync(User user)
         {
-            Console.WriteLine($"Updating profile for user: {user.UserName}");
-            await Task.Delay(100); // Simulate async operation
-            // Replace with actual database/Identity update
-            return true;
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
         }
 
         public async Task<bool> ChangePasswordAsync(string userId, string currentPassword, string newPassword)
         {
-            Console.WriteLine($"Changing password for user ID: {userId}");
-            await Task.Delay(100); // Simulate async operation
-            // Replace with actual Identity password change logic
-            return true;
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return false;
+            }
+            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            return result.Succeeded;
         }
     }
 }
