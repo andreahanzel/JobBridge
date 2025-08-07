@@ -16,7 +16,7 @@ namespace JobBridge.Data
 
         // User relation (1:1)
         [Required(ErrorMessage = "UserId is required")]
-        public int UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [Required]
         public User User { get; set; } = null!;

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JobBridge.Controllers
 {
-    [Route("applications")]
+    [Route("api/[controller]")]
     [ApiController]
     public class ApplicationsController : ControllerBase
     {

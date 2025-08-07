@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobBridge.Data;
+using JobBridge.Data.Models;
 
 namespace JobBridge.Controllers;
 
-[Route("jobposts")]
+[Route("api/[controller]")]
 [ApiController]
 public class JobPostController : Controller
 {

@@ -1,10 +1,11 @@
-namespace JobBridge.Data;
+using System.Collections.Generic;
 
-public class Field
+namespace JobBridge.Data
 {
-    public int Id { get; set; }
-
-    public string FieldTitle { get; set; }
-
-    public ICollection<JobPost> JobPosts { get; set; }
+    public class Field
+    {
+        public int Id { get; set; }
+        public string? FieldTitle { get; set; }
+        public List<JobPost>? JobPosts { get; set; }
+    }
 }

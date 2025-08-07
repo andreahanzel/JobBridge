@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using JobBridge.Data.Models;
 
 namespace JobBridge.Data.Models
 {
@@ -17,7 +19,7 @@ namespace JobBridge.Data.Models
         public string CompanyName { get; set; } = string.Empty;
 
         [StringLength(100, ErrorMessage = "Location cannot exceed 100 characters.")]
-        public string? Location { get; set; } // E.g., "New York, NY", "Remote"
+        public string? Location { get; set; }
 
         [DataType(DataType.MultilineText)]
         public string? Description { get; set; }
@@ -25,14 +27,14 @@ namespace JobBridge.Data.Models
         public DateTime PostedDate { get; set; } = DateTime.UtcNow;
 
         // Job attributes
-        public string? EmploymentType { get; set; } // E.g., "Full-time", "Part-time", "Contract"
-        public string? ExperienceLevel { get; set; } // E.g., "Entry-level", "Mid", "Senior"
-        public string? SalaryRange { get; set; } // E.g., "$50,000 - $70,000"
+        public string? EmploymentType { get; set; }
+        public string? ExperienceLevel { get; set; }
+        public string? SalaryRange { get; set; }
 
-        // Foreign Key for Employer (if you create an EmployerProfile later)
-        // public string? EmployerId { get; set; } // Link to ApplicationUser or a separate Employer entity
+        // Foreign Key for Employer
+        // public int EmployerId { get; set; }
         // [ForeignKey("EmployerId")]
-        // public ApplicationUser? Employer { get; set; }
+        // public Employers? Employer { get; set; }
 
         // Example status
         public bool IsActive { get; set; } = true;

@@ -3,6 +3,8 @@
 @using Microsoft.EntityFrameworkCore
 @inject JobBridgeContext DbContext
 @inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @* Add this line later: @attribute [Authorize(Roles = "Employer")] *@
 
 <PageTitle>Employer Dashboard - JobBridge</PageTitle>
@@ -12,8 +14,16 @@
     <div class="dashboard-header">
         <div class="hero-section">
             <div class="hero-content">
-                <h1 class="hero-title">Welcome, @(employer?.Name ?? "Employer")!</h1>
-                <p class="hero-subtitle">Manage your job postings and track candidate engagement</p>
+                <AuthorizeView>
+                    <Authorized>
+                        <h1 class="hero-title">Welcome, @context.User.FindFirst(ClaimTypes.GivenName)?.Value!</h1>
+                        <p class="hero-subtitle">Ready to find top talent? Manage your job postings and connect with qualified candidates!</p>
+                    </Authorized>
+                    <NotAuthorized>
+                        <h1 class="hero-title">Welcome to JobBridge!</h1>
+                        <p class="hero-subtitle">Manage your job postings and track candidate engagement</p>
+                    </NotAuthorized>
+                </AuthorizeView>
                 <div class="hero-buttons">
                     <a href="/employer/@Id/jobs/create" class="btn btn-primary">Post New Job</a>
                     <a href="/employer/profile" class="btn btn-secondary">Company Profile</a>

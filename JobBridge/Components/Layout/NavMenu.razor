@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
 
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
@@ -19,14 +20,13 @@
                         <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
                     </NavLink>
                 </li>
-                
+
                 <li class="nav-item">
                     <NavLink class="nav-link" href="job-listings">
                         <span class="bi bi-search-nav-menu" aria-hidden="true"></span> Browse Jobs
                     </NavLink>
                 </li>
 
-                <!-- Dashboard Links for Authenticated Users -->
                 <AuthorizeView>
                     <Authorized>
                         @if (context.User.IsInRole("JobSeeker"))
@@ -53,27 +53,23 @@
                                 </NavLink>
                             </li>
                         }
-                        
-                        <!-- Logout for Authenticated Users -->
+
                         <li class="nav-item">
-                            <form action="Account/Logout" method="post" class="h-100">
-                                <AntiforgeryToken />
-                                <button type="submit" class="nav-link btn btn-link h-100">
-                                    <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Logout
-                                </button>
-                            </form>
-                        </li>
-                    </Authorized>
-                    
-                    <!-- Login/Register for Non-Authenticated Users -->
-                    <NotAuthorized>
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="Account/Register">
-                                <span class="bi bi-person-plus-fill-nav-menu" aria-hidden="true"></span> Register
+                            <NavLink class="nav-link" href="authentication/logout">
+                                <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Logout
                             </NavLink>
                         </li>
+                    </Authorized>
+
+                    <NotAuthorized>
+                        @* <li class="nav-item">
+                            <NavLink class="nav-link" href="Authentication/Register">
+                                <span class="bi bi-person-plus-fill-nav-menu" aria-hidden="true"></span> Register
+                            </NavLink>
+                        </li> *@
+
                         <li class="nav-item">
-                            <NavLink class="nav-link" href="Account/Login">
+                            <NavLink class="nav-link" href="authentication">
                                 <span class="bi bi-box-arrow-in-right-nav-menu" aria-hidden="true"></span> Login
                             </NavLink>
                         </li>
@@ -86,7 +82,6 @@
 
 @code {
     private bool collapseNavMenu = true;
-
     private string? NavMenuCssClass => collapseNavMenu ? null : "show";
 
     private void ToggleNavMenu()

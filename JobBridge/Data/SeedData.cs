@@ -1,46 +1,101 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
+using JobBridge.Data;
+using JobBridge.Data.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JobBridge.Data
 {
     public static class SeedData
     {
-        public static void Initialize(JobBridgeContext db)
+        public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
-            // Seed Users
-            if (!db.Users.Any())
+            // Use a service scope to get required services.
+            using var scope = serviceProvider.CreateScope();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var db = scope.ServiceProvider.GetRequiredService<JobBridgeContext>();
+
+            // Seed roles if they don't exist.
+            string[] roles = { "JobSeeker", "Employer", "Admin" };
+            foreach (var role in roles)
             {
-                var users = new User[]
+                if (!await roleManager.RoleExistsAsync(role))
                 {
-                    new User
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
+            
+            // Define users to be seeded.
+            var usersToSeed = new User[]
+            {
+                new User
+                {
+                    Role = "Admin",
+                    FirstName = "John",
+                    LastName = "Doe",
+                    Email = "john.doe@example.com",
+                    UserName = "john.doe@example.com",
+                    Phone = "123-456-7890",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new User
+                {
+                    Role = "JobSeeker",
+                    FirstName = "Jane",
+                    LastName = "Smith",
+                    Email = "jane.smith@example.com",
+                    UserName = "jane.smith@example.com",
+                    Phone = "098-765-4321",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+            
+            // List to hold the User objects after creation/retrieval.
+            var createdUsers = new List<User>();
+
+            // Create users if they don't exist and add them to the createdUsers list.
+            foreach (var user in usersToSeed)
+            {
+                var existingUser = await userManager.FindByEmailAsync(user.Email);
+                if (existingUser == null)
+                {
+                    var result = await userManager.CreateAsync(user, "Password123!");
+                    if (!result.Succeeded)
                     {
-                        Role = "Admin",
-                        FirstName = "John",
-                        LastName = "Doe",
-                        Email = "john.doe@example.com",
-                        Phone = "123-456-7890",
-                        Password = "password",
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    },
-                    new User
-                    {
-                        Role = "User",
-                        FirstName = "Jane",
-                        LastName = "Smith",
-                        Email = "jane.smith@example.com",
-                        Phone = "098-765-4321",
-                        Password = "password",
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        throw new Exception($"Error while creating user {user.Email}: {errors}");
                     }
-                };
-                db.Users.AddRange(users);
-                db.SaveChanges();
+                    if (user.Role != null)
+                    {
+                        await userManager.AddToRoleAsync(user, user.Role);
+                    }
+                    // Add the newly created user object directly to the list.
+                    createdUsers.Add(user);
+                }
+                else
+                {
+                    // If the user already exists, add the existing object to the list.
+                    createdUsers.Add(existingUser);
+                }
             }
 
-            // Get existing users for foreign key relations
-            var usersList = db.Users.ToList();
+            // Get the specific user objects from the list.
+            var john = createdUsers.FirstOrDefault(u => u.Email == "john.doe@example.com");
+            var jane = createdUsers.FirstOrDefault(u => u.Email == "jane.smith@example.com");
+
+            if (john == null || jane == null)
+            {
+                // This check is now a safety net, as the logic above should prevent this.
+                throw new Exception("User not found after creation/retrieval.");
+            }
+
+            var usersList = new List<User> { john, jane };
 
             // Seed Employers
             if (!db.Employers.Any())
@@ -54,7 +109,7 @@ namespace JobBridge.Data
                         NumberOfEmployees = 150,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                        UserId = usersList[0].Id // Associate to John Doe user
+                        UserId = john.Id // Associate to John Doe user using the retrieved object
                     },
                     new Employers
                     {
@@ -63,11 +118,11 @@ namespace JobBridge.Data
                         NumberOfEmployees = 50,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                        UserId = usersList[1].Id // Associate to Jane Smith user
+                        UserId = jane.Id // Associate to Jane Smith user using the retrieved object
                     }
                 };
                 db.Employers.AddRange(employers);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
 
             // Get existing employers for foreign key relations
@@ -84,7 +139,7 @@ namespace JobBridge.Data
                     new Field { FieldTitle = "Sales" }
                 };
                 db.Fields.AddRange(fields);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
 
             // Get existing fields for foreign key relations
@@ -174,7 +229,7 @@ namespace JobBridge.Data
                         JobSummary = "Join our team as a Senior Backend Developer to build scalable APIs and microservices using .NET Core.",
                         KeyResponsibilities = "• Design and implement RESTful APIs\n• Work with databases and data modeling\n• Optimize application performance\n• Mentor junior developers",
                         RequiredQualifications = "• 5+ years of experience with C# and .NET Core\n• Strong knowledge of Entity Framework\n• Experience with SQL databases\n• Experience with cloud platforms (Azure preferred)",
-                        PreferredQualifications = "• Experience with microservices architecture\n• Knowledge of Docker and Kubernetes\n• Experience with DevOps practices",
+                        PreferredQualifications = "• Experience with microservices architecture\n• Knowledge of Docker and Kubernetes\n• Familiarity with DevOps practices",
                         RequiredSkills = "C#, .NET Core, Entity Framework, SQL, Azure",
                         NiceToHaveSkills = "Docker, Kubernetes, Redis, RabbitMQ",
                         ApplicationMethod = "External Link/Email",
@@ -193,7 +248,7 @@ namespace JobBridge.Data
                     }
                 };
                 db.JobPosts.AddRange(jobPosts);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
 
             // Seed Job Seekers
@@ -203,13 +258,13 @@ namespace JobBridge.Data
                 {
                     new JobSeeker
                     {
-                        UserId = usersList[1].Id, // Reference to Jane Smith
+                        UserId = jane.Id, // Reference to Jane Smith
                         ResumeUrl = "https://example.com/resume/jane-smith.pdf",
                         RememberMe = true
                     }
                 };
                 db.JobSeekers.AddRange(jobSeekers);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
 
             // Get existing job seekers for applications
@@ -237,7 +292,7 @@ namespace JobBridge.Data
                     }
                 };
                 db.Applications.AddRange(applications);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
         }
     }

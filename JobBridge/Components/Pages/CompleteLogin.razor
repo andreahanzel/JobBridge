@@ -1,0 +1,43 @@
+@page "/complete-login"
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient
+@inject IJSRuntime JSRuntime
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Email { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Remember { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(Email))
+        {
+            try
+            {
+                var request = new { Email = Email, Remember = Remember };
+                var baseUrl = Navigation.BaseUri;
+                var response = await HttpClient.PostAsJsonAsync($"{baseUrl}api/auth/signin", request);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    // Wait a moment for authentication to complete
+                    await Task.Delay(500);
+                    // Force a complete page reload
+                    await JSRuntime.InvokeVoidAsync("location.replace", "/");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Sign-in error: {ex.Message}");
+            }
+        }
+        Navigation.NavigateTo("/");
+    }
+
+
+}

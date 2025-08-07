@@ -1,16 +1,16 @@
-using JobBridge.Data.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using JobBridge.Data.Models;
 
 namespace JobBridge.Data;
 
-public class JobBridgeContext : IdentityDbContext<ApplicationUser>
+public class JobBridgeContext : IdentityDbContext<User>
 {
     public JobBridgeContext(DbContextOptions<JobBridgeContext> options) : base(options)
     {
     }
 
-    public DbSet<User> Users { get; set; }
+  //  public new DbSet<User> Users { get; set; }
     public DbSet<JobSeeker> JobSeekers { get; set; } // Added
     public DbSet<Employers> Employers { get; set; }
     public DbSet<JobPost> JobPosts { get; set; }
