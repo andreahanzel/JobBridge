@@ -1,70 +1,46 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
-using System.Diagnostics.CodeAnalysis;
-using System.Web;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace JobBridge.Identity
 {
-    internal sealed class IdentityRedirectManager
+    public class IdentityRedirectManager
     {
-        public const string StatusMessageParam = "StatusMessage";
-        public const string RedirectUrlParam = "RedirectUrl";
-
         private readonly NavigationManager _navigationManager;
-        private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public IdentityRedirectManager(NavigationManager navigationManager, AuthenticationStateProvider authenticationStateProvider)
+        public IdentityRedirectManager(NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor)
         {
             _navigationManager = navigationManager;
-            _authenticationStateProvider = authenticationStateProvider;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        [DoesNotReturn]
         public void RedirectTo(string uri)
         {
-            _navigationManager.NavigateTo(uri, new NavigationOptions { ForceLoad = true });
-            throw new InvalidOperationException("RedirectTo called."); // Added to satisfy [DoesNotReturn]
+            // Always use NavigationManager in Blazor Server to avoid headers issues
+            _navigationManager.NavigateTo(uri, forceLoad: true);
         }
 
-        [DoesNotReturn]
-        public void RedirectToCurrentPage() => RedirectTo(_navigationManager.Uri);
-
-        [DoesNotReturn]
-        public void RedirectToCurrentPageWithStatus(string message, AuthenticationState? authenticationState = null)
+        public void RedirectToWithStatus(string uri, string message)
         {
-            var uri = _navigationManager.Uri;
-            if (authenticationState is { User.Identity.IsAuthenticated: true })
-            {
-                uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri).ToString();
-            }
-
-            RedirectToWithStatus(uri, message, authenticationState);
-            throw new InvalidOperationException("RedirectToCurrentPageWithStatus called."); // Added to satisfy [DoesNotReturn]
+            var uriWithQuery = QueryHelpers.AddQueryString(uri, StatusMessageParam, message);
+            RedirectTo(uriWithQuery);
         }
 
-        [DoesNotReturn]
-        public void RedirectToWithStatus(string uri, string message, AuthenticationState? authenticationState = null)
+        public void RedirectToCurrentPageWithStatus(string message)
         {
-            uri = QueryHelpers.AddQueryString(uri, StatusMessageParam, message);
-
-            if (authenticationState is { User.Identity.IsAuthenticated: true })
-            {
-                // No further redirect logic here for simplicity, as discussed
-            }
-
-            RedirectTo(uri);
-            throw new InvalidOperationException("RedirectToWithStatus called."); // Added to satisfy [DoesNotReturn]
+            RedirectToWithStatus(_navigationManager.Uri, message);
         }
+
+        public const string StatusMessageParam = "StatusMessage";
     }
 
-    // Helper class for URL query string manipulation (often provided by Microsoft.AspNetCore.WebUtilities,
-    // but included here to avoid an extra dependency if only this method is needed)
-    internal static class QueryHelpers
+    public static class QueryHelpers
     {
         public static string AddQueryString(string uri, string name, string value)
         {
             var uriBuilder = new UriBuilder(uri);
-            var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
             query[name] = value;
             uriBuilder.Query = query.ToString();
             return uriBuilder.ToString();

@@ -1,0 +1,37 @@
+@page "/auth-test"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>Authentication Test</h3>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="alert alert-success">
+            <h4>User is authenticated!</h4>
+            <p>Name: @context.User.Identity?.Name</p>
+            <p>Email: @context.User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value</p>
+            <p>Role: @context.User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value</p>
+            <p>Claims:</p>
+            <ul>
+                @foreach (var claim in context.User.Claims)
+                {
+                    <li>@claim.Type: @claim.Value</li>
+                }
+            </ul>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-danger">
+            <h4>User is NOT authenticated</h4>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        Console.WriteLine($"Auth state: {authState.User.Identity?.IsAuthenticated}");
+        Console.WriteLine($"User name: {authState.User.Identity?.Name}");
+    }
+}

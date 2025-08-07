@@ -1,28 +1,17 @@
 using System.ComponentModel.DataAnnotations;
-namespace JobBridge.Data;
+using Microsoft.AspNetCore.Identity;
+using System;
 
-public class User
+namespace JobBridge.Data
 {
-    public int Id { get; set; }
-
-    public required string Role { get; set; }
-    [Required(ErrorMessage = "First name is required")]
-    public required string FirstName { get; set; }
-
-    [Required(ErrorMessage = "Last name is required")]
-    public string LastName { get; set; }
-
-    [Required(ErrorMessage = "Email is required")]
-    [EmailAddress]
-    public required string Email { get; set; }
-    [Required(ErrorMessage = "Phone number is required")]
-    public string Phone { get; set; }
-    [Required(ErrorMessage = "Password is required")]
-    public string Password { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime UpdatedAt { get; set; }
-    public bool RememberMe { get; set; }
-
+    public class User : IdentityUser
+    {
+        public required string Role { get; set; }
+        public required string FirstName { get; set; }
+        public string? LastName { get; set; }
+        public new required string Email { get; set; }
+        public string? Phone { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
 }

@@ -1,46 +1,65 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using JobBridge.Data;
+using JobBridge.Data.Models;
 
 namespace JobBridge.Data
 {
     public static class SeedData
     {
-        public static void Initialize(JobBridgeContext db)
+        public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
-            // Seed Users
-            if (!db.Users.Any())
+            using var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            using var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+            string[] roles = { "JobSeeker", "Employer", "Admin" };
+            foreach (var role in roles)
             {
-                var users = new User[]
+                if (!await roleManager.RoleExistsAsync(role))
                 {
-                    new User
-                    {
-                        Role = "Admin",
-                        FirstName = "John",
-                        LastName = "Doe",
-                        Email = "john.doe@example.com",
-                        Phone = "123-456-7890",
-                        Password = "password",
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    },
-                    new User
-                    {
-                        Role = "User",
-                        FirstName = "Jane",
-                        LastName = "Smith",
-                        Email = "jane.smith@example.com",
-                        Phone = "098-765-4321",
-                        Password = "password",
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    }
-                };
-                db.Users.AddRange(users);
-                db.SaveChanges();
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
             }
 
-            // Get existing users for foreign key relations
-            var usersList = db.Users.ToList();
+            using var db = serviceProvider.GetRequiredService<JobBridgeContext>();
+            if (db.Users.Any() || db.Employers.Any() || db.JobPosts.Any()) return;
+
+            // Users
+            var users = new User[]
+            {
+                new User
+                {
+                    Role = "Admin",
+                    FirstName = "John",
+                    LastName = "Doe",
+                    Email = "john.doe@example.com",
+                    UserName = "john.doe@example.com",
+                    Phone = "123-456-7890",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new User
+                {
+                    Role = "JobSeeker",
+                    FirstName = "Jane",
+                    LastName = "Smith",
+                    Email = "jane.smith@example.com",
+                    UserName = "jane.smith@example.com",
+                    Phone = "098-765-4321",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+            foreach (var user in users)
+            {
+                var result = await userManager.CreateAsync(user, "Password123!");
+                if (result.Succeeded && user.Role != null)
+                {
+                    await userManager.AddToRoleAsync(user, user.Role);
+                }
+            }
+            await db.SaveChangesAsync();
 
             // Seed Employers
             if (!db.Employers.Any())
@@ -67,7 +86,7 @@ namespace JobBridge.Data
                     }
                 };
                 db.Employers.AddRange(employers);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
 
             // Get existing employers for foreign key relations
@@ -84,7 +103,7 @@ namespace JobBridge.Data
                     new Field { FieldTitle = "Sales" }
                 };
                 db.Fields.AddRange(fields);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
 
             // Get existing fields for foreign key relations

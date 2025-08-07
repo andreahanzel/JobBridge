@@ -1,10 +1,10 @@
-using JobBridge.Data.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using JobBridge.Data.Models;
 
 namespace JobBridge.Data;
 
-public class JobBridgeContext : IdentityDbContext<ApplicationUser>
+public class JobBridgeContext : IdentityDbContext<User>
 {
     public JobBridgeContext(DbContextOptions<JobBridgeContext> options) : base(options)
     {

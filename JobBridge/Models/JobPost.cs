@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+using System;
+
 namespace JobBridge.Data
 {
     public class JobPost
@@ -55,7 +57,6 @@ namespace JobBridge.Data
         public int NumberOfApplicants { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        //foreigns
         public int EmployerId { get; set; }
         public Employers Employer { get; set; } = null!;
         public int FieldId { get; set; }

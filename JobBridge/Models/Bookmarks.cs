@@ -1,4 +1,5 @@
-namespace JobBridge.Data;
+using JobBridge.Data;
+using System;
 
 public class Bookmark
 {

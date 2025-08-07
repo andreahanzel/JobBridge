@@ -1,0 +1,50 @@
+@page "/authentication/logout"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@using JobBridge.Services
+@using Microsoft.JSInterop
+@inject SessionAuthService SessionAuth
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<link href="css/authentication.css" rel="stylesheet" />
+
+<AuthorizeView>
+    <Authorized>
+        <div class="container mt-5 animate-fadeInUp auth-container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <h2 class="text-center mb-4 text-primary">Log Out</h2>
+                    <div class="card p-4 shadow-sm text-center auth-card">
+                        <p>Are you sure you want to log out?</p>
+                        <button class="btn btn-primary animate-pulse" @onclick="HandleLogout">Log Out</button>
+                        <div class="text-center mt-3">
+                            <a href="/" class="text-muted">Return to Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card p-4 shadow-sm text-center">
+                        <p>You are not logged in.</p>
+                        <a href="/authentication" class="btn btn-primary">Go to Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private async Task HandleLogout()
+    {
+        await SessionAuth.SignOutAsync(JSRuntime);
+        await Task.Delay(200);
+        Navigation.NavigateTo("/authentication");
+    }
+}

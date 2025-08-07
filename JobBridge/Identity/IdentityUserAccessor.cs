@@ -1,41 +1,44 @@
-using Microsoft.AspNetCore.Identity;
-using JobBridge.Data.Models;
-using System.Security.Claims;
+using JobBridge.Data;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace JobBridge.Identity
 {
-    internal sealed class IdentityUserAccessor
+    public class IdentityUserAccessor
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IdentityRedirectManager _redirectManager;
-        private readonly AuthenticationStateProvider _authenticationStateProvider; // Added this dependency
+        private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly UserManager<User> _userManager;
 
-        public IdentityUserAccessor(
-            UserManager<ApplicationUser> userManager,
-            IdentityRedirectManager redirectManager,
-            AuthenticationStateProvider authenticationStateProvider) // Added this parameter
+        public IdentityUserAccessor(AuthenticationStateProvider authenticationStateProvider, UserManager<User> userManager)
         {
-            _userManager = userManager;
-            _redirectManager = redirectManager;
-            _authenticationStateProvider = authenticationStateProvider; // Assigned the dependency
+            _authenticationStateProvider = authenticationStateProvider ?? throw new ArgumentNullException(nameof(authenticationStateProvider));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
-        public async Task<ApplicationUser> GetRequiredUserAsync(ClaimsPrincipal principal)
+        public async Task<User?> GetUserAsync()
         {
-            var user = await _userManager.GetUserAsync(principal);
+            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
 
-            if (user is null)
+            if (user.Identity?.IsAuthenticated != true)
             {
-                // Get the current AuthenticationState to pass to the redirect manager
-                var authenticationState = await _authenticationStateProvider.GetAuthenticationStateAsync(); // Get AuthenticationState
-                _redirectManager.RedirectToWithStatus(
-                    "Account/InvalidUser",
-                    $"Error: Unable to load user with ID '{_userManager.GetUserId(principal)}'.",
-                    authenticationState); // Pass authenticationState
+                return null;
             }
 
-            return user;
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return null;
+            }
+
+            return await _userManager.FindByIdAsync(userId);
+        }
+
+        public async Task<User> GetRequiredUserAsync()
+        {
+            var user = await GetUserAsync();
+            return user ?? throw new InvalidOperationException("The current user could not be retrieved.");
         }
     }
 }
