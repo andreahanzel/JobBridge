@@ -2,6 +2,7 @@
 @page "/employer/{id:int}/jobs/management"
 @using JobBridge.Components.Common
 @using JobBridge.Data
+@using JobBridge.Models
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Authorization
 @inject JobBridgeContext DbContext
@@ -45,21 +46,21 @@
         <div class="stat-card">
             <div class="stat-icon">👁️</div>
             <div class="stat-content">
-                <div class="stat-number">8,456</div>
+                <div class="stat-number">@totalViews</div>
                 <div class="stat-label">Total Views</div>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">📄</div>
             <div class="stat-content">
-                <div class="stat-number">234</div>
+                <div class="stat-number">@totalApplications</div>
                 <div class="stat-label">Applications</div>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">📈</div>
             <div class="stat-content">
-                <div class="stat-number">15%</div>
+                <div class="stat-number">@applyRate.ToString("P0")</div>
                 <div class="stat-label">Avg. Apply Rate</div>
             </div>
         </div>
@@ -173,6 +174,9 @@
     private Employers? employer = new Employers();
     private List<JobPost> jobPosts = new();
     private string? errorMessage = null;
+    private int totalViews = 0;
+    private int totalApplications = 0;
+    private decimal applyRate = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -191,6 +195,19 @@
                 .Where(j => j.EmployerId == Id)
                 .OrderByDescending(j => j.CreatedAt)
                 .ToListAsync();
+                
+            // Calculate real-time statistics
+            var jobPostIds = jobPosts.Select(j => j.Id).ToList();
+            
+            totalViews = await DbContext.JobViews
+                .Where(jv => jobPostIds.Contains(jv.JobPostId))
+                .CountAsync();
+                
+            totalApplications = await DbContext.Applications
+                .Where(a => jobPostIds.Contains(a.JobPostId))
+                .CountAsync();
+                
+            applyRate = totalViews > 0 ? (decimal)totalApplications / totalViews : 0;
                 
             Console.WriteLine($"Loaded employer: {employer.Name}, Job posts: {jobPosts.Count}");
         }

@@ -1,5 +1,6 @@
 @page "/dashboard/employer/{id:int}"
 @using JobBridge.Data
+@using JobBridge.Models
 @using Microsoft.EntityFrameworkCore
 @inject JobBridgeContext DbContext
 @inject NavigationManager NavigationManager
@@ -18,6 +19,7 @@
                 <p class="hero-subtitle">Ready to find top talent? Manage your job postings and connect with qualified candidates!</p>
                 <div class="hero-buttons">
                     <a href="/employer/@Id/jobs/create" class="btn btn-primary">Post New Job</a>
+                    <a href="/employer/@Id/jobs" class="btn btn-toggle active">Manage Jobs</a>
                     <a href="/employer/profile" class="btn btn-secondary">Company Profile</a>
                 </div>
             </div>
@@ -217,11 +219,16 @@
             var applicationsCount = await DbContext.Applications
                 .Where(a => jobPostIds.Contains(a.JobPostId))
                 .CountAsync();
+                
+            // Calculate real job views from JobViews table
+            var realJobViews = await DbContext.JobViews
+                .Where(jv => jobPostIds.Contains(jv.JobPostId))
+                .CountAsync();
 
             // Calculate stats from loaded data
             activeJobs = jobPosts.Count(j => j.IsActive);
             totalApplicants = applicationsCount;
-            jobViews = totalApplicants * 15; // Estimate views based on applications
+            jobViews = realJobViews;
             responseRate = jobViews > 0 ? (decimal)totalApplicants / jobViews : 0;
             
             Console.WriteLine($"Dashboard - Stats: Active={activeJobs}, Applicants={totalApplicants}, Views={jobViews}");

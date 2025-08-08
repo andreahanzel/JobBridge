@@ -1,8 +1,11 @@
 @page "/jobs/{id:int}"
 @page "/job-listings/{id:int}"
 @using JobBridge.Data
+@using JobBridge.Models
 @using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
 @inject JobBridgeContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 
 @if (isLoading)
@@ -225,7 +228,6 @@ else if (jobPost != null)
 }
 
 @inject NavigationManager Navigation
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 
 @code {
@@ -338,6 +340,9 @@ return companyName.Length >= 2 ? companyName.Substring(0, 2).ToUpper() : company
                         }
                     }
                 }
+                
+                // Track job view
+                await TrackJobView();
             }
         }
         catch (Exception ex)
@@ -347,6 +352,36 @@ return companyName.Length >= 2 ? companyName.Substring(0, 2).ToUpper() : company
         finally
         {
             isLoading = false;
+        }
+    }
+    
+    private async Task TrackJobView()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            JobSeeker? jobSeeker = null;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                jobSeeker = await DbContext.JobSeekers
+                    .FirstOrDefaultAsync(js => js.UserId == userId);
+            }
+            
+            var jobView = new JobView
+            {
+                JobPostId = Id,
+                JobSeekerId = jobSeeker?.Id,
+                ViewedAt = DateTime.Now
+            };
+            
+            DbContext.JobViews.Add(jobView);
+            await DbContext.SaveChangesAsync();
+        }
+        catch
+        {
+            // Silently handle tracking errors
         }
     }
 }
