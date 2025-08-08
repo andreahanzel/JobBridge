@@ -109,3 +109,7 @@ npm-debug.log*
 
 # Rider
 .idea/
+
+jobbridge-deploy.zip
+publish/
+*.zip
