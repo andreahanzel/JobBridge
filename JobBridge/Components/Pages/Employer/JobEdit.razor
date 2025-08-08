@@ -103,7 +103,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label required">Location</label>
-                        <input type="text" class="form-control" @bind="jobPost.Location" />
+                        <input type="text" class="form-control" @bind="jobPost.Location" @oninput="OnLocationChanged" />
                         <ValidationMessage For="@(() => jobPost.Location)" class="text-danger" />
                     </div>
 
@@ -120,16 +120,16 @@
                     <div class="form-group">
                         <label class="form-label">Minimum Salary</label>
                         <div class="input-group">
-                            <span class="input-prefix">$</span>
-                            <input type="number" class="form-control" @bind="jobPost.MinimumSalary" />
+                            <span class="input-prefix">@currencySymbol</span>
+                            <input type="text" class="form-control" @bind="minSalaryFormatted" @oninput="OnMinSalaryChanged" />
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Maximum Salary</label>
                         <div class="input-group">
-                            <span class="input-prefix">$</span>
-                            <input type="number" class="form-control" @bind="jobPost.MaximumSalary" />
+                            <span class="input-prefix">@currencySymbol</span>
+                            <input type="text" class="form-control" @bind="maxSalaryFormatted" @oninput="OnMaxSalaryChanged" />
                         </div>
                     </div>
 
@@ -287,6 +287,9 @@
     private bool isSubmitting = false;
     private string? errorMessage = null;
     private int postDuration;
+    private string currencySymbol = "$"; // Default to USD
+    private string minSalaryFormatted = "";
+    private string maxSalaryFormatted = "";
     protected override async Task OnInitializedAsync()
     {
         // Load job data for editing when data layer is ready
@@ -303,6 +306,13 @@
             var duration = jobPost.PostExpirationDate - jobPost.CreatedAt;
             postDuration = (int)Math.Round(duration.TotalDays); // Store the duration in days
             Console.WriteLine($"Post Duration: {postDuration} days");
+            
+            // Set initial currency symbol based on existing location
+            SetCurrencySymbolFromLocation(jobPost.Location ?? "");
+            
+            // Initialize formatted salary values
+            minSalaryFormatted = jobPost.MinimumSalary > 0 ? jobPost.MinimumSalary.ToString("N0") : "";
+            maxSalaryFormatted = jobPost.MaximumSalary > 0 ? jobPost.MaximumSalary.ToString("N0") : "";
         }
         else
         {
@@ -336,6 +346,79 @@
         finally
         {
             isSubmitting = false;
+        }
+    }
+    
+    private void OnLocationChanged(ChangeEventArgs e)
+    {
+        var location = e.Value?.ToString() ?? "";
+        SetCurrencySymbolFromLocation(location);
+        StateHasChanged();
+    }
+    
+    private void SetCurrencySymbolFromLocation(string location)
+    {
+        var locationLower = location.ToLower();
+        
+        if (locationLower.Contains("uk") || locationLower.Contains("united kingdom") || locationLower.Contains("london") || locationLower.Contains("england") || locationLower.Contains("scotland") || locationLower.Contains("wales"))
+        {
+            currencySymbol = "£";
+        }
+        else if (locationLower.Contains("canada") || locationLower.Contains("toronto") || locationLower.Contains("vancouver") || locationLower.Contains("montreal"))
+        {
+            currencySymbol = "C$";
+        }
+        else if (locationLower.Contains("australia") || locationLower.Contains("sydney") || locationLower.Contains("melbourne") || locationLower.Contains("brisbane"))
+        {
+            currencySymbol = "A$";
+        }
+        else if (locationLower.Contains("euro") || locationLower.Contains("germany") || locationLower.Contains("france") || locationLower.Contains("spain") || locationLower.Contains("italy") || locationLower.Contains("netherlands") || locationLower.Contains("belgium"))
+        {
+            currencySymbol = "€";
+        }
+        else if (locationLower.Contains("japan") || locationLower.Contains("tokyo") || locationLower.Contains("osaka"))
+        {
+            currencySymbol = "¥";
+        }
+        else if (locationLower.Contains("india") || locationLower.Contains("mumbai") || locationLower.Contains("delhi") || locationLower.Contains("bangalore"))
+        {
+            currencySymbol = "₹";
+        }
+        else if (locationLower.Contains("nigeria") || locationLower.Contains("lagos") || locationLower.Contains("abuja") || locationLower.Contains("kano") || locationLower.Contains("ibadan") || locationLower.Contains("calabar"))
+        {
+            currencySymbol = "₦";
+        }
+        else
+        {
+            currencySymbol = "$"; // Default to USD for US and other locations
+        }
+    }
+    
+    private void OnMinSalaryChanged(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString()?.Replace(",", "") ?? "";
+        if (decimal.TryParse(input, out var value))
+        {
+            jobPost.MinimumSalary = value;
+            minSalaryFormatted = value.ToString("N0");
+        }
+        else
+        {
+            minSalaryFormatted = input;
+        }
+    }
+
+    private void OnMaxSalaryChanged(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString()?.Replace(",", "") ?? "";
+        if (decimal.TryParse(input, out var value))
+        {
+            jobPost.MaximumSalary = value;
+            maxSalaryFormatted = value.ToString("N0");
+        }
+        else
+        {
+            maxSalaryFormatted = input;
         }
     }
 }

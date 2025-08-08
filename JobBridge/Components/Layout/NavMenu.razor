@@ -2,6 +2,10 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@inject JobBridgeContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
@@ -40,7 +44,7 @@
                         @if (context.User.IsInRole("Employer"))
                         {
                             <li class="nav-item">
-                                <NavLink class="nav-link" href="dashboard" ActiveClass="active">
+                                <NavLink class="nav-link" href="@GetEmployerDashboardUrl()" ActiveClass="active">
                                     <i class="bi bi-building me-2" aria-hidden="true"></i> Dashboard
                                 </NavLink>
                             </li>
@@ -81,5 +85,10 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+    
+    private string GetEmployerDashboardUrl()
+    {
+        return "/dashboard";
     }
 }

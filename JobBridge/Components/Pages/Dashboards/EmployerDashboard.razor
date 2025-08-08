@@ -1,12 +1,11 @@
 @page "/dashboard/employer/{id:int}"
-@attribute [Authorize(Roles = "Employer")]
 @using JobBridge.Data
 @using Microsoft.EntityFrameworkCore
 @inject JobBridgeContext DbContext
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
-@* Add this line later: @attribute [Authorize(Roles = "Employer")] *@
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Employer Dashboard - JobBridge</PageTitle>
 
@@ -15,16 +14,8 @@
     <div class="dashboard-header">
         <div class="hero-section">
             <div class="hero-content">
-                <AuthorizeView>
-                    <Authorized>
-                        <h1 class="hero-title">Welcome, @context.User.FindFirst(ClaimTypes.GivenName)?.Value!</h1>
-                        <p class="hero-subtitle">Ready to find top talent? Manage your job postings and connect with qualified candidates!</p>
-                    </Authorized>
-                    <NotAuthorized>
-                        <h1 class="hero-title">Welcome to JobBridge!</h1>
-                        <p class="hero-subtitle">Manage your job postings and track candidate engagement</p>
-                    </NotAuthorized>
-                </AuthorizeView>
+                <h1 class="hero-title">Welcome, @(employer?.Name ?? "JobBridge User")!</h1>
+                <p class="hero-subtitle">Ready to find top talent? Manage your job postings and connect with qualified candidates!</p>
                 <div class="hero-buttons">
                     <a href="/employer/@Id/jobs/create" class="btn btn-primary">Post New Job</a>
                     <a href="/employer/profile" class="btn btn-secondary">Company Profile</a>
@@ -177,54 +168,111 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Get current user's employer ID and redirect if necessary
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if (!string.IsNullOrEmpty(userId))
+        {
+            var userEmployer = await DbContext.Employers
+                .FirstOrDefaultAsync(e => e.UserId == userId);
+                
+            if (userEmployer != null && userEmployer.Id != Id)
+            {
+                // Redirect to correct employer ID
+                NavigationManager.NavigateTo($"/dashboard/employer/{userEmployer.Id}", true);
+                return;
+            }
+        }
+        
         await LoadDashboardData();
     }
 
     private async Task LoadDashboardData()
-{
-    // Load the employer including User data and their JobPosts
-    employer = await DbContext.Employers
-        .Include(e => e.User) // Load personal details from the User table
-        .Include(e => e.JobPosts) // Load all job posts from this employer
-        .FirstOrDefaultAsync(e => e.Id == Id);
-
-    // Handle case when employer is not found
-    if (employer == null)
     {
-        jobPosts = new List<JobPost>();
-        recentJobs = new List<JobPost>();
-        recentApplications = new List<EmployerApplicationModel>();
-        topPerformingJobs = new List<JobPost>();
-        return;
+        try
+        {
+            // Load employer and their job posts directly
+            employer = await DbContext.Employers
+                .Include(e => e.User)
+                .FirstOrDefaultAsync(e => e.Id == Id);
+
+            if (employer == null)
+            {
+                Console.WriteLine($"Employer with ID {Id} not found");
+                NavigationManager.NavigateTo("/dashboard");
+                return;
+            }
+
+            // Load job posts for this employer
+            jobPosts = await DbContext.JobPosts
+                .Where(j => j.EmployerId == Id)
+                .OrderByDescending(j => j.CreatedAt)
+                .ToListAsync();
+                
+            Console.WriteLine($"Dashboard - Loaded {jobPosts.Count} job posts for employer {Id}");
+
+            // Calculate actual applicant counts from Applications table
+            var jobPostIds = jobPosts.Select(j => j.Id).ToList();
+            var applicationsCount = await DbContext.Applications
+                .Where(a => jobPostIds.Contains(a.JobPostId))
+                .CountAsync();
+
+            // Calculate stats from loaded data
+            activeJobs = jobPosts.Count(j => j.IsActive);
+            totalApplicants = applicationsCount;
+            jobViews = totalApplicants * 15; // Estimate views based on applications
+            responseRate = jobViews > 0 ? (decimal)totalApplicants / jobViews : 0;
+            
+            Console.WriteLine($"Dashboard - Stats: Active={activeJobs}, Applicants={totalApplicants}, Views={jobViews}");
+            
+
+
+            // Recent jobs
+            recentJobs = jobPosts.Take(5).ToList();
+
+
+            // Load applications
+            var applications = await DbContext.Applications
+                .Include(a => a.JobPost)
+                .Include(a => a.JobSeeker)
+                    .ThenInclude(js => js.User)
+                .Where(a => jobPosts.Select(j => j.Id).Contains(a.JobPostId))
+                .OrderByDescending(a => a.AppliedDate)
+                .Take(5)
+                .ToListAsync();
+
+            recentApplications = applications.Select(a => new EmployerApplicationModel
+            {
+                Id = a.Id,
+                ApplicantName = $"{a.JobSeeker.User.FirstName} {a.JobSeeker.User.LastName}",
+                JobTitle = a.JobPost.JobTitle,
+                AppliedDate = a.AppliedDate
+            }).ToList();
+
+            // Calculate trends
+            var weekAgo = DateTime.UtcNow.AddDays(-7);
+            var monthAgo = DateTime.UtcNow.AddDays(-30);
+            
+            weeklyApplications = applications.Count(a => a.AppliedDate >= weekAgo);
+            monthlyApplications = applications.Count(a => a.AppliedDate >= monthAgo);
+
+            // Top performing jobs
+            topPerformingJobs = jobPosts.OrderByDescending(j => j.NumberOfApplicants).Take(3).ToList();
+            
+            // Force UI refresh
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dashboard data: {ex.Message}");
+            // Initialize empty collections
+            jobPosts = new List<JobPost>();
+            recentJobs = new List<JobPost>();
+            recentApplications = new List<EmployerApplicationModel>();
+            topPerformingJobs = new List<JobPost>();
+        }
     }
-
-    // Convert JobPosts to a list
-    jobPosts = employer.JobPosts.ToList();
-
-    // Calculate basic stats
-    activeJobs = jobPosts.Count(j => j.IsActive);
-    totalApplicants = jobPosts.Sum(j => j.NumberOfApplicants);
-    
-    // Temporary mock values (replace with real data later)
-    jobViews = 156;
-    responseRate = 0.68m;
-    weeklyApplications = 8;
-    monthlyApplications = 34;
-
-    // Recent job posts
-    recentJobs = jobPosts.OrderByDescending(j => j.PostedDate).Take(3).ToList();
-
-    // Temporary mock data for recent applications
-    recentApplications = new List<EmployerApplicationModel>
-    {
-        new() { Id = 1, ApplicantName = "John Smith", JobTitle = "Software Engineer", AppliedDate = DateTime.Now.AddDays(-1) },
-        new() { Id = 2, ApplicantName = "Sarah Johnson", JobTitle = "Product Manager", AppliedDate = DateTime.Now.AddDays(-2) },
-        new() { Id = 3, ApplicantName = "Mike Chen", JobTitle = "UX Designer", AppliedDate = DateTime.Now.AddDays(-3) }
-    };
-
-    // Top performing jobs (mock data for now)
-    topPerformingJobs = jobPosts.OrderByDescending(j => j.PostedDate).Take(3).ToList();
-}
 
     private async Task EditJob(int jobId)
     {
@@ -249,8 +297,9 @@
 
     private async Task ViewApplication(int applicationId)
     {
-        // Mock view application action
-        await Task.Delay(1);
+        // Navigate to application details page
+        NavigationManager.NavigateTo($"/employer/applications/{applicationId}");
+        await Task.CompletedTask;
     }
 
     // Temporary models for UI development

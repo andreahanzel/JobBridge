@@ -3,10 +3,19 @@
 @using JobBridge.Components.Common
 @using JobBridge.Data
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
 @inject JobBridgeContext DbContext
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="job-management-container">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+    
     <!-- Page Header -->
     <div class="page-header">
         <div class="header-content">
@@ -170,19 +179,25 @@
         try
         {
             employer = await DbContext.Employers
-            .FirstOrDefaultAsync(e => e.Id == Id);
+                .FirstOrDefaultAsync(e => e.Id == Id);
+
+            if (employer == null)
+            {
+                errorMessage = $"Employer with ID {Id} not found.";
+                return;
+            }
 
             jobPosts = await DbContext.JobPosts
-            .Where(j => j.EmployerId == Id)
-            .ToListAsync();
+                .Where(j => j.EmployerId == Id)
+                .OrderByDescending(j => j.CreatedAt)
+                .ToListAsync();
+                
+            Console.WriteLine($"Loaded employer: {employer.Name}, Job posts: {jobPosts.Count}");
         }
         catch (Exception ex)
         {
             errorMessage = $"Failed to load job listings: {ex.Message}";
         }
-
-        // Load employer's jobs when data layer is ready
-        await Task.CompletedTask;
     }
 
     private async Task ToggleJobStatus(int jobId)

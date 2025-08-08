@@ -103,67 +103,83 @@
                     <DataAnnotationsValidator />
                     <ValidationSummary class="validation-message" />
 
-                    <div class="mb-3">
-                        <label for="firstName" class="form-label">First Name</label>
-                        <InputText id="firstName" class="form-control" @bind-Value="registerModel.FirstName"
-                            placeholder="Enter your first name" />
-                        <ValidationMessage For="@(() => registerModel.FirstName)" class="validation-message" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="lastName" class="form-label">Last Name</label>
-                        <InputText id="lastName" class="form-control" @bind-Value="registerModel.LastName"
-                            placeholder="Enter your last name" />
-                        <ValidationMessage For="@(() => registerModel.LastName)" class="validation-message" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <InputText id="email" class="form-control" @bind-Value="registerModel.Email"
-                            placeholder="Enter your email" />
-                        <ValidationMessage For="@(() => registerModel.Email)" class="validation-message" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="position-relative">
-                            <InputText id="password" type="@(showRegisterPassword ? "text" : "password")" class="form-control pe-5" @bind-Value="registerModel.Password"
-                                placeholder="Enter your password" />
-                            <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showRegisterPassword = !showRegisterPassword" style="z-index: 10; margin-right: 10px;">
-                                <i class="bi @(showRegisterPassword ? "bi-eye-slash" : "bi-eye") text-muted"></i>
-                            </button>
-                        </div>
-                        <ValidationMessage For="@(() => registerModel.Password)" class="validation-message" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="confirmPassword" class="form-label">Confirm Password</label>
-                        <div class="position-relative">
-                            <InputText id="confirmPassword" type="@(showConfirmPassword ? "text" : "password")" class="form-control pe-5"
-                                @bind-Value="registerModel.ConfirmPassword" placeholder="Confirm your password" />
-                            <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showConfirmPassword = !showConfirmPassword" style="z-index: 10; margin-right: 10px;">
-                                <i class="bi @(showConfirmPassword ? "bi-eye-slash" : "bi-eye") text-muted"></i>
-                            </button>
-                        </div>
-                        <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="validation-message" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="phone" class="form-label">Phone</label>
-                        <InputText id="phone" class="form-control" @bind-Value="registerModel.Phone"
-                            placeholder="Enter your phone number" />
-                        <ValidationMessage For="@(() => registerModel.Phone)" class="validation-message" />
-                    </div>
-
-                    <div class="mb-3">
+                    <div class="mb-4">
+                        <p class="text-muted mb-2">Are you a Job Seeker or an Employer? Please select a role.</p>
                         <label for="role" class="form-label">Role</label>
-                        <InputSelect id="role" class="form-control" @bind-Value="registerModel.Role">
+                        <InputSelect id="role" class="form-control" @bind-Value="registerModel.Role" @onchange="OnRoleChanged">
                             <option value="">Select a role</option>
                             <option value="JobSeeker">Job Seeker</option>
                             <option value="Employer">Employer</option>
                         </InputSelect>
                         <ValidationMessage For="@(() => registerModel.Role)" class="validation-message" />
                     </div>
+
+                    @if (!string.IsNullOrEmpty(registerModel.Role))
+                    {
+                        @if (registerModel.Role == "JobSeeker")
+                        {
+                            <div class="mb-3">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <InputText id="firstName" class="form-control" @bind-Value="registerModel.FirstName"
+                                    placeholder="Enter your first name" />
+                                <ValidationMessage For="@(() => registerModel.FirstName)" class="validation-message" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <InputText id="lastName" class="form-control" @bind-Value="registerModel.LastName"
+                                    placeholder="Enter your last name" />
+                                <ValidationMessage For="@(() => registerModel.LastName)" class="validation-message" />
+                            </div>
+                        }
+                        else if (registerModel.Role == "Employer")
+                        {
+                            <div class="mb-3">
+                                <label for="companyName" class="form-label">Company/Organization Name</label>
+                                <InputText id="companyName" class="form-control" @bind-Value="registerModel.CompanyName"
+                                    placeholder="Enter your company or organization name" />
+                                <ValidationMessage For="@(() => registerModel.CompanyName)" class="validation-message" />
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <InputText id="email" class="form-control" @bind-Value="registerModel.Email"
+                                placeholder="Enter your email" />
+                            <ValidationMessage For="@(() => registerModel.Email)" class="validation-message" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="position-relative">
+                                <InputText id="password" type="@(showRegisterPassword ? "text" : "password")" class="form-control pe-5" @bind-Value="registerModel.Password"
+                                    placeholder="Enter your password" />
+                                <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showRegisterPassword = !showRegisterPassword" style="z-index: 10; margin-right: 10px;">
+                                    <i class="bi @(showRegisterPassword ? "bi-eye-slash" : "bi-eye") text-muted"></i>
+                                </button>
+                            </div>
+                            <ValidationMessage For="@(() => registerModel.Password)" class="validation-message" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <div class="position-relative">
+                                <InputText id="confirmPassword" type="@(showConfirmPassword ? "text" : "password")" class="form-control pe-5"
+                                    @bind-Value="registerModel.ConfirmPassword" placeholder="Confirm your password" />
+                                <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showConfirmPassword = !showConfirmPassword" style="z-index: 10; margin-right: 10px;">
+                                    <i class="bi @(showConfirmPassword ? "bi-eye-slash" : "bi-eye") text-muted"></i>
+                                </button>
+                            </div>
+                            <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="validation-message" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <InputText id="phone" class="form-control" @bind-Value="registerModel.Phone"
+                                placeholder="Enter your phone number" />
+                            <ValidationMessage For="@(() => registerModel.Phone)" class="validation-message" />
+                        </div>
+                    }
 
                     <button type="submit" class="btn btn-primary w-100 animate-pulse" disabled="@isSubmitting">
                         @if (isSubmitting)
@@ -206,6 +222,16 @@
     private bool showRegisterPassword = false;
     private bool showConfirmPassword = false;
 
+    private void OnRoleChanged(ChangeEventArgs e)
+    {
+        registerModel.Role = e.Value?.ToString() ?? "";
+        // Clear role-specific fields when role changes
+        registerModel.FirstName = "";
+        registerModel.LastName = "";
+        registerModel.CompanyName = "";
+        StateHasChanged();
+    }
+
 
     [Parameter]
     [SupplyParameterFromQuery(Name = "error")]
@@ -234,11 +260,9 @@
 
     private class RegisterModel
     {
-        [Required(ErrorMessage = "First name is required")]
         public string FirstName { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Last name is required")]
         public string LastName { get; set; } = string.Empty;
+        public string CompanyName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
@@ -300,13 +324,39 @@
         isSubmitting = true;
         errorMessage = null;
 
+        // Validate role-specific fields
+        if (registerModel.Role == "JobSeeker")
+        {
+            if (string.IsNullOrEmpty(registerModel.FirstName))
+            {
+                errorMessage = "First name is required for Job Seekers.";
+                isSubmitting = false;
+                return;
+            }
+            if (string.IsNullOrEmpty(registerModel.LastName))
+            {
+                errorMessage = "Last name is required for Job Seekers.";
+                isSubmitting = false;
+                return;
+            }
+        }
+        else if (registerModel.Role == "Employer")
+        {
+            if (string.IsNullOrEmpty(registerModel.CompanyName))
+            {
+                errorMessage = "Company/Organization name is required for Employers.";
+                isSubmitting = false;
+                return;
+            }
+        }
+
         try
         {
             var user = new User
             {
                 Role = registerModel.Role,
-                FirstName = registerModel.FirstName,
-                LastName = registerModel.LastName,
+                FirstName = registerModel.Role == "JobSeeker" ? registerModel.FirstName : registerModel.CompanyName,
+                LastName = registerModel.Role == "JobSeeker" ? registerModel.LastName : "",
                 Email = registerModel.Email,
                 UserName = registerModel.Email,
                 Phone = registerModel.Phone,
@@ -336,8 +386,9 @@
                         var employer = new Employers
                         {
                             UserId = user.Id,
-                            Name = $"{registerModel.FirstName} {registerModel.LastName}'s Company",
+                            Name = registerModel.CompanyName,
                             Location = "Not specified",
+                            Industry = "Not specified",
                             NumberOfEmployees = 0,
                             CreatedAt = DateTime.UtcNow,
                             UpdatedAt = DateTime.UtcNow

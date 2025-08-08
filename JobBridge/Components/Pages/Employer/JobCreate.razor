@@ -2,8 +2,11 @@
 @using JobBridge.Data
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Authorization
 @inject JobBridgeContext DbContext
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Roles = "Employer")]
 
 
 <div class="job-create-container">
@@ -105,7 +108,7 @@
                     <div class="form-group">
                         <label class="form-label required">Location</label>
                         <input type="text" class="form-control" placeholder="e.g. San Francisco, CA"
-                            @bind="jobPost.Location" />
+                            @bind="jobPost.Location" @oninput="OnLocationChanged" />
                         <ValidationMessage For="@(() => jobPost.Location)" class="text-danger" />
                     </div>
 
@@ -123,18 +126,18 @@
                     <div class="form-group">
                         <label class="form-label">Minimum Salary</label>
                         <div class="input-group">
-                            <span class="input-prefix">$</span>
-                            <input type="number" class="form-control" placeholder="80,000"
-                                @bind="jobPost.MinimumSalary" />
+                            <span class="input-prefix">@currencySymbol</span>
+                            <input type="text" class="form-control" placeholder="80,000"
+                                @bind="minSalaryFormatted" @oninput="OnMinSalaryChanged" />
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Maximum Salary</label>
                         <div class="input-group">
-                            <span class="input-prefix">$</span>
-                            <input type="number" class="form-control" placeholder="120,000"
-                                @bind="jobPost.MaximumSalary" />
+                            <span class="input-prefix">@currencySymbol</span>
+                            <input type="text" class="form-control" placeholder="120,000"
+                                @bind="maxSalaryFormatted" @oninput="OnMaxSalaryChanged" />
                         </div>
                     </div>
 
@@ -304,6 +307,79 @@
     private int postDuration = 30; // Default post duration for now
     private bool isSubmitting = false;
     private string? errorMessage = null;
+    private string currencySymbol = "$"; // Default to USD
+    private string minSalaryFormatted = "";
+    private string maxSalaryFormatted = "";
+
+
+
+    private void OnLocationChanged(ChangeEventArgs e)
+    {
+        var location = e.Value?.ToString()?.ToLower() ?? "";
+        
+        if (location.Contains("uk") || location.Contains("united kingdom") || location.Contains("london") || location.Contains("england") || location.Contains("scotland") || location.Contains("wales"))
+        {
+            currencySymbol = "£";
+        }
+        else if (location.Contains("canada") || location.Contains("toronto") || location.Contains("vancouver") || location.Contains("montreal"))
+        {
+            currencySymbol = "C$";
+        }
+        else if (location.Contains("australia") || location.Contains("sydney") || location.Contains("melbourne") || location.Contains("brisbane"))
+        {
+            currencySymbol = "A$";
+        }
+        else if (location.Contains("euro") || location.Contains("germany") || location.Contains("france") || location.Contains("spain") || location.Contains("italy") || location.Contains("netherlands") || location.Contains("belgium"))
+        {
+            currencySymbol = "€";
+        }
+        else if (location.Contains("japan") || location.Contains("tokyo") || location.Contains("osaka"))
+        {
+            currencySymbol = "¥";
+        }
+        else if (location.Contains("india") || location.Contains("mumbai") || location.Contains("delhi") || location.Contains("bangalore"))
+        {
+            currencySymbol = "₹";
+        }
+        else if (location.Contains("nigeria") || location.Contains("lagos") || location.Contains("abuja") || location.Contains("kano") || location.Contains("ibadan") || location.Contains("calabar"))
+        {
+            currencySymbol = "₦";
+        }
+        else
+        {
+            currencySymbol = "$"; // Default to USD for US and other locations
+        }
+        
+        StateHasChanged();
+    }
+
+    private void OnMinSalaryChanged(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString()?.Replace(",", "") ?? "";
+        if (decimal.TryParse(input, out var value))
+        {
+            jobPost.MinimumSalary = value;
+            minSalaryFormatted = value.ToString("N0");
+        }
+        else
+        {
+            minSalaryFormatted = input;
+        }
+    }
+
+    private void OnMaxSalaryChanged(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString()?.Replace(",", "") ?? "";
+        if (decimal.TryParse(input, out var value))
+        {
+            jobPost.MaximumSalary = value;
+            maxSalaryFormatted = value.ToString("N0");
+        }
+        else
+        {
+            maxSalaryFormatted = input;
+        }
+    }
 
     private void HandleCancel()
     {

@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject SessionAuthService SessionAuth
 @inject IJSRuntime JSRuntime
+@using System.Security.Claims
 
 <div class="page-layout-horizontal">
     <header class="top-navbar-container">
@@ -30,12 +31,6 @@
     <Footer />
 </div>
 
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div>
-
 @code {
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -45,3 +40,10 @@
         }
     }
 }
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+

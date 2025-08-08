@@ -1,13 +1,64 @@
-<div class="stat-card">
+@* Statistics Card Component for Dashboards *@
+
+<div class="statistics-card">
     <div class="stat-icon">@Icon</div>
     <div class="stat-content">
-        <h3 class="stat-number">@Value</h3>
-        <p class="stat-label">@Label</p>
+        <div class="stat-value">@Value</div>
+        <div class="stat-label">@Label</div>
     </div>
 </div>
 
 @code {
-    [Parameter] public string Icon { get; set; } = "📊";
+    [Parameter] public string Icon { get; set; } = "";
     [Parameter] public string Value { get; set; } = "0";
-    [Parameter] public string Label { get; set; } = "Statistic";
+    [Parameter] public string Label { get; set; } = "";
 }
+
+<style>
+.statistics-card {
+    background: var(--gradient-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-md);
+}
+
+.statistics-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+    font-size: var(--font-size-3xl);
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+    color: white;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+}
+
+.stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    font-weight: var(--font-medium);
+}
+</style>

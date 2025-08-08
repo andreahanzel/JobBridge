@@ -51,7 +51,14 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
     options.Events.OnRedirectToLogin = context =>
     {
-        context.Response.StatusCode = 401;
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            context.Response.StatusCode = 401;
+        }
+        else
+        {
+            context.Response.Redirect("/authentication");
+        }
         return Task.CompletedTask;
     };
     options.Events.OnRedirectToAccessDenied = context =>
@@ -100,6 +107,18 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapControllers();
+
+// Add server-side login endpoint
+app.MapGet("/server-login", async (HttpContext context, SignInManager<User> signInManager, string email, bool remember = false) =>
+{
+    var user = await signInManager.UserManager.FindByEmailAsync(email);
+    if (user != null)
+    {
+        await signInManager.SignInAsync(user, remember);
+        return Results.LocalRedirect("/");
+    }
+    return Results.LocalRedirect("/authentication?error=Login failed");
+});
 
 using (var scope = app.Services.CreateScope())
 {
