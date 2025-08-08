@@ -487,6 +487,16 @@
 }
 
 /* =============================================
+    NAVIGATION ACTIVE LINK STYLING
+    ============================================= */
+.nav-link.active {
+    color: var(--primary-500) !important;
+    border-bottom: 2px solid var(--primary-500);
+    padding-bottom: calc(var(--space-2) - 2px);
+    font-weight: var(--font-semibold);
+}
+
+/* =============================================
     SHARED LAYOUT STYLES 
     ============================================= */
 

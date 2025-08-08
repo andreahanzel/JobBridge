@@ -3,6 +3,7 @@ using System;
 using JobBridge.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobBridge.Migrations
 {
     [DbContext(typeof(JobBridgeContext))]
-    partial class JobBridgeContextModelSnapshot : ModelSnapshot
+    [Migration("20250808134029_AddProfileViews")]
+    partial class AddProfileViews
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.7");
@@ -377,51 +380,6 @@ namespace JobBridge.Migrations
                     b.ToTable("ProfileViews");
                 });
 
-            modelBuilder.Entity("JobBridge.Models.SavedSearch", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EmploymentType")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("JobSeekerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("JobTitle")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Location")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("MaxSalary")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("MinSalary")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SearchName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("JobSeekerId");
-
-                    b.ToTable("SavedSearches");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -648,17 +606,6 @@ namespace JobBridge.Migrations
                         .IsRequired();
 
                     b.Navigation("Employer");
-
-                    b.Navigation("JobSeeker");
-                });
-
-            modelBuilder.Entity("JobBridge.Models.SavedSearch", b =>
-                {
-                    b.HasOne("JobBridge.Data.JobSeeker", "JobSeeker")
-                        .WithMany()
-                        .HasForeignKey("JobSeekerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("JobSeeker");
                 });
