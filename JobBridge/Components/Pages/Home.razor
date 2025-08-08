@@ -1,7 +1,170 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Home - JobBridge</PageTitle>
 
-<h1>Hello, world!</h1>
+<AuthorizeView>
+    <Authorized>
+        @code {
+            protected override async Task OnInitializedAsync()
+            {
+                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                var user = authState.User;
 
-Welcome to your new app.
+                if (user.IsInRole("Admin"))
+                {
+                    Navigation.NavigateTo("/dashboard/admin");
+                }
+                else if (user.IsInRole("Employer"))
+                {
+                    Navigation.NavigateTo("/dashboard/employer/1");
+                }
+                else if (user.IsInRole("JobSeeker"))
+                {
+                    Navigation.NavigateTo("/dashboard/jobseeker/1");
+                }
+            }
+        }
+    </Authorized>
+    <NotAuthorized>
+        <!-- Hero Section -->
+        <section class="section-container animate-fadeInUp">
+            <div class="content">
+                <div class="grid grid-cols-2">
+                    <div>
+                        <h1 class="gradient-text">Find Your Dream Job with JobBridge</h1>
+                        <p class="text-muted">Connect with top employers and discover opportunities that match your skills and ambitions.</p>
+                        <div style="display: flex; gap: var(--space-3);">
+                            <a href="/authentication" class="btn btn-gradient">Get Started</a>
+                            <a href="/job-listings" class="btn btn-secondary">Browse Jobs</a>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center;">
+                        <div class="card" style="padding: var(--space-8); text-align: center;">
+                            <h2 class="text-primary">1000+</h2>
+                            <p>Active Jobs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="section-container animate-slide-in">
+            <h2 class="gradient-text" style="text-align: center; margin-bottom: var(--space-8);">Why Choose JobBridge?</h2>
+            <div class="grid grid-cols-3">
+                <div class="card">
+                    <div class="card-body" style="text-align: center;">
+                        <div style="font-size: var(--font-size-4xl); color: var(--primary-500); margin-bottom: var(--space-3);">
+                            🔍
+                        </div>
+                        <h4>Easy Job Search</h4>
+                        <p class="text-muted">Find jobs that match your skills with our advanced search filters.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body" style="text-align: center;">
+                        <div style="font-size: var(--font-size-4xl); color: var(--primary-500); margin-bottom: var(--space-3);">
+                            🏢
+                        </div>
+                        <h4>Top Companies</h4>
+                        <p class="text-muted">Connect with leading companies across various industries.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body" style="text-align: center;">
+                        <div style="font-size: var(--font-size-4xl); color: var(--primary-500); margin-bottom: var(--space-3);">
+                            📈
+                        </div>
+                        <h4>Career Growth</h4>
+                        <p class="text-muted">Advance your career with opportunities that help you grow.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="section-container">
+            <h2 class="gradient-text" style="text-align: center; margin-bottom: var(--space-8);">How It Works</h2>
+            <div class="grid grid-cols-4">
+                @for (int i = 1; i <= 4; i++)
+                {
+                    var step = i switch
+                    {
+                        1 => ("Create Account", "Sign up as a job seeker or employer in minutes."),
+                        2 => ("Complete Profile", "Add your skills, experience, and preferences."),
+                        3 => ("Search & Apply", "Browse jobs and apply with one click."),
+                        4 => ("Get Hired", "Connect with employers and land your dream job."),
+                        _ => ("", "")
+                    };
+                    
+                    <div style="text-align: center;">
+                        <div class="btn btn-gradient" style="width: 60px; height: 60px; border-radius: var(--radius-full); margin: 0 auto var(--space-3) auto; font-size: var(--font-size-2xl); pointer-events: none;">
+                            @i
+                        </div>
+                        <h5>@step.Item1</h5>
+                        <p class="text-muted" style="font-size: var(--font-size-sm);">@step.Item2</p>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="section-container bg-gradient">
+            <div class="grid grid-cols-4" style="text-align: center; color: white;">
+                <div>
+                    <h2 style="color: white;">1000+</h2>
+                    <p style="color: rgba(255,255,255,0.9);">Active Jobs</p>
+                </div>
+                <div>
+                    <h2 style="color: white;">500+</h2>
+                    <p style="color: rgba(255,255,255,0.9);">Companies</p>
+                </div>
+                <div>
+                    <h2 style="color: white;">10,000+</h2>
+                    <p style="color: rgba(255,255,255,0.9);">Job Seekers</p>
+                </div>
+                <div>
+                    <h2 style="color: white;">5000+</h2>
+                    <p style="color: rgba(255,255,255,0.9);">Successful Hires</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="section-container" style="text-align: center; background: var(--gradient-primary); color: white;">
+            <h2 style="color: white; margin-bottom: var(--space-4);">Ready to Take the Next Step in Your Career?</h2>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: var(--space-6);">Join thousands of professionals who have found their perfect job through JobBridge.</p>
+            <div style="display: flex; gap: var(--space-3); justify-content: center;">
+                <a href="/authentication" class="btn btn-secondary">Register Now</a>
+                <a href="/job-listings" class="btn" style="background: white; color: var(--primary-500);">View All Jobs</a>
+            </div>
+        </section>
+
+        <!-- For Employers Section -->
+        <section class="section-container animate-slide-in">
+            <div class="grid grid-cols-2">
+                <div>
+                    <h2 class="gradient-text">For Employers</h2>
+                    <p class="text-muted" style="margin-bottom: var(--space-4);">Find the perfect candidates for your open positions with our advanced matching system.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: var(--space-2);">Post unlimited job listings</li>
+                        <li style="margin-bottom: var(--space-2);">Access qualified candidates</li>
+                        <li style="margin-bottom: var(--space-2);">Manage applications easily</li>
+                        <li style="margin-bottom: var(--space-2);">Track hiring analytics</li>
+                    </ul>
+                    <a href="/authentication" class="btn btn-gradient">Start Hiring</a>
+                </div>
+                <div class="card" style="display: flex; align-items: center; justify-content: center; min-height: 300px;">
+                    <div class="card-body" style="text-align: center;">
+                        <div style="font-size: var(--font-size-5xl); margin-bottom: var(--space-3);">💼</div>
+                        <h3 class="text-primary">Hire Top Talent</h3>
+                        <p class="text-muted">Connect with qualified professionals ready to join your team.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </NotAuthorized>
+</AuthorizeView>

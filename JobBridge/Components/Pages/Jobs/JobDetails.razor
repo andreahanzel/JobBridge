@@ -4,6 +4,7 @@
 @using Microsoft.EntityFrameworkCore
 @inject JobBridgeContext DbContext
 
+
 @if (isLoading)
 {
     <div class="loading-container">
@@ -47,11 +48,11 @@ else if (jobPost != null)
                 </div>
 
                 <div class="job-actions">
-                    <button class="btn btn-secondary bookmark-btn">
-                        <span class="bookmark-icon">♡</span>
-                        Save Job
-                    </button>
-                    <button class="btn btn-primary apply-btn">
+                <button class="btn btn-secondary bookmark-btn" @onclick="SaveJob">
+                    <span class="bookmark-icon">@(isBookmarked ? "❤️" : "♡")</span>
+                    @(isBookmarked ? "Saved" : "Save Job")
+                </button>
+                    <button class="btn btn-primary apply-btn" @onclick="ApplyForJob">
                         <span class="apply-icon">→</span>
                         Apply Now
                     </button>
@@ -159,7 +160,7 @@ else if (jobPost != null)
                 <div class="apply-card">
                     <h3 class="apply-title">Ready to Apply?</h3>
                     <p class="apply-description">Join our team and make an impact</p>
-                    <button class="btn btn-primary btn-large apply-main-btn">
+                    <button class="btn btn-primary btn-large apply-main-btn" @onclick="ApplyForJob">
                         Apply for this Position
                     </button>
                     <div class="apply-meta">
@@ -170,10 +171,10 @@ else if (jobPost != null)
                 <!-- Company Info -->
                 <div class="company-card">
                     <div class="company-card-header">
-                        <div class="company-logo-large">TC</div>
-                        <div class="company-info-text">
-                            <h3 class="company-card-name">TechCorp Inc.</h3>
-                            <p class="company-size">500-1000 employees</p>
+                    <div class="company-logo-large">@GetCompanyInitials(jobPost.Employer?.Name)</div>
+                    <div class="company-info-text">
+                        <h3 class="company-card-name">@jobPost.Employer?.Name</h3>
+                        <p class="company-size">@jobPost.Employer?.NumberOfEmployees employees</p>
                         </div>
                     </div>
 
@@ -223,23 +224,120 @@ else if (jobPost != null)
     </div>
 }
 
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
 @code {
     [Parameter] public int Id { get; set; }
     private JobPost? jobPost;
     private bool isLoading = true;
     private string? errorMessage;
+    private bool isBookmarked = false;
+    private JobSeeker? currentJobSeeker;
 
-    protected override async Task OnInitializedAsync()
+    private void ApplyForJob()
+    {
+        if (jobPost != null)
+        {
+            string applicationUrl = "";
+            
+            // Check if there's an external application URL
+            if (!string.IsNullOrEmpty(jobPost.ExternalApplicationUrl))
+            {
+                applicationUrl = jobPost.ExternalApplicationUrl;
+            }
+            else
+            {
+                // Generate a mock application URL based on company name
+                var companyName = jobPost.Employer?.Name?.ToLower().Replace(" ", "") ?? "company";
+                applicationUrl = $"https://careers.{companyName}.com/apply/{jobPost.Id}";
+            }
+            
+            // Open in new tab
+            Navigation.NavigateTo(applicationUrl, forceLoad: true);
+        }
+    }
+
+
+
+        private string GetCompanyInitials(string? companyName)
+    {
+        if (string.IsNullOrEmpty(companyName)) return "?";
+        
+        var words = companyName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length >= 2)
+        {
+            return $"{words[0][0]}{words[1][0]}".ToUpper();
+        }
+return companyName.Length >= 2 ? companyName.Substring(0, 2).ToUpper() : companyName.ToUpper();
+    }
+
+    private async Task SaveJob()
+    {
+        if (currentJobSeeker != null)
+        {
+            if (isBookmarked)
+            {
+                // Remove bookmark
+                var bookmark = await DbContext.Bookmarks
+                    .FirstOrDefaultAsync(b => b.JobSeekerId == currentJobSeeker.Id && b.JobPostId == Id);
+                
+                if (bookmark != null)
+                {
+                    DbContext.Bookmarks.Remove(bookmark);
+                    await DbContext.SaveChangesAsync();
+                    isBookmarked = false;
+                }
+            }
+            else
+            {
+                // Add bookmark
+                var bookmark = new Bookmark
+                {
+                    JobSeekerId = currentJobSeeker.Id,
+                    JobPostId = Id
+                };
+                
+                DbContext.Bookmarks.Add(bookmark);
+                await DbContext.SaveChangesAsync();
+                isBookmarked = true;
+            }
+            
+            StateHasChanged();
+        }
+        
+    }    protected override async Task OnInitializedAsync()
     {
         try
         {
             jobPost = await DbContext.JobPosts
-            .Include(j => j.Employer)
-            .FirstOrDefaultAsync(j => j.Id == Id);
+                .Include(j => j.Employer)
+                .FirstOrDefaultAsync(j => j.Id == Id);
 
             if (jobPost == null)
             {
                 errorMessage = "Post not found";
+            }
+            else
+            {
+                // Check if user is logged in and has bookmarked this job
+                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                if (authState.User.Identity?.IsAuthenticated == true)
+                {
+                    var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        currentJobSeeker = await DbContext.JobSeekers
+                            .Include(js => js.Bookmarks)
+                            .FirstOrDefaultAsync(js => js.UserId == userId);
+
+                        if (currentJobSeeker != null)
+                        {
+                            isBookmarked = currentJobSeeker.Bookmarks.Any(b => b.JobPostId == Id);
+                        }
+                    }
+                }
             }
         }
         catch (Exception ex)

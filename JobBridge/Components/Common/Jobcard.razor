@@ -63,7 +63,7 @@
             <span class="posted-date">Posted @GetRelativeTime(JobPost.PostedDate)</span>
         </div>
         <div class="job-cta">
-            <button class="btn btn-primary btn-sm">
+            <button class="btn btn-primary btn-sm" @onclick:stopPropagation="true" @onclick="() => ApplyForJob(JobPost)">
                 Apply Now
                 <span class="btn-arrow">→</span>
             </button>
@@ -117,6 +117,24 @@
     {
         if (string.IsNullOrEmpty(description)) return "No description available.";
         return description.Length > 120 ? description.Substring(0, 120) + "..." : description;
+    }
+
+    private void ApplyForJob(JobPost job)
+    {
+        string applicationUrl = "";
+        
+        if (!string.IsNullOrEmpty(job.ExternalApplicationUrl))
+        {
+            applicationUrl = job.ExternalApplicationUrl;
+        }
+        else
+        {
+            // Generate mock URL
+            var companyName = job.Employer?.Name?.ToLower().Replace(" ", "") ?? "company";
+            applicationUrl = $"https://careers.{companyName}.com/apply/{job.Id}";
+        }
+        
+        Navigation.NavigateTo(applicationUrl, forceLoad: true);
     }
 
     private List<string> GetSkillTags(string description)

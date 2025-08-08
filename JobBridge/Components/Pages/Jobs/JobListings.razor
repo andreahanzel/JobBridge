@@ -5,7 +5,6 @@
 @using Microsoft.EntityFrameworkCore
 @inject JobBridgeContext DbContext
 
-
 <div class="job-listings-container">
     <!-- Header Section -->
     <div class="listings-header">
@@ -16,7 +15,8 @@
 
         <!-- Search Section -->
         <div class="search-section">
-            <SearchBar Placeholder="Search for jobs, companies, or keywords..." OnSearch="HandleSearch"
+            <SearchBar Placeholder="Search for jobs, companies, or keywords..." 
+                OnSearch="HandleSearch"
                 OnAdvancedToggle="ToggleFilters" />
         </div>
 
@@ -37,112 +37,19 @@
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="listings-content">
-        <!-- Sidebar Filters -->
-        <div class="sidebar-filters">
-            <div class="filter-header">
-                <h3>Refine Your Search</h3>
-                <button class="clear-all-btn" @onclick="ClearAllFilters">Clear All</button>
-            </div>
-
-            <!-- Quick Filters -->
-            <div class="quick-filters">
-                <h4 class="filter-section-title">Quick Filters</h4>
-                <div class="filter-tags">
-                    <button class="filter-tag">
-                        Remote
-                        <span class="tag-count">234</span>
-                    </button>
-                    <button class="filter-tag active">
-                        Full-time
-                        <span class="tag-count">567</span>
-                    </button>
-                    <button class="filter-tag">
-                        Tech
-                        <span class="tag-count">445</span>
-                    </button>
-                    <button class="filter-tag">
-                        Entry Level
-                        <span class="tag-count">123</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Employment Type -->
-            <div class="filter-section">
-                <h4 class="filter-section-title">Employment Type</h4>
-                <label class="filter-checkbox">
-                    <input type="checkbox" />
-                    <span class="checkbox-label">Full-time</span>
-                    <span class="option-count">(1,234)</span>
-                </label>
-                <label class="filter-checkbox">
-                    <input type="checkbox" checked />
-                    <span class="checkbox-label">Part-time</span>
-                    <span class="option-count">(456)</span>
-                </label>
-                <label class="filter-checkbox">
-                    <input type="checkbox" />
-                    <span class="checkbox-label">Contract</span>
-                    <span class="option-count">(789)</span>
-                </label>
-                <label class="filter-checkbox">
-                    <input type="checkbox" />
-                    <span class="checkbox-label">Internship</span>
-                    <span class="option-count">(234)</span>
-                </label>
-            </div>
-
-            <!-- Experience Level -->
-            <div class="filter-section">
-                <h4 class="filter-section-title">Experience Level</h4>
-                <label class="filter-checkbox">
-                    <input type="checkbox" />
-                    <span class="checkbox-label">Entry Level</span>
-                    <span class="option-count">(567)</span>
-                </label>
-                <label class="filter-checkbox">
-                    <input type="checkbox" />
-                    <span class="checkbox-label">Mid Level</span>
-                    <span class="option-count">(890)</span>
-                </label>
-                <label class="filter-checkbox">
-                    <input type="checkbox" />
-                    <span class="checkbox-label">Senior Level</span>
-                    <span class="option-count">(678)</span>
-                </label>
-                <label class="filter-checkbox">
-                    <input type="checkbox" />
-                    <span class="checkbox-label">Executive</span>
-                    <span class="option-count">(123)</span>
-                </label>
-            </div>
-
-            <!-- Salary Range -->
-            <div class="filter-section">
-                <h4 class="filter-section-title">Salary Range</h4>
-                <div class="salary-range">
-                    <div class="salary-inputs">
-                        <input type="number" class="salary-input" placeholder="Min" />
-                        <span class="salary-separator">-</span>
-                        <input type="number" class="salary-input" placeholder="Max" />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Job Results -->
-        <div class="job-results">
+    <!-- Main Content - Single Column -->
+    <div class="listings-content-single">
+        <!-- Job Results Full Width -->
+        <div class="job-results-full">
             <!-- Results Header -->
             <div class="results-header">
                 <div class="results-info">
-                    <h2 class="results-title">@jobs.Count Jobs Found</h2>
+                    <h2 class="results-title">@filteredJobs.Count Jobs Found</h2>
                 </div>
 
                 <div class="results-controls">
                     <div class="sort-dropdown">
-                        <select class="sort-select">
+                        <select class="sort-select" @onchange="SortJobs">
                             <option value="relevance">Most Relevant</option>
                             <option value="date">Date Posted</option>
                             <option value="salary_high">Salary: High to Low</option>
@@ -152,17 +59,18 @@
                     </div>
 
                     <div class="view-toggle">
-                        <button class="view-btn active">Grid</button>
-                        <button class="view-btn">List</button>
+                        <button class="view-btn @(viewMode == "grid" ? "active" : "")" @onclick="() => SetViewMode(ViewMode.Grid)">Grid</button>
+                        <button class="view-btn @(viewMode == "list" ? "active" : "")" @onclick="() => SetViewMode(ViewMode.List)">List</button>
                     </div>
                 </div>
             </div>
 
             <!-- Job Cards Grid -->
-            <div class="job-cards-container grid">
+            <div class="job-cards-container @viewMode">
                 @if (isLoading)
                 {
                     <div class="loading-message">
+                        <div class="loading-spinner"></div>
                         <p>Loading job listings...</p>
                     </div>
                 }
@@ -172,48 +80,123 @@
                         <p>@errorMessage</p>
                     </div>
                 }
-                else if (jobs.Count == 0)
+                else if (!filteredJobs.Any())
                 {
                     <div class="no-jobs-message">
-                        <p>No job listings found.</p>
+                        <div class="no-results-icon">🔍</div>
+                        <h3>No jobs found</h3>
+                        @if (currentSearch != null && !string.IsNullOrWhiteSpace(currentSearch.SearchTerm))
+                        {
+                            <p>We couldn't find any jobs matching "<strong>@currentSearch.SearchTerm</strong>"</p>
+                        }
+                        else
+                        {
+                            <p>No job listings found matching your criteria.</p>
+                        }
+                        <p class="suggestion-text">Try adjusting your search terms or filters</p>
+                        <button class="btn btn-primary" @onclick="ClearFilters">Clear All Filters</button>
                     </div>
                 }
                 else
                 {
-                    @foreach (var job in jobs)
+                    var pagedJobs = filteredJobs
+                        .Skip((currentPage - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+                        
+                    @foreach (var job in pagedJobs)
                     {
-                        <Jobcard JobPost="@job" />
+                        <Jobcard JobPost="@job" OnBookmarkToggle="HandleBookmarkToggle" />
                     }
                 }
             </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Showing @((currentPage - 1) * pageSize + 1) - @Math.Min(currentPage * pageSize, filteredJobs.Count) of @filteredJobs.Count jobs
+                    </div>
+                    <div class="pagination">
+                        <button class="page-btn @(currentPage == 1 ? "disabled" : "")" 
+                            @onclick="() => GoToPage(currentPage - 1)" 
+                            disabled="@(currentPage == 1)">
+                            Previous
+                        </button>
+                        
+                        @for (int i = 1; i <= Math.Min(totalPages, 10); i++)
+                        {
+                            var pageNum = i;
+                            <button class="page-btn @(currentPage == pageNum ? "active" : "")" 
+                                @onclick="() => GoToPage(pageNum)">
+                                @pageNum
+                            </button>
+                        }
+                        
+                        @if (totalPages > 10)
+                        {
+                            <span class="page-ellipsis">...</span>
+                            <button class="page-btn" @onclick="() => GoToPage(totalPages)">
+                                @totalPages
+                            </button>
+                        }
+                        
+                        <button class="page-btn @(currentPage == totalPages ? "disabled" : "")" 
+                            @onclick="() => GoToPage(currentPage + 1)" 
+                            disabled="@(currentPage == totalPages)">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            }
         </div>
     </div>
-
-    <!-- Mobile Filter Button -->
-    <button class="mobile-filter-btn">
-        <span class="filter-icon">Filter</span>
-        <span class="filter-badge">3</span>
-    </button>
 </div>
 
 <!-- Advanced Filter Panel -->
-<FilterPanel IsVisible="@showAdvancedFilters" OnClose="CloseAdvancedFilters" />
+<FilterPanel IsVisible="@showAdvancedFilters" 
+    AllJobs="@jobs"
+    OnFiltersChanged="HandleFiltersChanged" 
+    OnClose="CloseAdvancedFilters" />
 
 @code {
     private bool showAdvancedFilters = false;
     private List<JobPost> jobs = new();
+    private List<JobPost> filteredJobs = new();
     private bool isLoading = true;
     private string? errorMessage = null;
+    private string viewMode = "grid";
+    private string sortBy = "relevance";
+    
+    // Pagination
+    private int currentPage = 1;
+    private int pageSize = 12;
+    private int totalPages => (int)Math.Ceiling((double)filteredJobs.Count / pageSize);
+    
+    // Search and Filter Models
+    private SearchBar.SearchModel? currentSearch;
+    private FilterPanel.FilterModel? currentFilters;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadJobs();
+    }
+
+    private async Task LoadJobs()
     {
         try
         {
             isLoading = true;
             jobs = await DbContext.JobPosts
-            .Include(j => j.Employer)
-            .Where(j => j.IsActive)
-            .ToListAsync();
+                .Include(j => j.Employer)
+                .Include(j => j.Field)
+                .Where(j => j.IsActive)
+                .OrderByDescending(j => j.PostedDate)
+                .ToListAsync();
+            
+            filteredJobs = jobs.ToList();
+            ApplySorting();
         }
         catch (Exception ex)
         {
@@ -225,11 +208,165 @@
         }
     }
 
-
-
-    private void HandleSearch(object searchModel)
+    private async Task HandleSearch(SearchBar.SearchModel searchModel)
     {
-        // Search logic will be implemented when data layer is ready
+        currentSearch = searchModel;
+        Console.WriteLine($"HandleSearch called with: '{searchModel.SearchTerm}', '{searchModel.Location}'");
+        await ApplyFilters();
+    }
+
+    private async Task HandleFiltersChanged(FilterPanel.FilterModel filterModel)
+    {
+        currentFilters = filterModel;
+        await ApplyFilters();
+    }
+
+    private async Task ApplyFilters()
+    {
+        try
+        {
+            isLoading = true;
+            
+            // Start with all jobs
+            var query = jobs.AsQueryable();
+            
+            // DEBUG: Log the search term
+            Console.WriteLine($"Searching for: '{currentSearch?.SearchTerm}' in {jobs.Count} jobs");
+
+        // Apply search filters
+        if (currentSearch != null)
+        {
+            if (!string.IsNullOrWhiteSpace(currentSearch.SearchTerm))
+            {
+            var searchTerm = currentSearch.SearchTerm.Trim().ToLower();
+            Console.WriteLine($"Filtering with search term: '{searchTerm}'");
+            
+            var beforeCount = query.Count();
+            query = query.Where(j =>
+                (j.JobTitle != null && j.JobTitle.ToLower().Contains(searchTerm)) ||
+                (j.Department != null && j.Department.ToLower().Contains(searchTerm)) ||
+                (j.JobSummary != null && j.JobSummary.ToLower().Contains(searchTerm)) ||
+                (j.Employer != null && j.Employer.Name != null && j.Employer.Name.ToLower().Contains(searchTerm)) ||
+                (j.RequiredSkills != null && j.RequiredSkills.ToLower().Contains(searchTerm)) ||
+                (j.NiceToHaveSkills != null && j.NiceToHaveSkills.ToLower().Contains(searchTerm)) ||
+                (j.KeyResponsibilities != null && j.KeyResponsibilities.ToLower().Contains(searchTerm)));
+            
+            var afterCount = query.Count();
+            Console.WriteLine($"Before filter: {beforeCount} jobs, After filter: {afterCount} jobs");
+        }
+
+            if (!string.IsNullOrWhiteSpace(currentSearch.Location))
+                            {
+                                var location = currentSearch.Location.Trim().ToLower();
+                                query = query.Where(j => 
+                                    (j.Location != null && j.Location.ToLower().Contains(location)) ||
+                                    (j.WorkArrangement != null && j.WorkArrangement.ToLower().Contains(location)));
+                            }
+                }
+
+            // Apply advanced filters
+            if (currentFilters != null)
+            {
+                // Employment Type
+                if (currentFilters.EmploymentTypes != null && currentFilters.EmploymentTypes.Any())
+                {
+                    // Normalize the employment types for comparison
+                    var normalizedTypes = currentFilters.EmploymentTypes.Select(t => t.ToLower()).ToList();
+                    query = query.Where(j => j.EmploymentType != null && 
+                        normalizedTypes.Contains(j.EmploymentType.ToLower()));
+                }
+
+                // Experience Level
+                if (currentFilters.ExperienceLevels != null && currentFilters.ExperienceLevels.Any())
+                {
+                    var normalizedLevels = currentFilters.ExperienceLevels.Select(l => l.ToLower()).ToList();
+                    query = query.Where(j => j.ExperienceLevel != null && 
+                        normalizedLevels.Contains(j.ExperienceLevel.ToLower()));
+                }
+
+                // Salary Range
+                if (currentFilters.MinSalary.HasValue)
+                {
+                    query = query.Where(j => j.MaximumSalary >= currentFilters.MinSalary.Value);
+                }
+                if (currentFilters.MaxSalary.HasValue)
+                {
+                    query = query.Where(j => j.MinimumSalary <= currentFilters.MaxSalary.Value);
+                }
+
+                // Remote/Hybrid
+                if (currentFilters.RemoteOnly)
+                {
+                    query = query.Where(j => j.WorkArrangement != null && 
+                        j.WorkArrangement.ToLower() == "remote");
+                }
+                if (currentFilters.HybridIncluded)
+                {
+                    query = query.Where(j => j.WorkArrangement != null && 
+                        (j.WorkArrangement.ToLower() == "hybrid" || j.WorkArrangement.ToLower() == "remote"));
+                }
+
+                // Date Posted
+                if (!string.IsNullOrEmpty(currentFilters.DatePosted) && currentFilters.DatePosted != "any")
+                {
+                    var dateLimit = currentFilters.DatePosted switch
+                    {
+                        "1day" => DateTime.UtcNow.AddDays(-1),
+                        "1week" => DateTime.UtcNow.AddDays(-7),
+                        "1month" => DateTime.UtcNow.AddMonths(-1),
+                        _ => DateTime.MinValue
+                    };
+
+                    if (dateLimit > DateTime.MinValue)
+                    {
+                        query = query.Where(j => j.PostedDate >= dateLimit);
+                    }
+                }
+            }
+
+        filteredJobs = query.ToList();
+        // DEBUG: Log results
+        Console.WriteLine($"Found {filteredJobs.Count} jobs after filtering");
+        foreach(var job in filteredJobs)
+        {
+            Console.WriteLine($"  - {job.JobTitle}");
+        }
+
+        ApplySorting();
+        currentPage = 1; // Reset to first page
+
+        await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error applying filters: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SortJobs(ChangeEventArgs e)
+    {
+        sortBy = e.Value?.ToString() ?? "relevance";
+        ApplySorting();
+        StateHasChanged();
+    }
+
+    private void ApplySorting()
+    {
+        filteredJobs = sortBy switch
+        {
+            "date" => filteredJobs.OrderByDescending(j => j.PostedDate).ToList(),
+            "salary_high" => filteredJobs.OrderByDescending(j => j.MaximumSalary).ToList(),
+            "salary_low" => filteredJobs.OrderBy(j => j.MinimumSalary).ToList(),
+            "company" => filteredJobs.Where(j => j.Employer != null)
+                .OrderBy(j => j.Employer.Name).ToList(),
+            _ => filteredJobs.OrderByDescending(j => j.IsFeatured)
+                .ThenByDescending(j => j.PostedDate).ToList()
+        };
+        StateHasChanged();
     }
 
     private void ToggleFilters()
@@ -242,8 +379,45 @@
         showAdvancedFilters = false;
     }
 
-    private void ClearAllFilters()
+    private async Task ClearFilters()
     {
-        // Clear filters logic will be implemented when data layer is ready by the data team
+        currentSearch = null;
+        currentFilters = null;
+        filteredJobs = jobs.ToList();
+        ApplySorting();
+        currentPage = 1;
+        await InvokeAsync(StateHasChanged);
+    }
+
+        private async Task ClearSearch()
+    {
+        currentSearch = null;
+        await ApplyFilters();
+    }
+
+    private void SetViewMode(ViewMode mode)
+    {
+        viewMode = mode.ToString().ToLower();
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= totalPages)
+        {
+            currentPage = page;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleBookmarkToggle(int jobId)
+    {
+        // Implement bookmark functionality when backend is ready
+        await Task.CompletedTask;
+    }
+
+    private enum ViewMode
+    {
+        Grid,
+        List
     }
 }

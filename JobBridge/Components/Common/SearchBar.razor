@@ -8,6 +8,7 @@
                     class="search-input" 
                     placeholder="@Placeholder"
                     @bind="SearchTerm"
+                    @bind:event="oninput"
                     @onkeypress="HandleKeyPress"
                     @onfocus="OnSearchFocus"
                     @onblur="OnSearchBlur" />
@@ -28,6 +29,7 @@
                     class="location-input" 
                     placeholder="Location"
                     @bind="LocationTerm"
+                    @bind:event="oninput"
                     @onkeypress="HandleKeyPress"
                     @onfocus="OnLocationFocus"
                     @onblur="OnLocationBlur" />
@@ -91,21 +93,18 @@
     private bool ShowAdvancedSearch { get; set; } = false;
     private bool IsFocused { get; set; } = false;
 
-    // Mock data for UI development
+    // Updated with actual job titles from your database
     private List<string> QuickSearches = new()
     {
-        "Software Engineer", "Remote Jobs", "Frontend Developer", "Data Scientist", 
-        "Product Manager", "UX Designer", "Full Stack", "React Developer"
+        "Backend Developer", "Frontend Developer", "Marketing", "Remote", 
+        "TechNova", "GreenSolutions", "React", "Engineering"
     };
 
-    private List<string> RecentSearches = new()
-    {
-        "React Developer Remote", "Product Manager NYC", "Data Scientist", 
-        "UX Designer San Francisco", "Software Engineer"
-    };
+    private List<string> RecentSearches = new();
 
     private async Task PerformSearch()
     {
+        Console.WriteLine($"PerformSearch: SearchTerm='{SearchTerm}', LocationTerm='{LocationTerm}'");
         var searchModel = new SearchModel
         {
             SearchTerm = SearchTerm,
@@ -177,6 +176,7 @@
     private async Task ClearSearch()
     {
         SearchTerm = string.Empty;
+        LocationTerm = string.Empty;
         await PerformSearch();
     }
 

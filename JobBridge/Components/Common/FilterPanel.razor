@@ -1,3 +1,5 @@
+@using JobBridge.Data
+
 <div class="filter-panel @(IsVisible ? "visible" : "")">
     <div class="filter-header">
         <h3 class="filter-title">
@@ -152,6 +154,7 @@
     [Parameter] public bool IsVisible { get; set; } = false;
     [Parameter] public EventCallback<FilterModel> OnFiltersChanged { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public List<JobPost>? AllJobs { get; set; } 
 
     private int? MinSalary { get; set; }
     private int? MaxSalary { get; set; }
@@ -159,33 +162,92 @@
     private bool HybridIncluded { get; set; } = false;
     private string SelectedDatePosted { get; set; } = "any";
 
-    // Mock data for UI development
-    private List<FilterOption> EmploymentTypes = new()
-    {
-        new() { Name = "Full-time", Count = 1234, IsSelected = false },
-        new() { Name = "Part-time", Count = 456, IsSelected = false },
-        new() { Name = "Contract", Count = 789, IsSelected = false },
-        new() { Name = "Internship", Count = 234, IsSelected = false },
-        new() { Name = "Freelance", Count = 123, IsSelected = false }
-    };
+    // Store as fields, not properties
+    private List<FilterOption> EmploymentTypes = new();
+    private List<FilterOption> ExperienceLevels = new();
+    private List<FilterOption> CompanySizes = new();
 
-    private List<FilterOption> ExperienceLevels = new()
+    protected override void OnParametersSet()
     {
-        new() { Name = "Entry Level", Count = 567, IsSelected = false },
-        new() { Name = "Mid Level", Count = 890, IsSelected = false },
-        new() { Name = "Senior Level", Count = 678, IsSelected = false },
-        new() { Name = "Executive", Count = 123, IsSelected = false }
-    };
+        if (AllJobs != null)
+        {
+            InitializeFilterOptions();
+        }
+    }
 
-    private List<FilterOption> CompanySizes = new()
+    private void InitializeFilterOptions()
     {
-        new() { Name = "Startup (1-10)", Count = 234, IsSelected = false },
-        new() { Name = "Small (11-50)", Count = 456, IsSelected = false },
-        new() { Name = "Medium (51-200)", Count = 345, IsSelected = false },
-        new() { Name = "Large (201-1000)", Count = 567, IsSelected = false },
-        new() { Name = "Enterprise (1000+)", Count = 234, IsSelected = false }
-    };
+        // Employment Types
+        var types = new[] { "Full-Time", "Part-Time", "Contract", "Internship", "Freelance" };
+        EmploymentTypes = types.Select(type => new FilterOption
+        {
+            Name = type,
+            Count = AllJobs?.Count(j => j.EmploymentType == type) ?? 0,
+            IsSelected = EmploymentTypes.FirstOrDefault(e => e.Name == type)?.IsSelected ?? false
+        }).ToList();
 
+        // Experience Levels
+        var levels = new[] { "Entry Level", "Mid Level", "Senior Level", "Executive" };
+        ExperienceLevels = levels.Select(level => new FilterOption
+        {
+            Name = level,
+            Count = AllJobs?.Count(j => j.ExperienceLevel == level) ?? 0,
+            IsSelected = ExperienceLevels.FirstOrDefault(e => e.Name == level)?.IsSelected ?? false
+        }).ToList();
+
+        // Company Sizes
+        if (!CompanySizes.Any())
+        {
+            CompanySizes = new List<FilterOption>
+            {
+                new() { Name = "Startup (1-10)", Count = 0, IsSelected = false },
+                new() { Name = "Small (11-50)", Count = 0, IsSelected = false },
+                new() { Name = "Medium (51-200)", Count = 0, IsSelected = false },
+                new() { Name = "Large (201-1000)", Count = 0, IsSelected = false },
+                new() { Name = "Enterprise (1000+)", Count = 0, IsSelected = false }
+            };
+        }
+    }
+    private List<FilterOption> GetEmploymentTypes()
+    {
+        if (AllJobs == null) return new List<FilterOption>();
+        
+        var types = new[] { "Full-Time", "Part-Time", "Contract", "Internship", "Freelance" };
+        return types.Select(type => new FilterOption
+        {
+            Name = type,
+            Count = AllJobs.Count(j => j.EmploymentType == type),
+            IsSelected = false
+        }).ToList();
+    }
+
+    private List<FilterOption> GetExperienceLevels()
+    {
+        if (AllJobs == null) return new List<FilterOption>();
+        
+        var levels = new[] { "Entry Level", "Mid Level", "Senior Level", "Executive" };
+        return levels.Select(level => new FilterOption
+        {
+            Name = level,
+            Count = AllJobs.Count(j => j.ExperienceLevel == level),
+            IsSelected = false
+        }).ToList();
+    }
+
+    private List<FilterOption> GetCompanySizes()
+    {
+        // Since your JobPost doesn't have company size, return empty or mock data
+        return new List<FilterOption>
+        {
+            new() { Name = "Startup (1-10)", Count = 0, IsSelected = false },
+            new() { Name = "Small (11-50)", Count = 0, IsSelected = false },
+            new() { Name = "Medium (51-200)", Count = 0, IsSelected = false },
+            new() { Name = "Large (201-1000)", Count = 0, IsSelected = false },
+            new() { Name = "Enterprise (1000+)", Count = 0, IsSelected = false }
+        };
+    }
+
+    // Keep the DatePostedOptions as is
     private List<DateOption> DatePostedOptions = new()
     {
         new() { Label = "Any time", Value = "any" },
@@ -214,6 +276,7 @@
         };
 
         await OnFiltersChanged.InvokeAsync(filterModel);
+        await OnClose.InvokeAsync(); 
     }
 
     private async Task ClearAllFilters()

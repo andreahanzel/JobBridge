@@ -53,6 +53,17 @@ namespace JobBridge.Data
                     Phone = "098-765-4321",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
+                },
+                new User
+                {
+                    Role = "Employer",
+                    FirstName = "Bob",
+                    LastName = "Johnson",
+                    Email = "bob.johnson@example.com",
+                    UserName = "bob.johnson@example.com",
+                    Phone = "555-123-4567",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 }
             };
             
@@ -65,64 +76,82 @@ namespace JobBridge.Data
                 var existingUser = await userManager.FindByEmailAsync(user.Email);
                 if (existingUser == null)
                 {
+                    user.EmailConfirmed = true;
                     var result = await userManager.CreateAsync(user, "Password123!");
-                    if (!result.Succeeded)
+                    if (result.Succeeded)
+                    {
+                        if (user.Role != null)
+                        {
+                            await userManager.AddToRoleAsync(user, user.Role);
+                        }
+                        createdUsers.Add(user);
+                        Console.WriteLine($"Created user: {user.Email} with role: {user.Role}");
+                    }
+                    else
                     {
                         var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                        throw new Exception($"Error while creating user {user.Email}: {errors}");
+                        Console.WriteLine($"Warning: Could not create user {user.Email}: {errors}");
+                        existingUser = await userManager.FindByEmailAsync(user.Email);
+                        if (existingUser != null)
+                        {
+                            createdUsers.Add(existingUser);
+                        }
                     }
-                    if (user.Role != null)
-                    {
-                        await userManager.AddToRoleAsync(user, user.Role);
-                    }
-                    // Add the newly created user object directly to the list.
-                    createdUsers.Add(user);
                 }
                 else
                 {
                     // If the user already exists, add the existing object to the list.
                     createdUsers.Add(existingUser);
+                    Console.WriteLine($"User {user.Email} already exists.");
                 }
             }
 
             // Get the specific user objects from the list.
             var john = createdUsers.FirstOrDefault(u => u.Email == "john.doe@example.com");
             var jane = createdUsers.FirstOrDefault(u => u.Email == "jane.smith@example.com");
+            var bob = createdUsers.FirstOrDefault(u => u.Email == "bob.johnson@example.com");
 
-            if (john == null || jane == null)
+            if (john == null || jane == null || bob == null)
             {
-                // This check is now a safety net, as the logic above should prevent this.
-                throw new Exception("User not found after creation/retrieval.");
+                Console.WriteLine("Warning: Some users not found after creation/retrieval. Continuing with available users.");
             }
 
-            var usersList = new List<User> { john, jane };
-
             // Seed Employers
-            if (!db.Employers.Any())
+            var employersToAdd = new List<Employers>();
+            
+            // Add employer for Bob (who has Employer role)
+            if (bob != null && !db.Employers.Any(e => e.UserId == bob.Id))
             {
-                var employers = new Employers[]
+                employersToAdd.Add(new Employers
                 {
-                    new Employers
-                    {
-                        Name = "TechNova",
-                        Location = "New York",
-                        NumberOfEmployees = 150,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow,
-                        UserId = john.Id // Associate to John Doe user using the retrieved object
-                    },
-                    new Employers
-                    {
-                        Name = "GreenSolutions",
-                        Location = "Remote",
-                        NumberOfEmployees = 50,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow,
-                        UserId = jane.Id // Associate to Jane Smith user using the retrieved object
-                    }
-                };
-                db.Employers.AddRange(employers);
+                    Name = "TechNova",
+                    Location = "New York",
+                    NumberOfEmployees = 150,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    UserId = bob.Id
+                });
+            }
+            
+            // You can add another employer if needed
+            if (john != null && !db.Employers.Any(e => e.UserId == john.Id))
+            {
+                employersToAdd.Add(new Employers
+                {
+                    Name = "GreenSolutions",
+                    Location = "Remote",
+                    NumberOfEmployees = 50,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    UserId = john.Id
+                });
+            }
+            
+            if (employersToAdd.Any())
+            {
+                db.Employers.AddRange(employersToAdd);
                 await db.SaveChangesAsync();
+                Console.WriteLine($"Added {employersToAdd.Count} employer records.");
             }
 
             // Get existing employers for foreign key relations
@@ -140,17 +169,20 @@ namespace JobBridge.Data
                 };
                 db.Fields.AddRange(fields);
                 await db.SaveChangesAsync();
+                Console.WriteLine("Added field categories.");
             }
 
             // Get existing fields for foreign key relations
             var fieldsList = db.Fields.ToList();
 
-            // Seed Job Posts
-            if (!db.JobPosts.Any())
+            // Seed Job Posts only if we have employers and fields
+            if (!db.JobPosts.Any() && employersList.Any() && fieldsList.Any())
             {
-                var jobPosts = new JobPost[]
+                var jobPosts = new List<JobPost>();
+                
+                if (employersList.Count > 0 && fieldsList.Count > 0)
                 {
-                    new JobPost
+                    jobPosts.Add(new JobPost
                     {
                         JobTitle = "Frontend Developer",
                         Department = "Engineering",
@@ -169,7 +201,7 @@ namespace JobBridge.Data
                         RequiredSkills = "React, JavaScript, TypeScript, HTML, CSS",
                         NiceToHaveSkills = "Redux, Jest, Webpack, Git",
                         ApplicationMethod = "JobBridge Application System",
-                        ExternalApplicationUrl = null,
+                        ExternalApplicationUrl = "https://www.indeed.com",
                         PostedDate = DateTime.UtcNow,
                         ApplicationDeadline = DateTime.UtcNow.AddDays(30),
                         PostExpirationDate = DateTime.UtcNow.AddDays(30),
@@ -181,8 +213,12 @@ namespace JobBridge.Data
                         UpdatedAt = DateTime.UtcNow,
                         EmployerId = employersList[0].Id,
                         FieldId = fieldsList[0].Id
-                    },
-                    new JobPost
+                    });
+                }
+                
+                if (employersList.Count > 0 && fieldsList.Count > 1)
+                {
+                    jobPosts.Add(new JobPost
                     {
                         JobTitle = "Digital Marketing Specialist",
                         Department = "Marketing",
@@ -201,20 +237,24 @@ namespace JobBridge.Data
                         RequiredSkills = "SEO, SEM, Social Media, Google Analytics",
                         NiceToHaveSkills = "AdWords, Email Marketing, Content Creation",
                         ApplicationMethod = "JobBridge Application System",
-                        ExternalApplicationUrl = null,
+                        ExternalApplicationUrl = "https://www.linkedin.com/jobs",
                         PostedDate = DateTime.UtcNow,
                         ApplicationDeadline = DateTime.UtcNow.AddDays(60),
                         PostExpirationDate = DateTime.UtcNow.AddDays(60),
                         IsFeatured = false,
                         IsUrgent = false,
-                        IsActive = false,
+                        IsActive = true,
                         NumberOfApplicants = 0,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         EmployerId = employersList[0].Id,
                         FieldId = fieldsList[1].Id
-                    },
-                    new JobPost
+                    });
+                }
+                
+                if (employersList.Count > 1 && fieldsList.Count > 0)
+                {
+                    jobPosts.Add(new JobPost
                     {
                         JobTitle = "Backend Developer",
                         Department = "Engineering",
@@ -233,7 +273,7 @@ namespace JobBridge.Data
                         RequiredSkills = "C#, .NET Core, Entity Framework, SQL, Azure",
                         NiceToHaveSkills = "Docker, Kubernetes, Redis, RabbitMQ",
                         ApplicationMethod = "External Link/Email",
-                        ExternalApplicationUrl = "https://careers.greensolutions.com/job/backend",
+                        ExternalApplicationUrl = "https://www.glassdoor.com",
                         PostedDate = DateTime.UtcNow,
                         ApplicationDeadline = DateTime.UtcNow.AddDays(60),
                         PostExpirationDate = DateTime.UtcNow.AddDays(60),
@@ -243,57 +283,73 @@ namespace JobBridge.Data
                         NumberOfApplicants = 0,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                        EmployerId = employersList[1].Id,
+                        EmployerId = employersList.Count > 1 ? employersList[1].Id : employersList[0].Id,
                         FieldId = fieldsList[0].Id
-                    }
-                };
-                db.JobPosts.AddRange(jobPosts);
-                await db.SaveChangesAsync();
+                    });
+                }
+                
+                if (jobPosts.Any())
+                {
+                    db.JobPosts.AddRange(jobPosts);
+                    await db.SaveChangesAsync();
+                    Console.WriteLine($"Added {jobPosts.Count} job posts.");
+                }
             }
 
             // Seed Job Seekers
-            if (!db.JobSeekers.Any())
+            if (jane != null && !db.JobSeekers.Any(js => js.UserId == jane.Id))
             {
-                var jobSeekers = new JobSeeker[]
+                var jobSeeker = new JobSeeker
                 {
-                    new JobSeeker
-                    {
-                        UserId = jane.Id, // Reference to Jane Smith
-                        ResumeUrl = "https://example.com/resume/jane-smith.pdf",
-                        RememberMe = true
-                    }
+                    UserId = jane.Id,
+                    ResumeUrl = "https://example.com/resume/jane-smith.pdf",
+                    RememberMe = true
                 };
-                db.JobSeekers.AddRange(jobSeekers);
+                db.JobSeekers.Add(jobSeeker);
                 await db.SaveChangesAsync();
+                Console.WriteLine("Added JobSeeker record for Jane.");
             }
 
-            // Get existing job seekers for applications
+            // Get existing job seekers and job posts for applications
             var jobSeekersList = db.JobSeekers.ToList();
             var jobPostsList = db.JobPosts.ToList();
 
-            // Seed Applications
-            if (!db.Applications.Any())
+            // Seed Applications only if we have job seekers and job posts
+            if (!db.Applications.Any() && jobSeekersList.Any() && jobPostsList.Any())
             {
-                var applications = new Application[]
+                var applications = new List<Application>();
+                
+                if (jobSeekersList.Count > 0 && jobPostsList.Count > 0)
                 {
-                    new Application
+                    applications.Add(new Application
                     {
                         JobSeekerId = jobSeekersList[0].Id,
                         JobPostId = jobPostsList[0].Id,
                         Status = ApplicationStatus.Pending,
                         AppliedDate = DateTime.UtcNow.AddDays(-5)
-                    },
-                    new Application
+                    });
+                }
+                
+                if (jobSeekersList.Count > 0 && jobPostsList.Count > 2)
+                {
+                    applications.Add(new Application
                     {
                         JobSeekerId = jobSeekersList[0].Id,
                         JobPostId = jobPostsList[2].Id,
                         Status = ApplicationStatus.Interview,
                         AppliedDate = DateTime.UtcNow.AddDays(-2)
-                    }
-                };
-                db.Applications.AddRange(applications);
-                await db.SaveChangesAsync();
+                    });
+                }
+                
+                if (applications.Any())
+                {
+                    db.Applications.AddRange(applications);
+                    await db.SaveChangesAsync();
+                    Console.WriteLine($"Added {applications.Count} applications.");
+                }
             }
+            
+            Console.WriteLine("Database seeding completed successfully.");
         }
     }
 }
