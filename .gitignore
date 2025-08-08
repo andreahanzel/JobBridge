@@ -64,26 +64,28 @@ TestResults/
 Resharper/
 *.resharper
 *.resharper.user
-.idea/ # For Rider/IntelliJ
-packages/ # For older .NET projects using NuGet packages folder
+.idea/
+packages/
 TestResults/
-node_modules/ # If you use npm/yarn
+node_modules/
 temp/
 out/
-.DS_Store # macOS files
-Thumbs.db # Windows thumbnail cache
+.DS_Store
+Thumbs.db
 
 # Custom additions for Blazor/ASP.NET Core
-appsettings.Development.json # Often contains local connection strings/secrets
-appsettings.Staging.json     # Or other environment-specific settings not meant for repo
-appsettings.Production.json
-appsettings.*.json # Catch-all for environment settings, but be careful if some *are* meant to be tracked
-*.sqlite # SQLite database files (if you're using local SQLite)
-wwwroot/css/*.map # CSS sourcemaps if you're using Sass/Less and not bundling
-wwwroot/js/*.map # JS sourcemaps
-dist/ # If you have any build output directory
-.webpack/ # If you use webpack
-.env # Environment variables
+# appsettings.Development.json # Keep for team development
+appsettings.Staging.json
+# appsettings.Production.json # DO NOT IGNORE - needed for deployment
+*.sqlite
+*.db
+*.db-shm
+*.db-wal
+wwwroot/css/*.map
+wwwroot/js/*.map
+dist/
+.webpack/
+.env
 
 # User secrets (ASP.NET Core Secret Manager)
 *.usersecrets
@@ -92,10 +94,10 @@ dist/ # If you have any build output directory
 .azure/
 .azurefunctions/
 .funcignore
-local.settings.json # Often contains sensitive settings for Azure Functions
+local.settings.json
 
 # Docker files (if applicable)
-docker-compose.override.yml # Local Docker overrides
+docker-compose.override.yml
 
 # VS Code (if you use it)
 .vscode/
@@ -109,3 +111,21 @@ npm-debug.log*
 
 # Rider
 .idea/
+
+# Deployment artifacts
+publish/
+*.zip
+jobbridge-deploy.zip
+
+# Local publish profiles (but not the Azure ones)
+Properties/PublishProfiles/*.pubxml
+!Properties/PublishProfiles/Azure*.pubxml
+
+# .NET build artifacts
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# NuGet packages
+*.nupkg
+*.snupkg
