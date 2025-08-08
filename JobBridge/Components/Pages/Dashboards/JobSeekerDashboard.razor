@@ -1,9 +1,11 @@
 @page "/dashboard/jobseeker/{id:int}"
+@attribute [Authorize(Roles = "JobSeeker")]
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
 @using JobBridge.Data
 @using Microsoft.EntityFrameworkCore
 @inject JobBridgeContext DbContext
+@inject NavigationManager Navigation
 @* Add this line later: @attribute [Authorize(Roles = "JobSeeker")] *@
 
 <PageTitle>Job Seeker Dashboard - JobBridge</PageTitle>
@@ -51,12 +53,12 @@
                     <div class="application-list">
                         @foreach (var application in recentApplications)
                         {
-                            <div class="application-item">
-                                <div class="application-info">
-                                    <h4>@application.JobPost.JobTitle</h4>
-                                    <p>@application.JobPost.Employer.Name</p>
-                                    <span class="application-date">Applied @application.AppliedDate.ToString("MMM dd")</span>
-                                </div>
+                        <div class="application-item" @onclick="() => NavigateToJob(application.JobPost.Id)" style="cursor: pointer;">
+                            <div class="application-info">
+                                <h4>@application.JobPost.JobTitle</h4>
+                                <p>@application.JobPost.Employer.Name</p>
+                                <span class="application-date">Applied @application.AppliedDate.ToString("MMM dd")</span>
+                        </div>
                                 <div class="application-status">
                                     <span class="status-badge status-@application.Status.ToString().ToLower()">@application.Status</span>
                                 </div>
@@ -80,16 +82,17 @@
                     <div class="saved-jobs-list">
                         @foreach (var job in savedJobsList)
                         {
-                            <div class="job-item">
-                                <div class="job-info">
-                                    <h4>@job.JobTitle</h4>
-                                    <p>@job.Employer.Name</p>
-                                    <span class="job-location">📍 @job.Location</span>
-                                </div>
-                                <div class="job-actions">
-                                    <button class="btn btn-primary btn-sm" @onclick="() => ApplyToJob(job.Id)">Apply Now</button>
-                                </div>
-                            </div>
+                <div class="job-item">
+                    <div class="job-info" @onclick="() => NavigateToJob(job.Id)" style="cursor: pointer;">
+                        <h4>@job.JobTitle</h4>
+                        <p>@job.Employer.Name</p>
+                        <span class="job-location">📍 @job.Location</span>
+                    </div>
+                    <div class="job-actions">
+                        <button class="btn btn-primary btn-sm" @onclick="() => ApplyToJob(job.Id)">Apply Now</button>
+                        <button class="btn btn-secondary btn-sm" @onclick="() => RemoveBookmark(job.Id)">Remove</button>
+                    </div>
+                </div>
                         }
                     </div>
                 }
@@ -153,6 +156,50 @@
             .OrderByDescending(jp => jp.PostedDate)
             .Take(5)
             .ToList();
+    }
+
+        private void NavigateToJob(int jobId)
+    {
+        Navigation.NavigateTo($"/jobs/{jobId}");
+    }
+
+        private async Task SaveJob(int jobId)
+    {
+        if (jobSeeker != null)
+        {
+            // Check if already bookmarked
+            bool alreadyBookmarked = await DbContext.Bookmarks
+                .AnyAsync(b => b.JobSeekerId == jobSeeker.Id && b.JobPostId == jobId);
+
+            if (!alreadyBookmarked)
+            {
+                var bookmark = new Bookmark
+                {
+                    JobSeekerId = jobSeeker.Id,
+                    JobPostId = jobId
+                };
+
+                DbContext.Bookmarks.Add(bookmark);
+                await DbContext.SaveChangesAsync();
+                await LoadDashboardData(); // Refresh data
+            }
+        }
+    }
+
+    private async Task RemoveBookmark(int jobId)
+    {
+        if (jobSeeker != null)
+        {
+            var bookmark = await DbContext.Bookmarks
+                .FirstOrDefaultAsync(b => b.JobSeekerId == jobSeeker.Id && b.JobPostId == jobId);
+
+            if (bookmark != null)
+            {
+                DbContext.Bookmarks.Remove(bookmark);
+                await DbContext.SaveChangesAsync();
+                await LoadDashboardData(); // Refresh data
+            }
+        }
     }
 
     private async Task ApplyToJob(int jobId)

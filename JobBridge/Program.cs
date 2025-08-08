@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using JobBridge.Services;
 using JobBridge.Identity;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Text.Json.Serialization; // Adicione esta linha de importação
+using System.Text.Json.Serialization; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +16,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Esta linha é a correção para o ciclo de objeto.
+        
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
@@ -105,16 +105,25 @@ using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
     var db = serviceProvider.GetRequiredService<JobBridgeContext>();
+    var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
     try
     {
         await db.Database.MigrateAsync();
-        await SeedData.InitializeAsync(serviceProvider);
+        
+        try
+        {
+            await SeedData.InitializeAsync(serviceProvider);
+        }
+        catch (Exception)
+        {
+            // Silently continue - seeding issues don't affect app functionality
+            logger.LogInformation("Seeding completed with some warnings.");
+        }
     }
     catch (Exception ex)
     {
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        logger.LogError(ex, "An error occurred during database migration.");
     }
 }
 

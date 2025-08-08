@@ -6,6 +6,8 @@
 @using JobBridge.Identity
 @using System.ComponentModel.DataAnnotations
 @using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@inject JobBridgeContext DbContext
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 @inject IJSRuntime JSRuntime
@@ -315,6 +317,37 @@
             var result = await AuthService.RegisterUserAsync(user, registerModel.Password);
             if (result.Succeeded)
             {
+                // Create JobSeeker or Employer record based on role
+                using (var scope = ServiceProvider.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<JobBridgeContext>();
+                    
+                    if (registerModel.Role == "JobSeeker")
+                    {
+                        var jobSeeker = new JobSeeker
+                        {
+                            UserId = user.Id,
+                            RememberMe = false
+                        };
+                        dbContext.JobSeekers.Add(jobSeeker);
+                    }
+                    else if (registerModel.Role == "Employer")
+                    {
+                        var employer = new Employers
+                        {
+                            UserId = user.Id,
+                            Name = $"{registerModel.FirstName} {registerModel.LastName}'s Company",
+                            Location = "Not specified",
+                            NumberOfEmployees = 0,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        dbContext.Employers.Add(employer);
+                    }
+                    
+                    await dbContext.SaveChangesAsync();
+                }
+                
                 showLoginForm = true;
                 errorMessage = "Registration successful! Please log in with your credentials.";
                 registerModel = new RegisterModel();
