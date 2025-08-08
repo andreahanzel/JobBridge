@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using JobBridge.Data.Models;
+using JobBridge.Models;
 
 namespace JobBridge.Data;
 
@@ -17,6 +18,8 @@ public class JobBridgeContext : IdentityDbContext<User>
     public DbSet<Field> Fields { get; set; }
     public DbSet<Bookmark> Bookmarks { get; set; }
     public DbSet<Application> Applications { get; set; }// Added
+    public DbSet<ProfileView> ProfileViews { get; set; }
+    public DbSet<SavedSearch> SavedSearches { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,5 +69,23 @@ public class JobBridgeContext : IdentityDbContext<User>
             .HasOne(b => b.JobPost)
             .WithMany()
             .HasForeignKey(b => b.JobPostId);
+
+        // Relationship: ProfileView → JobSeeker (N:1)
+        modelBuilder.Entity<ProfileView>()
+            .HasOne(pv => pv.JobSeeker)
+            .WithMany()
+            .HasForeignKey(pv => pv.JobSeekerId);
+
+        // Relationship: ProfileView → Employer (N:1)
+        modelBuilder.Entity<ProfileView>()
+            .HasOne(pv => pv.Employer)
+            .WithMany()
+            .HasForeignKey(pv => pv.EmployerId);
+
+        // Relationship: SavedSearch → JobSeeker (N:1)
+        modelBuilder.Entity<SavedSearch>()
+            .HasOne(ss => ss.JobSeeker)
+            .WithMany()
+            .HasForeignKey(ss => ss.JobSeekerId);
     }
 }

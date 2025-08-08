@@ -3,7 +3,9 @@
 @using JobBridge.Components.Common
 @using JobBridge.Data
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components
 @inject JobBridgeContext DbContext
+@inject NavigationManager Navigation
 
 <div class="job-listings-container">
     <!-- Header Section -->
@@ -178,9 +180,64 @@
     private SearchBar.SearchModel? currentSearch;
     private FilterPanel.FilterModel? currentFilters;
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "title")]
+    public string? SearchTitle { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "location")]
+    public string? SearchLocation { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "type")]
+    public string? SearchType { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "minSalary")]
+    public decimal? SearchMinSalary { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "maxSalary")]
+    public decimal? SearchMaxSalary { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await LoadJobs();
+        await ApplyUrlParameters();
+    }
+
+    private async Task ApplyUrlParameters()
+    {
+        if (!string.IsNullOrEmpty(SearchTitle) || !string.IsNullOrEmpty(SearchLocation) || 
+            !string.IsNullOrEmpty(SearchType) || SearchMinSalary.HasValue || SearchMaxSalary.HasValue)
+        {
+            // Set up search model from URL parameters
+            currentSearch = new SearchBar.SearchModel
+            {
+                SearchTerm = SearchTitle ?? "",
+                Location = SearchLocation ?? ""
+            };
+
+            // Set up filter model from URL parameters
+            currentFilters = new FilterPanel.FilterModel();
+            
+            if (!string.IsNullOrEmpty(SearchType))
+            {
+                currentFilters.EmploymentTypes = new List<string> { SearchType };
+            }
+            
+            if (SearchMinSalary.HasValue)
+            {
+                currentFilters.MinSalary = (int?)SearchMinSalary;
+            }
+            
+            if (SearchMaxSalary.HasValue)
+            {
+                currentFilters.MaxSalary = (int?)SearchMaxSalary;
+            }
+
+            await ApplyFilters();
+        }
     }
 
     private async Task LoadJobs()

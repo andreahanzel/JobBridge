@@ -245,6 +245,7 @@
             recentApplications = applications.Select(a => new EmployerApplicationModel
             {
                 Id = a.Id,
+                JobSeekerId = a.JobSeeker.Id,
                 ApplicantName = $"{a.JobSeeker.User.FirstName} {a.JobSeeker.User.LastName}",
                 JobTitle = a.JobPost.JobTitle,
                 AppliedDate = a.AppliedDate
@@ -297,8 +298,12 @@
 
     private async Task ViewApplication(int applicationId)
     {
-        // Navigate to application details page
-        NavigationManager.NavigateTo($"/employer/applications/{applicationId}");
+        // Find the application and navigate to job seeker profile
+        var application = recentApplications?.FirstOrDefault(a => a.Id == applicationId);
+        if (application != null)
+        {
+            NavigationManager.NavigateTo($"/profile/jobseeker/{application.JobSeekerId}");
+        }
         await Task.CompletedTask;
     }
 
@@ -318,6 +323,7 @@
     public class EmployerApplicationModel
     {
         public int Id { get; set; }
+        public int JobSeekerId { get; set; }
         public string ApplicantName { get; set; } = string.Empty;
         public string JobTitle { get; set; } = string.Empty;
         public DateTime AppliedDate { get; set; }
