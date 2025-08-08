@@ -128,6 +128,18 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
+        // Ensure database is created and migrated
+        if (app.Environment.IsProduction())
+        {
+            // In production, ensure the database file exists
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var dbPath = connectionString?.Replace("Data Source=", "");
+            if (!string.IsNullOrEmpty(dbPath) && !File.Exists(dbPath))
+            {
+                await db.Database.EnsureCreatedAsync();
+            }
+        }
+        
         await db.Database.MigrateAsync();
         
         try
