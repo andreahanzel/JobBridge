@@ -7,19 +7,19 @@ namespace JobBridge.Data;
 
 public class JobBridgeContext : IdentityDbContext<User>
 {
-    public JobBridgeContext(DbContextOptions<JobBridgeContext> options) : base(options)
+    public JobBridgeContext(DbContextOptions<JobBridgeContext> options) : base(options) // Constructor
     {
     }
 
   //  public new DbSet<User> Users { get; set; }
-    public DbSet<JobSeeker> JobSeekers { get; set; } // Added
-    public DbSet<Employers> Employers { get; set; }
-    public DbSet<JobPost> JobPosts { get; set; }
-    public DbSet<Field> Fields { get; set; }
-    public DbSet<Bookmark> Bookmarks { get; set; }
-    public DbSet<Application> Applications { get; set; }// Added
-    public DbSet<ProfileView> ProfileViews { get; set; }
-    public DbSet<SavedSearch> SavedSearches { get; set; }
+    public DbSet<JobSeeker> JobSeekers { get; set; } // Job seekers
+    public DbSet<Employers> Employers { get; set; } // Employers
+    public DbSet<JobPost> JobPosts { get; set; } // Job posts
+    public DbSet<Field> Fields { get; set; } // Job fields
+    public DbSet<Bookmark> Bookmarks { get; set; } // Bookmarks
+    public DbSet<Application> Applications { get; set; } // Job applications
+    public DbSet<ProfileView> ProfileViews { get; set; } // Profile views
+    public DbSet<SavedSearch> SavedSearches { get; set; } // Saved searches
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -7,7 +7,7 @@ namespace JobBridge.Services
 {
     public class SessionAuthService : AuthenticationStateProvider
     {
-        private ClaimsPrincipal _currentUser = new ClaimsPrincipal(new ClaimsIdentity());
+        private ClaimsPrincipal _currentUser = new ClaimsPrincipal(new ClaimsIdentity()); // Initialize with empty claims
 
         public SessionAuthService()
         {
@@ -15,14 +15,15 @@ namespace JobBridge.Services
 
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            return Task.FromResult(new AuthenticationState(_currentUser));
+            return Task.FromResult(new AuthenticationState(_currentUser)); // Return the current authentication state
         }
 
+        // Initialize the authentication state
         public async Task InitializeAsync(IJSRuntime jsRuntime)
         {
             try
             {
-                var authData = await jsRuntime.InvokeAsync<string>("localStorage.getItem", "authData");
+                var authData = await jsRuntime.InvokeAsync<string>("localStorage.getItem", "authData"); // Get auth data from localStorage
                 if (!string.IsNullOrEmpty(authData))
                 {
                     var userData = JsonSerializer.Deserialize<UserData>(authData);
@@ -49,6 +50,9 @@ namespace JobBridge.Services
             }
         }
 
+        /// <summary>
+        /// Signs in the user and stores their information in localStorage.
+        /// </summary>
         public async Task SignInAsync(IJSRuntime jsRuntime, string userId, string email, string name, string role, string firstName, bool remember = false)
         {
             var claims = new[]
@@ -77,10 +81,13 @@ namespace JobBridge.Services
                 var authData = JsonSerializer.Serialize(userData);
                 await jsRuntime.InvokeVoidAsync("localStorage.setItem", "authData", authData);
             }
-            
+
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
+        /// <summary>
+        /// Signs out the user and removes their information from localStorage.
+        /// </summary>
         public async Task SignOutAsync(IJSRuntime jsRuntime)
         {
             _currentUser = new ClaimsPrincipal(new ClaimsIdentity());
@@ -88,6 +95,9 @@ namespace JobBridge.Services
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
+        /// <summary>
+        /// User data stored in localStorage.
+        /// </summary>
         private class UserData
         {
             public string UserId { get; set; } = string.Empty;

@@ -4,7 +4,7 @@ using JobBridge.Data;
 
 namespace JobBridge.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]")] // API route for users
     [ApiController]
     public class UsersController : ControllerBase
     {

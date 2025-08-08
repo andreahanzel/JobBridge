@@ -3,7 +3,7 @@
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
 
-@code {
+@code { // This is the code block for the complete login page
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -12,13 +12,14 @@
     [SupplyParameterFromQuery]
     public bool Remember { get; set; }
 
+    // This is the initialization handler
     protected override async Task OnInitializedAsync()
     {
-        if (!string.IsNullOrEmpty(Email))
+        if (!string.IsNullOrEmpty(Email)) // Check if email is provided
         {
             try
             {
-                var request = new { Email = Email, Remember = Remember };
+                var request = new { Email = Email, Remember = Remember }; // Create the request object
                 var baseUrl = Navigation.BaseUri;
                 var response = await HttpClient.PostAsJsonAsync($"{baseUrl}api/auth/signin", request);
                 
@@ -33,7 +34,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Sign-in error: {ex.Message}");
+                Console.WriteLine($"Sign-in error: {ex.Message}"); // Log the error message
             }
         }
         Navigation.NavigateTo("/");

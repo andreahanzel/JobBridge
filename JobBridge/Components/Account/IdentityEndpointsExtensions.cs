@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class IdentityEndpointsExtensions
     {
+
+        // Map additional identity endpoints
         public static IEndpointRouteBuilder MapAdditionalIdentityEndpoints(this IEndpointRouteBuilder endpoints)
         {
             endpoints.MapLoginDisplay();
@@ -20,6 +22,7 @@ namespace Microsoft.AspNetCore.Builder
             return endpoints;
         }
 
+        // This endpoint handles user login
         private static IEndpointConventionBuilder MapLoginDisplay(this IEndpointRouteBuilder endpoints)
         {
             var accountGroup = endpoints.MapGroup("/Account");
@@ -35,6 +38,7 @@ namespace Microsoft.AspNetCore.Builder
             return accountGroup;
         }
 
+    // This endpoint handles user logout
         private static IEndpointConventionBuilder MapLogoutDisplay(this IEndpointRouteBuilder endpoints)
         {
             var accountGroup = endpoints.MapGroup("/Account");
@@ -46,6 +50,7 @@ namespace Microsoft.AspNetCore.Builder
             return accountGroup;
         }
 
+        // This endpoint handles user registration
         private static IEndpointConventionBuilder MapRegisterDisplay(this IEndpointRouteBuilder endpoints)
         {
             var accountGroup = endpoints.MapGroup("/Account");

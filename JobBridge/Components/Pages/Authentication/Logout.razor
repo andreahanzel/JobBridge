@@ -7,8 +7,9 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<link href="css/authentication.css" rel="stylesheet" />
+<link href="css/authentication.css" rel="stylesheet" /> <!-- This is the authentication CSS -->
 
+<!-- This part is for the logout confirmation -->
 <AuthorizeView>
     <Authorized>
         <div class="container mt-5 animate-fadeInUp auth-container">
@@ -26,6 +27,7 @@
             </div>
         </div>
     </Authorized>
+    <!-- This part is the login confirmation -->
     <NotAuthorized>
         <div class="container mt-5">
             <div class="row justify-content-center">
@@ -41,6 +43,8 @@
 </AuthorizeView>
 
 @code {
+
+    // This is the logout handler
     private async Task HandleLogout()
     {
         await SessionAuth.SignOutAsync(JSRuntime);

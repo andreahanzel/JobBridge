@@ -228,7 +228,7 @@ else if (jobPost != null)
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 
-@code {
+@code { // This is the code block for the job details page
     [Parameter] public int Id { get; set; }
     private JobPost? jobPost;
     private bool isLoading = true;
@@ -236,6 +236,7 @@ else if (jobPost != null)
     private bool isBookmarked = false;
     private JobSeeker? currentJobSeeker;
 
+    // This is the apply for job handler
     private void ApplyForJob()
     {
         if (jobPost != null)
@@ -260,7 +261,7 @@ else if (jobPost != null)
     }
 
 
-
+ // This is the get company initials handler
         private string GetCompanyInitials(string? companyName)
     {
         if (string.IsNullOrEmpty(companyName)) return "?";
@@ -273,6 +274,7 @@ else if (jobPost != null)
 return companyName.Length >= 2 ? companyName.Substring(0, 2).ToUpper() : companyName.ToUpper();
     }
 
+    // This is the save job handler
     private async Task SaveJob()
     {
         if (currentJobSeeker != null)

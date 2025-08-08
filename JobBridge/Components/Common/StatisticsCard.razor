@@ -8,13 +8,14 @@
     </div>
 </div>
 
-@code {
+@code { // This class represents a statistics card
     [Parameter] public string Icon { get; set; } = "";
     [Parameter] public string Value { get; set; } = "0";
     [Parameter] public string Label { get; set; } = "";
 }
 
-<style>
+<!-- This style block contains the CSS for the statistics card component -->
+<style> 
 .statistics-card {
     background: var(--gradient-card);
     backdrop-filter: blur(20px);

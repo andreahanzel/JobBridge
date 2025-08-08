@@ -1,0 +1,11 @@
+@page "/error-test"
+
+<h3>Error Boundary Test</h3>
+<button class="btn btn-danger" @onclick="ThrowError">Click to Test Error Boundary</button>
+
+@code {
+    private void ThrowError()
+    {
+        throw new Exception("This is a test error!");
+    }
+}

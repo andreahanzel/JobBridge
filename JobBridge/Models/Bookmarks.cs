@@ -4,7 +4,7 @@ using System;
 public class Bookmark
 {
     public int Id { get; set; }
-   
+
     // Foreign key to JobSeeker
     public int JobSeekerId { get; set; }
     public JobSeeker JobSeeker { get; set; } = null!;

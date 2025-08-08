@@ -134,12 +134,14 @@
         }
     }
 
+    // This method toggles the advanced search panel
     private async Task ToggleAdvancedSearch()
     {
         ShowAdvancedSearch = !ShowAdvancedSearch;
         await OnAdvancedToggle.InvokeAsync();
     }
 
+    // This method applies a quick search
     private async Task ApplyQuickSearch(string searchTerm)
     {
         SearchTerm = searchTerm;
