@@ -20,6 +20,7 @@ public class JobBridgeContext : IdentityDbContext<User>
     public DbSet<Application> Applications { get; set; } // Job applications
     public DbSet<ProfileView> ProfileViews { get; set; } // Profile views
     public DbSet<SavedSearch> SavedSearches { get; set; } // Saved searches
+    public DbSet<JobView> JobViews { get; set; } // Job views
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -87,5 +88,17 @@ public class JobBridgeContext : IdentityDbContext<User>
             .HasOne(ss => ss.JobSeeker)
             .WithMany()
             .HasForeignKey(ss => ss.JobSeekerId);
+
+        // Relationship: JobView → JobPost (N:1)
+        modelBuilder.Entity<JobView>()
+            .HasOne(jv => jv.JobPost)
+            .WithMany()
+            .HasForeignKey(jv => jv.JobPostId);
+
+        // Relationship: JobView → JobSeeker (N:1) - Optional
+        modelBuilder.Entity<JobView>()
+            .HasOne(jv => jv.JobSeeker)
+            .WithMany()
+            .HasForeignKey(jv => jv.JobSeekerId);
     }
 }

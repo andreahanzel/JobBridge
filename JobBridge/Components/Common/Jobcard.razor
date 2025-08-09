@@ -1,5 +1,7 @@
 @using JobBridge.Data
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 
 <div class="job-card" @onclick="() => NavigateToJob(JobPost.Id)">
@@ -64,7 +66,7 @@
             <span class="posted-date">Posted @GetRelativeTime(JobPost.PostedDate)</span>
         </div>
         <div class="job-cta">
-            <button class="btn btn-primary btn-sm" @onclick:stopPropagation="true" @onclick="() => ApplyForJob(JobPost)">
+            <button class="btn btn-primary btn-sm" @onclick:stopPropagation="true" @onclick="async () => await ApplyForJob(JobPost)">
                 Apply Now
                 <span class="btn-arrow">→</span>
             </button>
@@ -120,8 +122,16 @@
         return description.Length > 120 ? description.Substring(0, 120) + "..." : description;
     }
 
-    private void ApplyForJob(JobPost job)
+    private async Task ApplyForJob(JobPost job)
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        
+        if (!authState.User.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/authentication/login");
+            return;
+        }
+        
         string applicationUrl = "";
         
         if (!string.IsNullOrEmpty(job.ExternalApplicationUrl))
