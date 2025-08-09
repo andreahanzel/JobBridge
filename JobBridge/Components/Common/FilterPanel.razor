@@ -4,11 +4,11 @@
 <div class="filter-panel @(IsVisible ? "visible" : "")">
     <div class="filter-header">
         <h3 class="filter-title">
-            <span class="filter-icon">🎛️</span>
+            <span class="filter-icon" aria-hidden="true">🎛️</span>
             Advanced Filters
         </h3>
-        <button class="close-filters" @onclick="CloseFilters">
-            <span class="close-icon">✕</span>
+        <button class="close-filters" @onclick="CloseFilters" aria-label="Close filters">
+            <span class="close-icon" aria-hidden="true">✕</span>
         </button>
     </div>
 
@@ -56,19 +56,21 @@
             <div class="salary-range-container">
                 <div class="salary-inputs">
                     <div class="salary-input-group">
-                        <label class="salary-label">Min</label>
-                        <input type="number" 
-                                class="salary-input"
-                                placeholder="$0"
-                                @bind="MinSalary" />
+                        <label for="min-salary-input" class="salary-label">Min</label>
+                        <input id="min-salary-input"
+                            type="number" 
+                            class="salary-input"
+                            placeholder="$0"
+                            @bind="MinSalary" />
                     </div>
                     <div class="salary-separator">-</div>
                     <div class="salary-input-group">
-                        <label class="salary-label">Max</label>
-                        <input type="number" 
-                                class="salary-input"
-                                placeholder="$200k+"
-                                @bind="MaxSalary" />
+                        <label for="max-salary-input" class="salary-label">Max</label>
+                        <input id="max-salary-input"
+                            type="number" 
+                            class="salary-input"
+                            placeholder="$200k+"
+                            @bind="MaxSalary" />
                     </div>
                 </div>
             </div>
@@ -131,7 +133,7 @@
     </div>
 
     <div class="filter-footer">
-        <div class="active-filters-count">
+        <div class="active-filters-count" aria-live="polite" aria-atomic="true">
             @GetActiveFiltersCount() filters active
         </div>
         <div class="filter-actions">

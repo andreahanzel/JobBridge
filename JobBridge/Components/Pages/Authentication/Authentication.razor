@@ -23,46 +23,51 @@
 <link href="css/authentication.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
 
-<div class="container mt-5 animate-fadeInUp auth-container"> <!-- This is the authentication container -->
+<PageTitle>Login - JobBridge</PageTitle>
+
+
+<div class="container mt-5 animate-fadeInUp auth-container">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            @if (showLoginForm) // This is the login form
+            @if (showLoginForm)
             {
-                <h2 class="text-center mb-4 gradient-text" style="background: linear-gradient(90deg, #0ea5e9, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; transition: all 0.15s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Login to JobBridge</h2>
+                <h1 class="text-center mb-4 gradient-text" style="background: linear-gradient(90deg, #0ea5e9, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; transition: all 0.15s ease; cursor: pointer; font-size: var(--font-size-3xl)">Login to JobBridge</h1>
 
                 <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="card p-4 shadow-sm auth-card">
                     <DataAnnotationsValidator />
                     <ValidationSummary class="validation-message" />
                     
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <InputText id="email" class="form-control" @bind-Value="loginModel.Email"
+                        <label for="loginEmail" class="form-label">Email</label>
+                        <InputText id="loginEmail" class="form-control" @bind-Value="loginModel.Email"
                             placeholder="Enter your email" />
                         <ValidationMessage For="@(() => loginModel.Email)" class="validation-message" />
                     </div>
 
-                    <div class="mb-3"> <!-- This is the password field -->
-                        <label for="password" class="form-label">Password</label>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Password</label>
                         <div class="position-relative">
-                            <InputText id="password" type="@(showLoginPassword ? "text" : "password")" class="form-control pe-5" @bind-Value="loginModel.Password"
+                            <InputText id="loginPassword" type="@(showLoginPassword ? "text" : "password")" class="form-control pe-5" @bind-Value="loginModel.Password"
                                 placeholder="Enter your password" />
-                            <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showLoginPassword = !showLoginPassword" style="z-index: 10; margin-right: 10px;">
-                                <i class="bi @(showLoginPassword ? "bi-eye-slash" : "bi-eye") text-muted"></i>
+                            <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showLoginPassword = !showLoginPassword" style="z-index: 10; margin-right: 10px;"
+                                aria-label="@(showLoginPassword ? "Hide password" : "Show password")">
+                                <i class="bi @(showLoginPassword ? "bi-eye-slash" : "bi-eye") text-muted" aria-hidden="true"></i>
                             </button>
                         </div>
                         <ValidationMessage For="@(() => loginModel.Password)" class="validation-message" />
                     </div>
 
                     <div class="mb-3 form-check">
-                        <InputCheckbox id="rememberMe" class="form-check-input" @bind-Value="loginModel.RememberMe" /> <!-- This is the remember me checkbox -->    
+                        <InputCheckbox id="rememberMe" class="form-check-input" @bind-Value="loginModel.RememberMe" />
                         <label class="form-check-label" for="rememberMe">Remember me</label>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 animate-pulse" disabled="@isLoggingIn"> <!-- This is the login button -->
+                    <button type="submit" class="btn btn-primary w-100 animate-pulse" disabled="@isLoggingIn"
+                            aria-label="@(isLoggingIn ? "Logging in..." : "Login")">
                         @if (isLoggingIn)
                         {
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span>Logging in...</span>
+                            <span class="ms-2">Logging in...</span>
                         }
                         else
                         {
@@ -70,7 +75,7 @@
                         }
                     </button>
 
-                    @if (loginSuccessful) // This is the login success message
+                    @if (loginSuccessful)
                     {
                         <div class="alert alert-success mt-3" role="alert">
                             Login successful! Redirecting to home page in 2 seconds...
@@ -90,14 +95,14 @@
                     }
 
                     <div class="text-center mt-3">
-                        <a href="javascript:void(0);" @onclick="() => showLoginForm = false" class="text-muted">Don't have
+                        <a href="javascript:void(0);" @onclick="() => showLoginForm = false" class="text-muted" role="button">Don't have
                             an account? Register here</a>
                     </div>
                 </EditForm>
             }
             else
             {
-                <h2 class="text-center mb-4 gradient-text" style="background: linear-gradient(90deg, #0ea5e9, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; transition: all 0.15s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Register for JobBridge</h2>
+                <h2 class="text-center mb-4 gradient-text" style="background: linear-gradient(90deg, #0ea5e9, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; transition: all 0.15s ease; cursor: pointer;">Register for JobBridge</h2>
                 <EditForm Model="@registerModel" OnValidSubmit="HandleRegister" FormName="register-form"
                     Context="formContext" class="card p-4 shadow-sm auth-card">
                     <DataAnnotationsValidator />
@@ -114,7 +119,7 @@
                         <ValidationMessage For="@(() => registerModel.Role)" class="validation-message" />
                     </div>
 
-                    @if (!string.IsNullOrEmpty(registerModel.Role)) // This checks if a role is selected
+                    @if (!string.IsNullOrEmpty(registerModel.Role))
                     {
                         @if (registerModel.Role == "JobSeeker")
                         {
@@ -143,19 +148,20 @@
                         }
 
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <InputText id="email" class="form-control" @bind-Value="registerModel.Email"
+                            <label for="registerEmail" class="form-label">Email</label>
+                            <InputText id="registerEmail" class="form-control" @bind-Value="registerModel.Email"
                                 placeholder="Enter your email" />
                             <ValidationMessage For="@(() => registerModel.Email)" class="validation-message" />
                         </div>
 
                         <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
+                            <label for="registerPassword" class="form-label">Password</label>
                             <div class="position-relative">
-                                <InputText id="password" type="@(showRegisterPassword ? "text" : "password")" class="form-control pe-5" @bind-Value="registerModel.Password"
+                                <InputText id="registerPassword" type="@(showRegisterPassword ? "text" : "password")" class="form-control pe-5" @bind-Value="registerModel.Password"
                                     placeholder="Enter your password" />
-                                <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showRegisterPassword = !showRegisterPassword" style="z-index: 10; margin-right: 10px;">
-                                    <i class="bi @(showRegisterPassword ? "bi-eye-slash" : "bi-eye") text-muted"></i>
+                                <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showRegisterPassword = !showRegisterPassword" style="z-index: 10; margin-right: 10px;"
+                                    aria-label="@(showRegisterPassword ? "Hide password" : "Show password")">
+                                    <i class="bi @(showRegisterPassword ? "bi-eye-slash" : "bi-eye") text-muted" aria-hidden="true"></i>
                                 </button>
                             </div>
                             <ValidationMessage For="@(() => registerModel.Password)" class="validation-message" />
@@ -166,8 +172,9 @@
                             <div class="position-relative">
                                 <InputText id="confirmPassword" type="@(showConfirmPassword ? "text" : "password")" class="form-control pe-5"
                                     @bind-Value="registerModel.ConfirmPassword" placeholder="Confirm your password" />
-                                <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showConfirmPassword = !showConfirmPassword" style="z-index: 10; margin-right: 10px;">
-                                    <i class="bi @(showConfirmPassword ? "bi-eye-slash" : "bi-eye") text-muted"></i>
+                                <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent" type="button" @onclick="() => showConfirmPassword = !showConfirmPassword" style="z-index: 10; margin-right: 10px;"
+                                    aria-label="@(showConfirmPassword ? "Hide password" : "Show password")">
+                                    <i class="bi @(showConfirmPassword ? "bi-eye-slash" : "bi-eye") text-muted" aria-hidden="true"></i>
                                 </button>
                             </div>
                             <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="validation-message" />
@@ -181,11 +188,12 @@
                         </div>
                     }
 
-                    <button type="submit" class="btn btn-primary w-100 animate-pulse" disabled="@isSubmitting">
+                    <button type="submit" class="btn btn-primary w-100 animate-pulse" disabled="@isSubmitting"
+                            aria-label="@(isSubmitting ? "Registering..." : "Register")">
                         @if (isSubmitting)
                         {
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span>Registering...</span>
+                            <span class="ms-2">Registering...</span>
                         }
                         else
                         {
@@ -209,6 +217,7 @@
         </div>
     </div>
 </div>
+
 
 @code {
     private bool showLoginForm = true;
@@ -237,7 +246,6 @@
     [SupplyParameterFromQuery(Name = "error")]
     public string? ErrorMessageFromQuery { get; set; }
 
-    // This is the initialization method
     protected override void OnInitialized()
     {
         if (!string.IsNullOrEmpty(ErrorMessageFromQuery))
@@ -246,7 +254,6 @@
         }
     }
 
-    // This is the login model
     private class LoginModel
     {
         [Required(ErrorMessage = "Email is required")]
@@ -260,7 +267,6 @@
         public bool RememberMe { get; set; }
     }
 
-    // This is the registration model
     private class RegisterModel
     {
         public string FirstName { get; set; } = string.Empty;
@@ -288,7 +294,6 @@
         public string Role { get; set; } = string.Empty;
     }
 
-    // This is the login handler
     private async Task HandleLogin()
     {
         isLoggingIn = true;
@@ -305,7 +310,6 @@
                     loginSuccessful = true;
                     await InvokeAsync(StateHasChanged);
                     
-                    // Redirect to server login page
                     await Task.Delay(2000);
                     Navigation.NavigateTo($"/server-login?email={user.Email}&remember={loginModel.RememberMe}");
                     return;
@@ -323,13 +327,11 @@
         }
     }
 
-    // This is the registration handler
     private async Task HandleRegister()
     {
         isSubmitting = true;
         errorMessage = null;
 
-        // Validate role-specific fields
         if (registerModel.Role == "JobSeeker")
         {
             if (string.IsNullOrEmpty(registerModel.FirstName))
@@ -372,7 +374,6 @@
             var result = await AuthService.RegisterUserAsync(user, registerModel.Password);
             if (result.Succeeded)
             {
-                // Create JobSeeker or Employer record based on role
                 using (var scope = ServiceProvider.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<JobBridgeContext>();

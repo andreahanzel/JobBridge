@@ -7,6 +7,7 @@
 @inject JobBridgeContext DbContext
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+<PageTitle>@jobPost.JobTitle - JobBridge</PageTitle>
 
 @if (isLoading)
 {
@@ -28,7 +29,7 @@ else if (jobPost != null)
         <!-- Breadcrumb Navigation -->
         <div class="breadcrumb-nav">
             <a href="/jobs" class="breadcrumb-link">Jobs</a>
-            <span class="breadcrumb-separator">→</span>
+            <span class="breadcrumb-separator" aria-hidden="true">→</span>
             <span class="breadcrumb-current">@jobPost.JobTitle</span>
         </div>
 
@@ -51,12 +52,12 @@ else if (jobPost != null)
                 </div>
 
                 <div class="job-actions">
-                <button class="btn btn-secondary bookmark-btn" @onclick="SaveJob">
-                    <span class="bookmark-icon">@(isBookmarked ? "❤️" : "♡")</span>
-                    @(isBookmarked ? "Saved" : "Save Job")
-                </button>
+                    <button class="btn btn-secondary bookmark-btn" @onclick="SaveJob" aria-label="@(isBookmarked ? "Remove from saved jobs" : "Save this job")">
+                        <span class="bookmark-icon" aria-hidden="true">@(isBookmarked ? "❤️" : "♡")</span>
+                        @(isBookmarked ? "Saved" : "Save Job")
+                    </button>
                     <button class="btn btn-primary apply-btn" @onclick="ApplyForJob">
-                        <span class="apply-icon">→</span>
+                        <span class="apply-icon" aria-hidden="true">→</span>
                         Apply Now
                     </button>
                 </div>
@@ -113,28 +114,28 @@ else if (jobPost != null)
                     <div class="section-content">
                         <div class="benefits-grid">
                             <div class="benefit-item">
-                                <div class="benefit-icon">💰</div>
+                                <div class="benefit-icon" aria-hidden="true">💰</div>
                                 <div class="benefit-content">
                                     <h4>Competitive Salary</h4>
                                     <p>Market-leading compensation package</p>
                                 </div>
                             </div>
                             <div class="benefit-item">
-                                <div class="benefit-icon">🏥</div>
+                                <div class="benefit-icon" aria-hidden="true">🏥</div>
                                 <div class="benefit-content">
                                     <h4>Health Insurance</h4>
                                     <p>Comprehensive health, dental, and vision</p>
                                 </div>
                             </div>
                             <div class="benefit-item">
-                                <div class="benefit-icon">🏠</div>
+                                <div class="benefit-icon" aria-hidden="true">🏠</div>
                                 <div class="benefit-content">
                                     <h4>Remote Work</h4>
                                     <p>Flexible hybrid work arrangements</p>
                                 </div>
                             </div>
                             <div class="benefit-item">
-                                <div class="benefit-icon">📚</div>
+                                <div class="benefit-icon" aria-hidden="true">📚</div>
                                 <div class="benefit-content">
                                     <h4>Learning Budget</h4>
                                     <p>Annual budget for courses and conferences</p>

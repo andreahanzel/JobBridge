@@ -7,6 +7,9 @@
 @inject JobBridgeContext DbContext
 @inject NavigationManager Navigation
 
+<PageTitle>Browse Jobs - JobBridge</PageTitle>
+
+
 <div class="job-listings-container">
     <!-- Header Section -->
     <div class="listings-header">
@@ -45,13 +48,15 @@
         <div class="job-results-full">
             <!-- Results Header -->
             <div class="results-header">
-                <div class="results-info">
+                <div class="results-info" aria-live="polite" aria-atomic="true">
                     <h2 class="results-title">@filteredJobs.Count Jobs Found</h2>
                 </div>
 
                 <div class="results-controls">
                     <div class="sort-dropdown">
-                        <select class="sort-select" @onchange="SortJobs">
+                        <label for="sort-select" class="visually-hidden">Sort results by</label>
+                        
+                        <select id="sort-select" class="sort-select" @onchange="SortJobs">
                             <option value="relevance">Most Relevant</option>
                             <option value="date">Date Posted</option>
                             <option value="salary_high">Salary: High to Low</option>
@@ -61,8 +66,8 @@
                     </div>
 
                     <div class="view-toggle">
-                        <button class="view-btn @(viewMode == "grid" ? "active" : "")" @onclick="() => SetViewMode(ViewMode.Grid)">Grid</button>
-                        <button class="view-btn @(viewMode == "list" ? "active" : "")" @onclick="() => SetViewMode(ViewMode.List)">List</button>
+                        <button aria-pressed="true" class="view-btn @(viewMode == "grid" ? "active" : "")" @onclick="() => SetViewMode(ViewMode.Grid)">Grid</button>
+                        <button aria-pressed="false"class="view-btn @(viewMode == "list" ? "active" : "")" @onclick="() => SetViewMode(ViewMode.List)">List</button>
                     </div>
                 </div>
             </div>
@@ -123,7 +128,8 @@
                     <div class="pagination">
                         <button class="page-btn @(currentPage == 1 ? "disabled" : "")" 
                             @onclick="() => GoToPage(currentPage - 1)" 
-                            disabled="@(currentPage == 1)">
+                            disabled="@(currentPage == 1)"
+                            aria-label="Previous Page">
                             Previous
                         </button>
                         

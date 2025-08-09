@@ -1,11 +1,14 @@
+@namespace JobBridge.Components.Common
+
 <div class="search-bar-container">
     <div class="search-bar-wrapper">
         <div class="search-input-group">
+            <label for="search-term-input" class="visually-hidden">Search for jobs, companies, or keywords</label>
             <div class="search-icon">
-                <span class="icon">🔍</span>
+                <span class="icon" aria-hidden="true">🔍</span>
             </div>
-            <input type="text" 
-                    class="search-input" 
+            <input type="text"
+                    id="search-term-input" class="search-input"
                     placeholder="@Placeholder"
                     @bind="SearchTerm"
                     @bind:event="oninput"
@@ -15,36 +18,37 @@
             
             @if (!string.IsNullOrEmpty(SearchTerm))
             {
-                <button class="clear-button" @onclick="ClearSearch">
-                    <span class="clear-icon">✕</span>
+                <button class="clear-button" @onclick="ClearSearch" aria-label="Clear search">
+                    <span class="clear-icon" aria-hidden="true">✕</span>
                 </button>
             }
         </div>
 
         <div class="location-input-group">
+            <label for="location-input" class="visually-hidden">Location</label>
             <div class="location-icon">
-                <span class="icon">📍</span>
+                <span class="icon" aria-hidden="true">📍</span>
             </div>
-            <input type="text" 
-                    class="location-input" 
-                    placeholder="Location"
-                    @bind="LocationTerm"
-                    @bind:event="oninput"
-                    @onkeypress="HandleKeyPress"
-                    @onfocus="OnLocationFocus"
-                    @onblur="OnLocationBlur" />
+            <input type="text"
+                id="location-input" class="location-input"
+                placeholder="Location"
+                @bind="LocationTerm"
+                @bind:event="oninput"
+                @onkeypress="HandleKeyPress"
+                @onfocus="OnLocationFocus"
+                @onblur="OnLocationBlur" />
         </div>
 
-        <button class="search-button" @onclick="PerformSearch">
-            <span class="search-btn-icon">🔍</span>
+        <button class="search-button" @onclick="PerformSearch" aria-label="Search">
+            <span class="search-btn-icon" aria-hidden="true">🔍</span>
             <span class="search-btn-text">Search</span>
         </button>
     </div>
 
     <!-- Advanced Search Toggle -->
     <div class="advanced-search-toggle">
-        <button class="toggle-btn" @onclick="ToggleAdvancedSearch">
-            <span class="toggle-icon">@(ShowAdvancedSearch ? "▲" : "▼")</span>
+        <button class="toggle-btn" @onclick="ToggleAdvancedSearch" aria-label="@(ShowAdvancedSearch ? "Hide advanced filters" : "Show advanced filters")">
+            <span class="toggle-icon" aria-hidden="true">@(ShowAdvancedSearch ? "▲" : "▼")</span>
             <span class="toggle-text">@(ShowAdvancedSearch ? "Hide" : "Show") Advanced Filters</span>
         </button>
     </div>
@@ -54,7 +58,7 @@
     {
         <div class="quick-searches">
             <h4 class="quick-searches-title">Popular Searches</h4>
-            <div class="quick-search-tags">
+            <div class="quick-search-tags" role="listbox" aria-label="Popular search suggestions">
                 @foreach (var search in QuickSearches)
                 {
                     <button class="quick-search-tag" @onclick="() => ApplyQuickSearch(search)">

@@ -28,19 +28,19 @@
                                 <div class="search-criteria">
                                     @if (!string.IsNullOrEmpty(search.JobTitle))
                                     {
-                                        <span class="criteria-tag">📋 @search.JobTitle</span>
+                                        <span class="criteria-tag" aria-hidden="true">📋 @search.JobTitle</span>
                                     }
                                     @if (!string.IsNullOrEmpty(search.Location))
                                     {
-                                        <span class="criteria-tag">📍 @search.Location</span>
+                                        <span class="criteria-tag" aria-hidden="true">📍 @search.Location</span>
                                     }
                                     @if (!string.IsNullOrEmpty(search.EmploymentType))
                                     {
-                                        <span class="criteria-tag">💼 @search.EmploymentType</span>
+                                        <span class="criteria-tag" aria-hidden="true">💼 @search.EmploymentType</span>
                                     }
                                     @if (search.MinSalary.HasValue || search.MaxSalary.HasValue)
                                     {
-                                        <span class="criteria-tag">💰 @GetSalaryRange(search)</span>
+                                        <span class="criteria-tag" aria-hidden="true">💰 @GetSalaryRange(search)</span>
                                     }
                                 </div>
                                 <small class="text-muted">Created @search.CreatedAt.ToString("MMM dd, yyyy")</small>

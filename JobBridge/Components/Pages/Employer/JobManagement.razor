@@ -9,6 +9,8 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+<PageTitle>Job Management - JobBridge</PageTitle>
+
 <div class="job-management-container">
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -37,28 +39,28 @@
     <!-- Quick Stats -->
     <div class="stats-overview">
         <div class="stat-card">
-            <div class="stat-icon">📝</div>
+            <div class="stat-icon" aria-hidden="true">📝</div>
             <div class="stat-content">
                 <div class="stat-number">@jobPosts.Count(j => j.IsActive)</div>
                 <div class="stat-label">Active Jobs</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">👁️</div>
+            <div class="stat-icon" aria-hidden="true">👁️</div>
             <div class="stat-content">
                 <div class="stat-number">@totalViews</div>
                 <div class="stat-label">Total Views</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">📄</div>
+            <div class="stat-icon" aria-hidden="true">📄</div>
             <div class="stat-content">
                 <div class="stat-number">@totalApplications</div>
                 <div class="stat-label">Applications</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">📈</div>
+            <div class="stat-icon" aria-hidden="true">📈</div>
             <div class="stat-content">
                 <div class="stat-number">@applyRate.ToString("P0")</div>
                 <div class="stat-label">Avg. Apply Rate</div>
@@ -70,12 +72,14 @@
     <div class="management-controls">
         <div class="search-filters">
             <div class="search-input-wrapper">
-                <input type="text" class="search-input" placeholder="Search your jobs..." />
-                <span class="search-icon">🔍</span>
+                <label for="searchInput" class="visually-hidden">Search for jobs</label>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search your jobs..." />
+                <span class="search-icon" aria-hidden="true">🔍</span>
             </div>
 
             <div class="filter-dropdown">
-                <select class="filter-select">
+                <label for="jobStatusFilter" class="visually-hidden">Filter by Job Status</label>
+                <select id="jobStatusFilter" class="filter-select">
                     <option value="all">All Jobs</option>
                     <option value="active">Active</option>
                     <option value="paused">Paused</option>
@@ -85,7 +89,8 @@
             </div>
 
             <div class="filter-dropdown">
-                <select class="filter-select">
+                <label for="departmentFilter" class="visually-hidden">Filter by Department</label>
+                <select id="departmentFilter" class="filter-select">
                     <option value="all">All Departments</option>
                     <option value="engineering">Engineering</option>
                     <option value="product">Product</option>
@@ -97,7 +102,8 @@
 
         <div class="view-controls">
             <div class="sort-dropdown">
-                <select class="sort-select">
+                <label for="sort" class="visually-hidden">Sort Jobs</label>
+                <select id="sort" class="sort-select">
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
                     <option value="most-views">Most Views</option>
@@ -106,8 +112,8 @@
             </div>
 
             <div class="view-toggle">
-                <button class="view-btn active">Grid</button>
-                <button class="view-btn">List</button>
+                <button class="view-btn active" aria-pressed="true">Grid</button>
+                <button class="view-btn" aria-pressed="false">List</button>
             </div>
         </div>
     </div>
@@ -161,7 +167,7 @@
     @if (jobPosts.Count == 0)
     {
         <div class="empty-state">
-            <div class="empty-icon">📝</div>
+            <div class="empty-icon" aria-hidden="true">📝</div>
             <h3 class="empty-title">No Job Postings Yet</h3>
             <p class="empty-description">Create your first job posting to start attracting top talent</p>
             <a href="/employer/@Id/jobs/create" class="btn btn-primary">Create Your First Job</a>

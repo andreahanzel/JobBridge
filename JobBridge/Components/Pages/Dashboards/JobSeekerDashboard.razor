@@ -55,16 +55,16 @@
                     <div class="application-list">
                         @foreach (var application in recentApplications)
                         {
-                        <div class="application-item" @onclick="() => NavigateToJob(application.JobPost.Id)" style="cursor: pointer;">
-                            <div class="application-info">
-                                <h4>@application.JobPost.JobTitle</h4>
-                                <p>@application.JobPost.Employer.Name</p>
-                                <span class="application-date">Applied @application.AppliedDate.ToString("MMM dd")</span>
-                        </div>
+                            <a href="/jobs/@application.JobPost.Id" class="application-item">
+                                <div class="application-info">
+                                    <h4>@application.JobPost.JobTitle</h4>
+                                    <p>@application.JobPost.Employer.Name</p>
+                                    <span class="application-date">Applied @application.AppliedDate.ToString("MMM dd")</span>
+                                </div>
                                 <div class="application-status">
                                     <span class="status-badge status-@application.Status.ToString().ToLower()">@application.Status</span>
                                 </div>
-                            </div>
+                            </a>
                         }
                     </div>
                 }
@@ -85,11 +85,11 @@
                         @foreach (var job in savedJobsList)
                         {
                             <div class="job-item">
-                                <div class="job-info" @onclick="() => NavigateToJob(job.Id)" style="cursor: pointer;">
+                                <a href="/jobs/@job.Id" class="job-info">
                                     <h4>@job.JobTitle</h4>
                                     <p>@job.Employer.Name</p>
-                                    <span class="job-location">📍 @job.Location</span>
-                                </div>
+                                    <span class="job-location" aria-hidden="true">📍 @job.Location</span>
+                                </a>
                                 <div class="job-actions">
                                     <button class="btn btn-primary btn-sm" @onclick="() => ApplyToJob(job.Id)">Apply Now</button>
                                     <button class="btn btn-secondary btn-sm" @onclick="() => RemoveBookmark(job.Id)">Remove</button>
@@ -123,11 +123,11 @@
                                     <div class="search-criteria">
                                         @if (!string.IsNullOrEmpty(search.JobTitle))
                                         {
-                                            <span class="criteria-tag">📋 @search.JobTitle</span>
+                                            <span class="criteria-tag" aria-hidden="true">📋 @search.JobTitle</span>
                                         }
                                         @if (!string.IsNullOrEmpty(search.Location))
                                         {
-                                            <span class="criteria-tag">📍 @search.Location</span>
+                                            <span class="criteria-tag" aria-hidden="true">📍 @search.Location</span>
                                         }
                                     </div>
                                     <span class="search-date">Created @search.CreatedAt.ToString("MMM dd")</span>

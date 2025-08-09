@@ -4,25 +4,29 @@
 @using System.Security.Claims
 
 <div class="page-layout-horizontal">
-    <header class="top-navbar-container">
+    <header class="top-navbar-container" role="banner">
         <NavMenu />
     </header>
 
     <AuthorizeView>
         <Authorized>
-            <div class="welcome-message bg-light border-bottom py-2">
+            <div class="welcome-message bg-light border-bottom py-2" role="status" aria-live="polite">
                 <div class="container">
-                    <div class="text-center text-success">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        Welcome back, <strong>@context.User.FindFirst(ClaimTypes.GivenName)?.Value</strong>! 
-                        <span class="text-muted">You are logged in as @context.User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value</span>
+                    <div style="color: #157045; font-size: 1.15rem;" class="text-center ">
+                        <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
+                        <span aria-label="Welcome back, @context.User.FindFirst(ClaimTypes.GivenName)?.Value">
+                            Welcome back, <strong>@context.User.FindFirst(ClaimTypes.GivenName)?.Value</strong>! 
+                        </span>
+                        <span class="text-muted d-block d-md-inline-block">
+                            You are logged in as @context.User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value
+                        </span>
                     </div>
                 </div>
             </div>
         </Authorized>
     </AuthorizeView>
 
-    <main id="main-content" class="main-content-horizontal" tabindex="-1">
+    <main id="mainContent" class="main-content-horizontal" tabindex="-1">
         <article class="content px-4">
             @Body
         </article>
@@ -31,7 +35,7 @@
     <Footer />
 </div>
 
-@code { // This class represents the main layout
+@code {
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -47,4 +51,3 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
-
