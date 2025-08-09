@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize(Roles = "Employer")]
+@inject ILogger<JobCreate> Logger
 
 
 <div class="job-create-container">
@@ -300,6 +301,7 @@
 
 @code {
     [Parameter] public int Id { get; set; }
+    [CascadingParameter] private ErrorDisplay? ErrorDisplay { get; set; }
     private JobPost jobPost = new JobPost()
     {
         ApplicationDeadline = DateTime.UtcNow.AddDays(30) // Default to 30 days from now
@@ -393,34 +395,54 @@
 
         try
         {
+            // Validate salary range
+            if (jobPost.MinimumSalary > jobPost.MaximumSalary)
+            {
+                ErrorDisplay?.ShowError("Minimum salary cannot be greater than maximum salary");
+                return;
+            }
+
+            // Validate deadline
+            if (jobPost.ApplicationDeadline < DateTime.Now)
+            {
+                ErrorDisplay?.ShowError("Application deadline must be in the future");
+                return;
+            }
+
             // Set the default values for the new job post
             jobPost.PostedDate = DateTime.UtcNow;
             jobPost.CreatedAt = DateTime.UtcNow;
             jobPost.UpdatedAt = DateTime.UtcNow;
             jobPost.NumberOfApplicants = 0;
-
-            // Set expiration date (30 days from now by default)
             jobPost.PostExpirationDate = DateTime.UtcNow.AddDays(postDuration);
-
-            // TODO: Set EmployerId and FieldId based on current user and selected field
-            // For now, using placeholder values
-            jobPost.EmployerId = Id; // This should come from the current logged-in employer
-            jobPost.FieldId = 1; // This should be selected in the form or determined from department
+            jobPost.EmployerId = Id;
+            jobPost.FieldId = 1;
 
             // Add the job post to the database
             DbContext.JobPosts.Add(jobPost);
             await DbContext.SaveChangesAsync();
 
-            // Navigate back to the jobs list page
+            // Show success message
+            ErrorDisplay?.ShowSuccess("Job post created successfully!");
+            
+            // Navigate after a short delay
+            await Task.Delay(1500);
             Navigation.NavigateTo($"/employer/{Id}/jobs");
+        }
+        catch (DbUpdateException dbEx)
+        {
+            Logger.LogError(dbEx, "Database error creating job post");
+            ErrorDisplay?.ShowError("Failed to save job post. Please check your input and try again.");
         }
         catch (Exception ex)
         {
-            errorMessage = $"An error occurred while creating the job post: {ex.Message}";
+            Logger.LogError(ex, "Error creating job post");
+            ErrorDisplay?.ShowError("An unexpected error occurred. Please try again later.");
         }
         finally
         {
             isSubmitting = false;
+            StateHasChanged();
         }
     }
 }

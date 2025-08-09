@@ -289,7 +289,7 @@
         {
             Id = j.Id,
             Title = j.JobTitle,
-            CompanyName = j.Employer.Name,
+            CompanyName = j.Employer?.Name ?? "Unknown",
             Location = j.Location,
             PostedDate = j.PostedDate
         }).ToList();

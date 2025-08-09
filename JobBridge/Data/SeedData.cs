@@ -32,7 +32,7 @@ namespace JobBridge.Data
             // Define users to be seeded.
             var usersToSeed = new User[]
             {
-                new User
+                new User // Admin user
                 {
                     Role = "Admin",
                     FirstName = "John",
@@ -43,7 +43,7 @@ namespace JobBridge.Data
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
-                new User
+                new User // Job seeker
                 {
                     Role = "JobSeeker",
                     FirstName = "Jane",
@@ -54,7 +54,7 @@ namespace JobBridge.Data
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
-                new User
+                new User // Employer
                 {
                     Role = "Employer",
                     FirstName = "Bob",
@@ -182,7 +182,7 @@ namespace JobBridge.Data
                 
                 if (employersList.Count > 0 && fieldsList.Count > 0)
                 {
-                    jobPosts.Add(new JobPost
+                    jobPosts.Add(new JobPost // Frontend Developer job post
                     {
                         JobTitle = "Frontend Developer",
                         Department = "Engineering",
@@ -218,7 +218,7 @@ namespace JobBridge.Data
                 
                 if (employersList.Count > 0 && fieldsList.Count > 1)
                 {
-                    jobPosts.Add(new JobPost
+                    jobPosts.Add(new JobPost // Digital Marketing Specialist job post
                     {
                         JobTitle = "Digital Marketing Specialist",
                         Department = "Marketing",
@@ -254,7 +254,7 @@ namespace JobBridge.Data
                 
                 if (employersList.Count > 1 && fieldsList.Count > 0)
                 {
-                    jobPosts.Add(new JobPost
+                    jobPosts.Add(new JobPost // Backend Developer job post
                     {
                         JobTitle = "Backend Developer",
                         Department = "Engineering",
@@ -345,11 +345,11 @@ namespace JobBridge.Data
                 {
                     db.Applications.AddRange(applications);
                     await db.SaveChangesAsync();
-                    Console.WriteLine($"Added {applications.Count} applications.");
+                    Console.WriteLine($"Added {applications.Count} applications."); // Job applications
                 }
             }
-            
-            Console.WriteLine("Database seeding completed successfully.");
+
+            Console.WriteLine("Database seeding completed successfully."); // Database seeding
         }
     }
 }

@@ -1,5 +1,6 @@
 @using JobBridge.Data
 
+<!-- This is the filter panel for job listings -->
 <div class="filter-panel @(IsVisible ? "visible" : "")">
     <div class="filter-header">
         <h3 class="filter-title">
@@ -96,10 +97,10 @@
                 {
                     <label class="radio-label">
                         <input type="radio" 
-                               name="datePosted"
-                               class="radio-input"
-                               value="@date.Value"
-                               @onchange="() => SelectDatePosted(date.Value)" />
+                                name="datePosted"
+                                class="radio-input"
+                                value="@date.Value"
+                                @onchange="() => SelectDatePosted(date.Value)" />
                         <span class="radio-custom"></span>
                         <span class="radio-text">@date.Label</span>
                     </label>
@@ -150,6 +151,7 @@
     <div class="filter-overlay" @onclick="CloseFilters"></div>
 }
 
+<!-- This is the code block for the filter panel -->
 @code {
     [Parameter] public bool IsVisible { get; set; } = false;
     [Parameter] public EventCallback<FilterModel> OnFiltersChanged { get; set; }
@@ -220,7 +222,7 @@
             IsSelected = false
         }).ToList();
     }
-
+    // This method retrieves the available experience levels for filtering
     private List<FilterOption> GetExperienceLevels()
     {
         if (AllJobs == null) return new List<FilterOption>();
@@ -256,11 +258,13 @@
         new() { Label = "Past month", Value = "1month" }
     };
 
+// This method is called when any filter is changed
     private async Task OnFilterChange()
     {
         await ApplyFilters();
     }
 
+    // This method applies the selected filters
     private async Task ApplyFilters()
     {
         var filterModel = new FilterModel
@@ -295,11 +299,13 @@
         await ApplyFilters();
     }
 
+// This method closes the filter panel
     private async Task CloseFilters()
     {
         await OnClose.InvokeAsync();
     }
 
+    // This method toggles the selection state of a company size filter option
     private void ToggleCompanySize(FilterOption size)
     {
         size.IsSelected = !size.IsSelected;
@@ -333,12 +339,14 @@
         public bool IsSelected { get; set; }
     }
 
+    // This class represents a date filter option
     public class DateOption
     {
         public string Label { get; set; } = string.Empty;
         public string Value { get; set; } = string.Empty;
     }
 
+    // This class represents the overall filter model
     public class FilterModel
     {
         public List<string> EmploymentTypes { get; set; } = new();

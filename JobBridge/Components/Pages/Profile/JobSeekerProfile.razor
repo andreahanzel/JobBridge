@@ -9,6 +9,7 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+<!-- Profile Container -->
 <div class="profile-container">
     @if (hasAccess && jobSeeker != null)
     {
@@ -49,6 +50,7 @@
     }
 </div>
 
+<!-- Profile Styles -->
 <style>
     .profile-container {
         max-width: 600px;
@@ -265,7 +267,7 @@
     }
 </style>
 
-@code {
+@code { // This is the code block for the job seeker profile
     [Parameter] public int Id { get; set; }
     
     private JobSeeker? jobSeeker;
@@ -276,6 +278,7 @@
         await CheckAccessAndLoadProfile();
     }
 
+    // This is the access check and profile loading handler
     private async Task CheckAccessAndLoadProfile()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();

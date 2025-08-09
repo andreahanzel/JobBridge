@@ -1,6 +1,7 @@
 @using JobBridge.Data
 @inject NavigationManager Navigation
 
+
 <div class="job-card" @onclick="() => NavigateToJob(JobPost.Id)">
     <div class="job-card-header">
         <div class="company-info">
@@ -137,6 +138,7 @@
         Navigation.NavigateTo(applicationUrl, forceLoad: true);
     }
 
+    // This method retrieves the skill tags from a job description
     private List<string> GetSkillTags(string description)
     {
         // Mock skill extraction - in real app, this would be more sophisticated
@@ -154,6 +156,7 @@
         return foundSkills.Take(3).ToList();
     }
 
+    // This method retrieves the relative time for a posted date
     private string GetRelativeTime(DateTime postedDate)
     {
         var timeSpan = DateTime.Now - postedDate;

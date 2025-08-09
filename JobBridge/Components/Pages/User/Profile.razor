@@ -11,7 +11,7 @@
 @attribute [Authorize]
 
 <PageTitle>My Profile - JobBridge</PageTitle>
-
+<!-- Profile Container -->
 <div class="profile-container">
     <div class="section-container animate-fadeInUp">
         <h1 class="gradient-text">My Profile</h1>
@@ -188,6 +188,7 @@
     }
 </div>
 
+<!-- Profile Styles -->
 <style>
     .profile-container {
         max-width: 1200px;
@@ -299,6 +300,7 @@
         }
     }
 
+    // This is the update profile handler
     private async Task UpdateProfile()
     {
         isSaving = true;
@@ -335,6 +337,7 @@
         }
     }
 
+    // This is the update job seeker info handler
     private async Task UpdateJobSeekerInfo()
     {
         if (jobSeeker != null)
@@ -346,6 +349,7 @@
         }
     }
 
+    // This is the update employer info handler
     private async Task UpdateEmployerInfo()
     {
         if (employer != null)
@@ -362,6 +366,7 @@
         }
     }
 
+    // This is the change password handler
     private async Task ChangePassword()
     {
         if (user != null)
@@ -379,6 +384,7 @@
         }
     }
 
+    // This is the profile model for the user profile page
     private class ProfileModel
     {
         public string FirstName { get; set; } = "";
@@ -387,6 +393,7 @@
         public string Phone { get; set; } = "";
     }
 
+    // This is the job seeker model for the user profile page
     private class JobSeekerModel
     {
         public string ResumeUrl { get; set; } = "";
@@ -394,6 +401,7 @@
         public string Bio { get; set; } = "";
     }
 
+    // This is the employer model for the user profile page
     private class EmployerModel
     {
         public string CompanyName { get; set; } = "";
@@ -402,6 +410,7 @@
         public int NumberOfEmployees { get; set; }
     }
 
+    // This is the password model for the user profile page
     private class PasswordModel
     {
         public string CurrentPassword { get; set; } = "";
