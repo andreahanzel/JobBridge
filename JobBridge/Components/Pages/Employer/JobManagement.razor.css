@@ -213,7 +213,7 @@
     border: none;
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-md);
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-medium);
     color: var(--gray-600);
     cursor: pointer;
@@ -222,7 +222,7 @@
 
 .view-btn.active {
     background: white;
-    color: var(--primary-600);
+    color: var(--primary-700);
     box-shadow: var(--shadow-sm);
 }
 

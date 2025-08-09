@@ -24,7 +24,7 @@
     <!-- Platform Statistics -->
     <div class="dashboard-stats">
         <div class="grid grid-cols-4">
-            <StatisticsCard Icon="👥" Value="@totalUsers.ToString()" Label="Total Users" />
+            <StatisticsCard Icon="👥"  Value="@totalUsers.ToString()" Label="Total Users" />
             <StatisticsCard Icon="💼" Value="@totalJobs.ToString()" Label="Active Jobs" />
             <StatisticsCard Icon="📊" Value="@totalApplications.ToString()" Label="Applications Today" />
             <StatisticsCard Icon="🏢" Value="@totalCompanies.ToString()" Label="Companies" />
@@ -182,22 +182,22 @@
             <h3>Quick Actions</h3>
             <div class="action-grid">
                 <a href="/admin/users" class="action-card">
-                    <div class="action-icon">👥</div>
+                    <div class="action-icon" aria-hidden="true">👥</div>
                     <h4>User Management</h4>
                     <p>Manage user accounts and permissions</p>
                 </a>
                 <a href="/admin/jobs" class="action-card">
-                    <div class="action-icon">💼</div>
+                    <div class="action-icon" aria-hidden="true">💼</div>
                     <h4>Job Moderation</h4>
                     <p>Review and approve job postings</p>
                 </a>
                 <a href="/admin/reports" class="action-card">
-                    <div class="action-icon">📊</div>
+                    <div class="action-icon" aria-hidden="true">📊</div>
                     <h4>Analytics Reports</h4>
                     <p>View detailed platform analytics</p>
                 </a>
                 <a href="/admin/settings" class="action-card">
-                    <div class="action-icon">⚙️</div>
+                    <div class="action-icon" aria-hidden="true">⚙️</div>
                     <h4>Platform Settings</h4>
                     <p>Configure system settings</p>
                 </a>

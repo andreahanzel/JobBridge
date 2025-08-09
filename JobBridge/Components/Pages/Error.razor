@@ -1,46 +1,49 @@
 @page "/Error"
 @page "/Error/{statusCode:int?}"
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            @if (StatusCode == 404)
-            {
-                <div class="error-404">
-                    <h1 class="display-1 text-primary">404</h1>
-                    <h2 class="mb-4">Page Not Found</h2>
-                    <p class="text-muted mb-4">
-                        Sorry, we couldn't find the page you're looking for.
-                    </p>
-                    <div class="d-flex gap-3 justify-content-center">
-                        <a href="/" class="btn btn-primary">
-                            <i class="bi bi-house-door me-2"></i>Go Home
-                        </a>
-                        <a href="/jobs" class="btn btn-outline-primary">
-                            <i class="bi bi-briefcase me-2"></i>Browse Jobs
-                        </a>
+<PageTitle>Error - JobBridge</PageTitle>
+
+<main id="mainContent" tabindex="-1">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                @if (StatusCode == 404)
+                {
+                    <div class="error-404">
+                        <h1 class="display-1 text-primary">404</h1>
+                        <h2 class="mb-4">Page Not Found</h2>
+                        <p class="text-muted mb-4">
+                            Sorry, we couldn't find the page you're looking for.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="/" class="btn btn-primary">
+                                <i class="bi bi-house-door me-2"></i>Go Home
+                            </a>
+                            <a href="/jobs" class="btn btn-outline-primary">
+                                <i class="bi bi-briefcase me-2"></i>Browse Jobs
+                            </a>
+                        </div>
                     </div>
-                </div>
-            }
-            else
-            {
-                <div class="error-generic">
-                    <h1 class="display-1 text-danger">Error</h1>
-                    <h2 class="mb-4">Something went wrong</h2>
-                    <p class="text-muted mb-4">
-                        An unexpected error occurred. Please try again.
-                    </p>
-                    <div class="d-flex gap-3 justify-content-center">
-                        <a href="/" class="btn btn-primary">
-                            <i class="bi bi-house-door me-2"></i>Go Home
-                        </a>
+                }
+                else
+                {
+                    <div class="error-generic">
+                        <h1 class="display-1 text-danger">Error</h1>
+                        <h2 class="mb-4">Something went wrong</h2>
+                        <p class="text-muted mb-4">
+                            An unexpected error occurred. Please try again.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="/" class="btn btn-primary">
+                                <i class="bi bi-house-door me-2"></i>Go Home
+                            </a>
+                        </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
         </div>
     </div>
-</div>
-
+</main>
 @code {
     [Parameter] public int? StatusCode { get; set; }
 }

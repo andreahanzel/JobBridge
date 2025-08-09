@@ -4,88 +4,94 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 
-<div class="job-card" @onclick="() => NavigateToJob(JobPost.Id)">
-    <div class="job-card-header">
-        <div class="company-info">
-            <div class="company-logo">
-                @GetCompanyInitials(JobPost.Employer.Name)
+<div class="job-card">
+    <a href="@($"jobs/{JobPost.Id}")">
+        <div class="job-card-header">
+            <div class="company-info">
+                <div class="company-logo">
+                    @GetCompanyInitials(JobPost.Employer.Name)
+                </div>
+                <div class="company-details">
+                    <h3 class="job-title">@JobPost.JobTitle</h3>
+                    <p class="company-name">@JobPost.Employer.Name</p>
+                </div>
             </div>
-            <div class="company-details">
-                <h3 class="job-title">@JobPost.JobTitle</h3>
-                <p class="company-name">@JobPost.Employer.Name</p>
-            </div>
-        </div>
-        @* <div class="job-actions">
-            <button class="btn-icon bookmark-btn @(JobPost.IsBookmarked ? "bookmarked" : "")" 
-                    @onclick:stopPropagation="true" 
-                    @onclick="() => ToggleBookmark(JobPost.Id)">
-                <span class="bookmark-icon">@(JobPost.IsBookmarked ? "❤️" : "🤍")</span>
-            </button>
-        </div> *@
-    </div>
-
-    <div class="job-card-body">
-        <div class="job-meta">
-            <span class="job-location">
-                <span class="meta-icon">📍</span>
-                @JobPost.Location
-            </span>
-            <span class="job-type">
-                <span class="meta-icon">💼</span>
-                @JobPost.EmploymentType
-            </span>
-            <span class="job-experience">
-                <span class="meta-icon">⭐</span>
-                @JobPost.ExperienceLevel
-            </span>
+            @* <div class="job-actions">
+                <button class="btn-icon bookmark-btn @(JobPost.IsBookmarked ? "bookmarked" : "")" 
+                        @onclick:stopPropagation="true" 
+                        @onclick="() => ToggleBookmark(JobPost.Id)">
+                    <span class="bookmark-icon">@(JobPost.IsBookmarked ? "❤️" : "🤍")</span>
+                </button>
+            </div> *@
         </div>
 
-        <p class="job-description">
-            @GetTruncatedDescription(JobPost.JobSummary)
-        </p>
+        <div class="job-card-body">
+            <div class="job-meta">
+                <span class="job-location">
+                    <span class="meta-icon" aria-hidden="true">📍</span>
+                    <span class="visually-hidden">Location: </span>
+                    @JobPost.Location
+                </span>
+                <span class="job-type">
+                    <span class="meta-icon" aria-hidden="true">💼</span>
+                    <span class="visually-hidden">Employment Type: </span>
+                    @JobPost.EmploymentType
+                </span>
+                <span class="job-experience">
+                    <span class="meta-icon" aria-hidden="true">⭐</span>
+                    <span class="visually-hidden">Experience Level: </span>
+                    @JobPost.ExperienceLevel
+                </span>
+            </div>
 
-        @if (@JobPost.MinimumSalary > 0 && @JobPost.MaximumSalary > 0)
+            <p class="job-description">
+                @GetTruncatedDescription(JobPost.JobSummary)
+            </p>
+
+            @if (@JobPost.MinimumSalary > 0 && @JobPost.MaximumSalary > 0)
+            {
+                <div class="salary-range">
+                    <span class="salary-icon" aria-hidden="true">💰</span>
+                    <span class="visually-hidden">Salary: </span>
+                    <span class="salary-text">@JobPost.MinimumSalary.ToString("N0") -
+                        @JobPost.MaximumSalary.ToString("N0")</span>
+                </div>
+            }
+
+            <div class="job-tags">
+                @foreach (var skill in GetSkillTags(JobPost.RequiredSkills))
+                {
+                    <span class="skill-tag">@skill</span>
+                }
+            </div>
+        </div>
+
+        <div class="job-card-footer">
+            <div class="job-timing">
+                <span class="posted-date">Posted @GetRelativeTime(JobPost.PostedDate)</span>
+            </div>
+            <div class="job-cta">
+                <button class="btn btn-primary btn-sm" @onclick:stopPropagation="true" @onclick="async () => await ApplyForJob(JobPost)">
+                    Apply Now
+                    <span class="btn-arrow" aria-hidden="true">→</span>
+                </button>
+            </div>
+        </div>
+
+        @if (JobPost.IsFeatured)
         {
-            <div class="salary-range">
-                <span class="salary-icon">💰</span>
-                <span class="salary-text">@JobPost.MinimumSalary.ToString("N0") -
-                    @JobPost.MaximumSalary.ToString("N0")</span>
+            <div class="featured-badge">
+                <span class="featured-text">Featured</span>
             </div>
         }
 
-        <div class="job-tags">
-            @foreach (var skill in GetSkillTags(JobPost.RequiredSkills))
-            {
-                <span class="skill-tag">@skill</span>
-            }
-        </div>
-    </div>
-
-    <div class="job-card-footer">
-        <div class="job-timing">
-            <span class="posted-date">Posted @GetRelativeTime(JobPost.PostedDate)</span>
-        </div>
-        <div class="job-cta">
-            <button class="btn btn-primary btn-sm" @onclick:stopPropagation="true" @onclick="async () => await ApplyForJob(JobPost)">
-                Apply Now
-                <span class="btn-arrow">→</span>
-            </button>
-        </div>
-    </div>
-
-    @if (JobPost.IsFeatured)
-    {
-        <div class="featured-badge">
-            <span class="featured-text">Featured</span>
-        </div>
-    }
-
-    @if (JobPost.IsUrgent)
-    {
-        <div class="urgent-badge">
-            <span class="urgent-text">Urgent</span>
-        </div>
-    }
+        @if (JobPost.IsUrgent)
+        {
+            <div class="urgent-badge">
+                <span class="urgent-text">Urgent</span>
+            </div>
+        }
+    </a>
 </div>
 
 @code {

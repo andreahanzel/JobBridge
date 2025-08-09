@@ -2,6 +2,10 @@
     JOB CARD COMPONENT
     ============================================= */
 
+a{
+    text-decoration: none;
+}
+
 .job-card {
     background: var(--gradient-card);
     -webkit-backdrop-filter: blur(20px);

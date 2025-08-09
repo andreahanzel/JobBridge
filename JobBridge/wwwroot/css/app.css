@@ -281,6 +281,33 @@
     color: white;
     }
 
+    .btn-skip {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: linear-gradient(90deg, #0ea5e9, #d946ef);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-100%);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 10000;
+    }
+      
+    .btn-skip:focus {
+    opacity: 1;
+    pointer-events: auto;
+    outline: 3px solid #0284c7;
+    outline-offset: 2px;
+    color: white;   
+    transform: translateY(0);
+    }
+      
     /* =============================================
     FORM CONTROLS
     ============================================= */
@@ -379,6 +406,12 @@
     background-clip: text;
     }
 
+    .gradient-text:hover,
+    .gradient-text:focus {
+    transform: scale(1.05);
+    }
+
+
     /* =============================================
     CONTENT LAYOUT
     ============================================= */
@@ -456,7 +489,7 @@
     BLAZOR SPECIFIC ENHANCEMENTS
     ============================================= */
     .validation-message {
-    color: var(--error-500);
+    color: var(--error-700);
     font-size: var(--font-size-sm);
     margin-top: var(--space-1);
     font-weight: var(--font-medium);
@@ -468,7 +501,7 @@
     }
 
     .invalid {
-    border-color: var(--error-500);
+    border-color: var(--error-700);
     box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
     }
 

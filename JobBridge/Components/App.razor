@@ -7,49 +7,65 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    
+
     <!-- Preconnect to Google Fonts for better performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <!-- Load Inter font family -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+
     <!-- Load Bootstrap (keeping for grid system and utilities) -->
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
-    
+
     <!-- Load Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+
     <!-- Load our modern design system -->
     <link rel="stylesheet" href="css/app.css" />
-    
+
     <!-- Load component-specific styles -->
     <link rel="stylesheet" href="JobBridge.styles.css" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png" />
-    
+
     <!-- Meta tags for better SEO and performance -->
-    <meta name="description" content="JobBridge - Modern job matching platform connecting job seekers and employers" />
+    <meta
+        name="description"
+        content="JobBridge - Modern job matching platform connecting job seekers and employers" />
     <meta name="theme-color" content="#2563eb" />
-    
+
     <HeadOutlet />
 </head>
 
 <!-- Connection Error Modal -->
-<div id="components-reconnect-modal" class="components-reconnect-modal">
+<div
+    id="components-reconnect-modal"
+    class="components-reconnect-modal"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="reconnectTitle"
+    aria-describedby="reconnectDesc">
     <div class="modal-backdrop show"></div>
     <div class="modal show d-block">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title">
+                    <h5 id="reconnectTitle" class="modal-title">
                         <i class="bi bi-wifi-off text-warning me-2"></i>
                         Connection Lost
                     </h5>
                 </div>
-                <div class="modal-body text-center">
+                <div
+                    id="reconnectDesc"
+                    class="modal-body text-center"
+                    aria-live="polite"
+                    aria-atomic="true">
                     <div class="spinner-border text-primary mb-3" role="status">
                         <span class="visually-hidden">Reconnecting...</span>
                     </div>
@@ -60,6 +76,7 @@
         </div>
     </div>
 </div>
+
 <!-- Reconnect Modal Styles -->
 <style>
     .components-reconnect-modal {
@@ -71,7 +88,7 @@
         height: 100%;
         z-index: 1050;
     }
-    
+
     .components-reconnect-modal.show {
         display: block;
     }
@@ -97,36 +114,57 @@
 
 <body>
     <!-- Skip link for accessibility -->
-    <button onclick="document.getElementById('main-content')?.focus()" class="skip-link btn btn-primary">Skip to main content</button>
-    
-    <!-- Main application routes -->
+    <button
+        class="skip-link btn btn-skip"
+        type="button"
+        aria-label="Skip to main content"
+        onclick="document.getElementById('mainContent')?.focus()">
+        Skip to main content
+    </button>
     <Routes @rendermode="RenderMode.InteractiveServer" />
-    
-    <!-- Blazor framework script -->
+
+    <script>
+        // ensures that the initial page focus is on the skip-link.
+        window.addEventListener('load', () => {
+            const skipLink = document.querySelector('.skip-link');
+   
+            if (skipLink) {
+                setTimeout(() => {
+                    skipLink.focus();
+                }, 100); 
+            }
+        });
+    </script>
+
     <script src="_framework/blazor.web.js"></script>
-    
-    <!-- Optional: Add smooth scrolling and theme detection -->
+
     <script>
         // Add smooth scrolling behavior
-        document.documentElement.style.scrollBehavior = 'smooth';
-        
+        document.documentElement.style.scrollBehavior = "smooth";
+
         // Add theme color meta tag based on user preference
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1e293b');
+        if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
+            document
+                .querySelector('meta[name="theme-color"]')
+                .setAttribute("content", "#1e293b");
         }
-        
+
         // Update navbar shadow on scroll
-        window.addEventListener('scroll', () => {
-            const navbar = document.querySelector('.top-navbar-container');
+        window.addEventListener("scroll", () => {
+            const navbar = document.querySelector(".top-navbar-container");
             if (navbar) {
                 if (window.scrollY > 10) {
-                    navbar.classList.add('scrolled');
+                    navbar.classList.add("scrolled");
                 } else {
-                    navbar.classList.remove('scrolled');
+                    navbar.classList.remove("scrolled");
                 }
             }
         });
     </script>
+
 </body>
 
 </html>

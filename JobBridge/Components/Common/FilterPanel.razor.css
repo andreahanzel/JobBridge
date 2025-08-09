@@ -79,6 +79,19 @@
     transform: scale(1.1);
 }
 
+.close-filters:focus,
+.filter-tag:focus,
+.btn-clear:focus,
+.btn-apply:focus,
+.filter-checkbox-label:focus-within,
+.radio-label:focus-within,
+.toggle-switch:focus-within {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+    transition: all var(--transition-fast);
+}
+
 .close-icon {
     font-size: var(--font-size-sm);
     color: var(--gray-700);
@@ -243,7 +256,7 @@
     color: var(--primary-700);
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-full);
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-medium);
     cursor: pointer;
     transition: all var(--transition-fast);

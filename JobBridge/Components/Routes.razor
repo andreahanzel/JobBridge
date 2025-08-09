@@ -27,10 +27,10 @@
                                             </p>
                                             <div class="d-flex gap-3 justify-content-center">
                                                 <a href="/" class="btn btn-primary">
-                                                    <i class="bi bi-house-door me-2"></i>Go Home
+                                                    <i class="bi bi-house-door me-2" aria-hidden="true"></i>Go Home
                                                 </a>
                                                 <a href="/jobs" class="btn btn-outline-primary">
-                                                    <i class="bi bi-briefcase me-2"></i>Browse Jobs
+                                                    <i class="bi bi-briefcase me-2" aria-hidden="true"></i>Browse Jobs
                                                 </a>
                                             </div>
                                         </div>
@@ -49,7 +49,7 @@
                             <div class="col-md-8">
                                 <div class="alert alert-danger p-4 shadow-sm">
                                     <h3 class="alert-heading">
-                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
                                         Oops! Something went wrong
                                     </h3>
                                     <p class="mb-3">
@@ -57,11 +57,11 @@
                                     </p>
                                     <hr>
                                     <div class="d-flex gap-3">
-                                        <button class="btn btn-primary" @onclick="() => NavigationManager.NavigateTo(NavigationManager.Uri, true)">
-                                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh Page
+                                        <button class="btn btn-primary" @onclick="() => NavigationManager.NavigateTo(NavigationManager.Uri, true)" aria-label="Refresh this page">
+                                            <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>Refresh Page
                                         </button>
                                         <a href="/" class="btn btn-outline-primary">
-                                            <i class="bi bi-house-door me-2"></i>Go Home
+                                            <i class="bi bi-house-door me-2" aria-hidden="true"></i>Go Home
                                         </a>
                                     </div>
                                 </div>

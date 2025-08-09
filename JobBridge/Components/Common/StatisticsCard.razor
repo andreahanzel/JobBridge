@@ -1,10 +1,10 @@
 @* Statistics Card Component for Dashboards *@
 
-<div class="statistics-card">
-    <div class="stat-icon">@Icon</div>
+<div class="statistics-card" aria-labelledby="stat-value-@SanitizedLabel stat-label-@SanitizedLabel">
+    <div class="stat-icon" aria-hidden="true">@Icon</div>
     <div class="stat-content">
-        <div class="stat-value">@Value</div>
-        <div class="stat-label">@Label</div>
+        <div class="stat-value" id="stat-value-@SanitizedLabel">@Value</div>
+        <div class="stat-label" id="stat-label-@SanitizedLabel">@Label</div>
     </div>
 </div>
 
@@ -12,6 +12,8 @@
     [Parameter] public string Icon { get; set; } = "";
     [Parameter] public string Value { get; set; } = "0";
     [Parameter] public string Label { get; set; } = "";
+
+    private string SanitizedLabel => Label.Replace(" ", "-");
 }
 
 <!-- This style block contains the CSS for the statistics card component -->
