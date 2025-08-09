@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobBridge.Data.Models;
 
-namespace JobBridge.Controllers
+namespace JobBridge.Controllers // Handles employer-related actions
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]")] // API route for employers
     [ApiController]
     public class EmployersController : ControllerBase
     {

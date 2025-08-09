@@ -23,17 +23,17 @@
 <link href="css/authentication.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
 
-<div class="container mt-5 animate-fadeInUp auth-container">
+<div class="container mt-5 animate-fadeInUp auth-container"> <!-- This is the authentication container -->
     <div class="row justify-content-center">
         <div class="col-md-6">
-            @if (showLoginForm)
+            @if (showLoginForm) // This is the login form
             {
                 <h2 class="text-center mb-4 gradient-text" style="background: linear-gradient(90deg, #0ea5e9, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; transition: all 0.15s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Login to JobBridge</h2>
 
                 <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="card p-4 shadow-sm auth-card">
                     <DataAnnotationsValidator />
                     <ValidationSummary class="validation-message" />
-
+                    
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <InputText id="email" class="form-control" @bind-Value="loginModel.Email"
@@ -41,7 +41,7 @@
                         <ValidationMessage For="@(() => loginModel.Email)" class="validation-message" />
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3"> <!-- This is the password field -->
                         <label for="password" class="form-label">Password</label>
                         <div class="position-relative">
                             <InputText id="password" type="@(showLoginPassword ? "text" : "password")" class="form-control pe-5" @bind-Value="loginModel.Password"
@@ -54,11 +54,11 @@
                     </div>
 
                     <div class="mb-3 form-check">
-                        <InputCheckbox id="rememberMe" class="form-check-input" @bind-Value="loginModel.RememberMe" />
+                        <InputCheckbox id="rememberMe" class="form-check-input" @bind-Value="loginModel.RememberMe" /> <!-- This is the remember me checkbox -->    
                         <label class="form-check-label" for="rememberMe">Remember me</label>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 animate-pulse" disabled="@isLoggingIn">
+                    <button type="submit" class="btn btn-primary w-100 animate-pulse" disabled="@isLoggingIn"> <!-- This is the login button -->
                         @if (isLoggingIn)
                         {
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -70,7 +70,7 @@
                         }
                     </button>
 
-                    @if (loginSuccessful)
+                    @if (loginSuccessful) // This is the login success message
                     {
                         <div class="alert alert-success mt-3" role="alert">
                             Login successful! Redirecting to home page in 2 seconds...
@@ -114,7 +114,7 @@
                         <ValidationMessage For="@(() => registerModel.Role)" class="validation-message" />
                     </div>
 
-                    @if (!string.IsNullOrEmpty(registerModel.Role))
+                    @if (!string.IsNullOrEmpty(registerModel.Role)) // This checks if a role is selected
                     {
                         @if (registerModel.Role == "JobSeeker")
                         {
@@ -237,6 +237,7 @@
     [SupplyParameterFromQuery(Name = "error")]
     public string? ErrorMessageFromQuery { get; set; }
 
+    // This is the initialization method
     protected override void OnInitialized()
     {
         if (!string.IsNullOrEmpty(ErrorMessageFromQuery))
@@ -245,6 +246,7 @@
         }
     }
 
+    // This is the login model
     private class LoginModel
     {
         [Required(ErrorMessage = "Email is required")]
@@ -258,6 +260,7 @@
         public bool RememberMe { get; set; }
     }
 
+    // This is the registration model
     private class RegisterModel
     {
         public string FirstName { get; set; } = string.Empty;
@@ -285,6 +288,7 @@
         public string Role { get; set; } = string.Empty;
     }
 
+    // This is the login handler
     private async Task HandleLogin()
     {
         isLoggingIn = true;
@@ -319,6 +323,7 @@
         }
     }
 
+    // This is the registration handler
     private async Task HandleRegister()
     {
         isSubmitting = true;

@@ -6,10 +6,10 @@ namespace JobBridge.Identity
 {
     public class IdentityRedirectManager
     {
-        private readonly NavigationManager _navigationManager;
+        private readonly NavigationManager _navigationManager; // Navigation manager for redirecting
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public IdentityRedirectManager(NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor)
+        public IdentityRedirectManager(NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor) // Constructor
         {
             _navigationManager = navigationManager;
             _httpContextAccessor = httpContextAccessor;
@@ -21,7 +21,7 @@ namespace JobBridge.Identity
             _navigationManager.NavigateTo(uri, forceLoad: true);
         }
 
-        public void RedirectToWithStatus(string uri, string message)
+        public void RedirectToWithStatus(string uri, string message) // Redirect with status message
         {
             var uriWithQuery = QueryHelpers.AddQueryString(uri, StatusMessageParam, message);
             RedirectTo(uriWithQuery);
@@ -35,6 +35,7 @@ namespace JobBridge.Identity
         public const string StatusMessageParam = "StatusMessage";
     }
 
+    // Query helper methods
     public static class QueryHelpers
     {
         public static string AddQueryString(string uri, string name, string value)

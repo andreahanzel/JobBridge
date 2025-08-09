@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace JobBridge.Services
 {
+
+    /// <summary>
+    /// User service for managing user profiles.
+    /// </summary>
     public class UserService
     {
         private readonly UserManager<User> _userManager;
@@ -13,6 +17,9 @@ namespace JobBridge.Services
             _userManager = userManager;
         }
 
+        /// <summary>
+        /// Gets the user's profile information.
+        /// </summary>
         public async Task<User?> GetUserProfileAsync(string userId)
         {
             return await _userManager.FindByIdAsync(userId);
@@ -24,6 +31,9 @@ namespace JobBridge.Services
             return result.Succeeded;
         }
 
+        /// <summary>
+        /// Changes the user's password.
+        /// </summary>
         public async Task<bool> ChangePasswordAsync(string userId, string currentPassword, string newPassword)
         {
             var user = await _userManager.FindByIdAsync(userId);

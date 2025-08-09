@@ -42,6 +42,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddSignInManager()
 .AddDefaultTokenProviders();
 
+// Configure application cookie settings
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/authentication";
@@ -72,7 +73,7 @@ builder.Services.ConfigureApplicationCookie(options =>
         return Task.CompletedTask;
     };
 });
-
+// Email sender service
 builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
 
 builder.Services.AddScoped<AuthService>();
@@ -86,10 +87,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+    app.UseStatusCodePagesWithReExecute("/Error/{0}");
 }
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseStatusCodePagesWithReExecute("/Error/{0}");
     app.UseHsts();
 }
 

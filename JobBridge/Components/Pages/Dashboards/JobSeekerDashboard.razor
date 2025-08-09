@@ -300,6 +300,7 @@
         Navigation.NavigateTo($"/jobs/{jobId}");
     }
 
+    // This is the remove bookmark handler
     private async Task RemoveBookmark(int jobId)
     {
         if (jobSeeker != null)
@@ -315,7 +316,7 @@
             }
         }
     }
-
+    // This is the apply to job handler
     private async Task ApplyToJob(int jobId)
     {
         if (jobSeeker != null)
@@ -342,7 +343,7 @@
             await LoadDashboardData();
         }
     }
-
+    // This is the save job handler
     private async Task SaveJob(int jobId)
     {
         if (jobSeeker != null)

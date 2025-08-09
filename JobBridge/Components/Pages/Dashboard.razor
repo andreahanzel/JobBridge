@@ -5,9 +5,9 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() // This is the initialization handler
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync(); // Get the authentication state
         var user = authState.User;
 
         if (user.Identity?.IsAuthenticated == true)
@@ -29,12 +29,12 @@
             }
             else
             {
-                Navigation.NavigateTo("/");
+                Navigation.NavigateTo("/"); // Redirect to home if no role matched
             }
         }
         else
         {
-            Navigation.NavigateTo("/authentication");
+            Navigation.NavigateTo("/authentication"); // Redirect to authentication if not logged in
         }
     }
 }

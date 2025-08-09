@@ -1,16 +1,75 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 @using JobBridge.Components.Layout
+@inject NavigationManager NavigationManager
 
+<!-- This is the main router for the application that handles all routing and navigation -->
 <CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(Program).Assembly">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-        </Found>
-        <NotFound>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
+    <ErrorDisplay>
+        <ErrorBoundary>
+            <ChildContent>
+                <Router AppAssembly="@typeof(Program).Assembly">
+                    <!-- Found route handling -->
+                    <Found Context="routeData">
+                        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+                    </Found>
+                    <!-- Not Found error handling -->
+                    <NotFound>
+                        <LayoutView Layout="@typeof(MainLayout)">
+                            <div class="container mt-5">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-8 text-center">
+                                        <div class="error-404">
+                                            <h1 class="display-1 text-primary">404</h1>
+                                            <h2 class="mb-4">Page Not Found</h2>
+                                            <p class="text-muted mb-4">
+                                                Sorry, we couldn't find the page you're looking for.
+                                            </p>
+                                            <div class="d-flex gap-3 justify-content-center">
+                                                <a href="/" class="btn btn-primary">
+                                                    <i class="bi bi-house-door me-2"></i>Go Home
+                                                </a>
+                                                <a href="/jobs" class="btn btn-outline-primary">
+                                                    <i class="bi bi-briefcase me-2"></i>Browse Jobs
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </LayoutView>
+                    </NotFound>
+                </Router>
+            </ChildContent>
+            <!-- Error Content -->
+            <ErrorContent>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <div class="container mt-5">
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <div class="alert alert-danger p-4 shadow-sm">
+                                    <h3 class="alert-heading">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        Oops! Something went wrong
+                                    </h3>
+                                    <p class="mb-3">
+                                        We encountered an unexpected error.
+                                    </p>
+                                    <hr>
+                                    <div class="d-flex gap-3">
+                                        <button class="btn btn-primary" @onclick="() => NavigationManager.NavigateTo(NavigationManager.Uri, true)">
+                                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh Page
+                                        </button>
+                                        <a href="/" class="btn btn-outline-primary">
+                                            <i class="bi bi-house-door me-2"></i>Go Home
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </LayoutView>
+            </ErrorContent>
+        </ErrorBoundary>
+    </ErrorDisplay>
 </CascadingAuthenticationState>

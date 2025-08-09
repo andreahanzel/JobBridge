@@ -1,0 +1,121 @@
+@implements IDisposable
+@inject ILogger<ErrorDisplay> Logger
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow-lg" 
+            style="z-index: 1050; min-width: 400px; max-width: 600px;" role="alert">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-exclamation-triangle-fill me-2 text-danger fs-5"></i>
+                <div class="flex-grow-1">
+                    <strong>Error!</strong> @ErrorMessage
+                </div>
+                <button type="button" class="btn-close" @onclick="ClearError" aria-label="Close"></button> 
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(SuccessMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow-lg" 
+            style="z-index: 1050; min-width: 400px; max-width: 600px;" role="alert">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-check-circle-fill me-2 text-success fs-5"></i>
+                <div class="flex-grow-1">
+                    <strong>Success!</strong> @SuccessMessage
+                </div>
+                <button type="button" class="btn-close" @onclick="ClearSuccess" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(WarningMessage))
+    {
+        <div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow-lg" 
+            style="z-index: 1050; min-width: 400px; max-width: 600px;" role="alert">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-exclamation-circle-fill me-2 text-warning fs-5"></i>
+                <div class="flex-grow-1">
+                    <strong>Warning!</strong> @WarningMessage
+                </div>
+                <button type="button" class="btn-close" @onclick="ClearWarning" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @code { // This class handles the error, success, and warning messages
+        [Parameter] public RenderFragment? ChildContent { get; set; }
+
+        // This property holds the error message to be displayed
+        private string? ErrorMessage { get; set; }
+        private string? SuccessMessage { get; set; }
+        private string? WarningMessage { get; set; }
+        
+        private Timer? _errorTimer;
+        private Timer? _successTimer;
+        private Timer? _warningTimer;
+
+        // This method displays an error message
+        public void ShowError(string message)
+        {
+            ErrorMessage = message;
+            Logger.LogWarning($"Error displayed: {message}");
+            InvokeAsync(StateHasChanged);
+            
+            _errorTimer?.Dispose();
+            _errorTimer = new Timer(_ => ClearError(), null, 7000, Timeout.Infinite);
+        }
+
+        // This method displays a success message
+        public void ShowSuccess(string message)
+        {
+            SuccessMessage = message;
+            InvokeAsync(StateHasChanged);
+            
+            _successTimer?.Dispose();
+            _successTimer = new Timer(_ => ClearSuccess(), null, 5000, Timeout.Infinite);
+        }
+
+        // This method displays a warning message
+        public void ShowWarning(string message)
+        {
+            WarningMessage = message;
+            InvokeAsync(StateHasChanged);
+            
+            _warningTimer?.Dispose();
+            _warningTimer = new Timer(_ => ClearWarning(), null, 6000, Timeout.Infinite);
+        }
+
+        // This method clears the error message
+        private void ClearError()
+        {
+            ErrorMessage = null;
+            InvokeAsync(StateHasChanged);
+        }
+
+        // This method clears the success message
+        private void ClearSuccess()
+        {
+            SuccessMessage = null;
+            InvokeAsync(StateHasChanged);
+        }
+
+        // This method clears the warning message
+        private void ClearWarning()
+        {
+            WarningMessage = null;
+            InvokeAsync(StateHasChanged);
+        }
+
+        // This method disposes of the timers
+        public void Dispose()
+        {
+            _errorTimer?.Dispose();
+            _successTimer?.Dispose();
+            _warningTimer?.Dispose();
+        }
+    }

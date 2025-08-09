@@ -4,6 +4,7 @@
 
 <h3>Authentication Test</h3>
 
+<!-- This is the authentication test page -->
 <AuthorizeView>
     <Authorized>
         <div class="alert alert-success">
@@ -20,6 +21,7 @@
             </ul>
         </div>
     </Authorized>
+    <!-- This is the not authorized section -->
     <NotAuthorized>
         <div class="alert alert-danger">
             <h4>User is NOT authenticated</h4>
@@ -27,8 +29,8 @@
     </NotAuthorized>
 </AuthorizeView>
 
-@code {
-    protected override async Task OnInitializedAsync()
+@code { // This is the code block for the authentication test page
+    protected override async Task OnInitializedAsync() // This is the initialization handler
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         Console.WriteLine($"Auth state: {authState.User.Identity?.IsAuthenticated}");

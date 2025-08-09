@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using System;
 
-namespace JobBridge.Data
+namespace JobBridge.Data // Data models for the application
 {
-    public class User : IdentityUser
+    public class User : IdentityUser // Represents a user in the system
     {
         public required string Role { get; set; }
         public required string FirstName { get; set; }
