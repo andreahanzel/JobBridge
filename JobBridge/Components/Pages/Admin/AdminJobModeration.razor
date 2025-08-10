@@ -1,0 +1,184 @@
+@page "/admin/jobs"
+@attribute [Authorize(Roles = "Admin")]
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@inject JobBridgeContext DbContext
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Job Management - Admin</PageTitle>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="hero-title">Job Management</h1>
+        <p class="hero-subtitle">Review and moderate job postings</p>
+    </div>
+
+    <div class="job-management-content">
+        @if (isLoading)
+        {
+            <div class="loading-message">Loading jobs...</div>
+        }
+        else if (jobs?.Any() == true)
+        {
+            <div class="jobs-grid">
+                @foreach (var job in jobs)
+                {
+                    <div class="admin-job-card">
+                        <div class="job-header">
+                            <h3>@job.JobTitle</h3>
+                            <span class="job-status @(job.IsActive ? "active" : "inactive")">
+                                @(job.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </div>
+                        <div class="job-details">
+                            <p><strong>Company:</strong> @(job.Employer?.Name ?? "Unknown")</p>
+                            <p><strong>Location:</strong> @job.Location</p>
+                            <p><strong>Posted:</strong> @job.PostedDate.ToString("MMM dd, yyyy")</p>
+                            <p><strong>Applications:</strong> @job.NumberOfApplicants</p>
+                        </div>
+                        <div class="job-actions">
+                            <a href="/job/@job.Id" class="btn btn-secondary btn-sm">View</a>
+                            @if (job.IsActive)
+                            {
+                                <button class="btn btn-warning btn-sm" @onclick="() => DeactivateJob(job.Id)" disabled="@isProcessing">
+                                    @(isProcessing ? "Processing..." : "Deactivate")
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-success btn-sm" @onclick="() => ActivateJob(job.Id)" disabled="@isProcessing">
+                                    @(isProcessing ? "Processing..." : "Activate")
+                                </button>
+                            }
+                            <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(job.Id)" disabled="@isProcessing">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>No job postings found.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<JobPost>? jobs;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private string? statusMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadJobs();
+    }
+
+    private async Task LoadJobs()
+    {
+        try
+        {
+            isLoading = true;
+            jobs = await DbContext.JobPosts
+                .Include(j => j.Employer)
+                .OrderByDescending(j => j.PostedDate)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error loading jobs: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ActivateJob(int jobId)
+    {
+        try
+        {
+            isProcessing = true;
+            var job = await DbContext.JobPosts.FindAsync(jobId);
+            if (job != null)
+            {
+                job.IsActive = true;
+                job.UpdatedAt = DateTime.UtcNow;
+                await DbContext.SaveChangesAsync();
+                statusMessage = "Job activated successfully!";
+                await LoadJobs();
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error activating job: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task DeactivateJob(int jobId)
+    {
+        try
+        {
+            isProcessing = true;
+            var job = await DbContext.JobPosts.FindAsync(jobId);
+            if (job != null)
+            {
+                job.IsActive = false;
+                job.UpdatedAt = DateTime.UtcNow;
+                await DbContext.SaveChangesAsync();
+                statusMessage = "Job deactivated successfully!";
+                await LoadJobs();
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error deactivating job: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task ConfirmDelete(int jobId)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this job? This action cannot be undone."))
+        {
+            await DeleteJob(jobId);
+        }
+    }
+
+    private async Task DeleteJob(int jobId)
+    {
+        try
+        {
+            isProcessing = true;
+            var job = await DbContext.JobPosts.FindAsync(jobId);
+            if (job != null)
+            {
+                DbContext.JobPosts.Remove(job);
+                await DbContext.SaveChangesAsync();
+                statusMessage = "Job removed successfully!";
+                await LoadJobs();
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error deleting job: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}

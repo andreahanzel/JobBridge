@@ -9,6 +9,7 @@
 @inject JobBridgeContext DbContext
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Job Seeker Dashboard - JobBridge</PageTitle>
 
@@ -84,15 +85,16 @@
                     <div class="saved-jobs-list">
                         @foreach (var job in savedJobsList)
                         {
-                            <div class="job-item">
+                            <div class="job-item" style="display: flex; flex-direction: column; gap: var(--space-3);">
                                 <a href="/jobs/@job.Id" class="job-info">
                                     <h4>@job.JobTitle</h4>
                                     <p>@job.Employer.Name</p>
                                     <span class="job-location" aria-hidden="true">📍 @job.Location</span>
                                 </a>
                                 <div class="job-actions">
+                                    <button class="btn btn-secondary btn-sm" style="background-color: #22c55e; color: white; border-color: #22c55e;" @onclick="() => ViewJob(job)">Apply External</button>
                                     <button class="btn btn-primary btn-sm" @onclick="() => ApplyToJob(job.Id)">Apply Now</button>
-                                    <button class="btn btn-secondary btn-sm" @onclick="() => RemoveBookmark(job.Id)">Remove</button>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveBookmark(job.Id)">Remove</button>
                                 </div>
                             </div>
                         }
@@ -111,7 +113,10 @@
         <div class="grid grid-cols-2" style="margin-top: 30px;">
             <!-- Active Searches -->
             <div class="section-container">
-                <h3>Active Searches</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                    <h3>Active Searches</h3>
+                    <button class="btn btn-secondary btn-sm" @onclick="CreateActiveSearch">Create Active Search</button>
+                </div>
                 @if (activeSearchesList?.Any() == true)
                 {
                     <div class="searches-list">
@@ -132,8 +137,9 @@
                                     </div>
                                     <span class="search-date">Created @search.CreatedAt.ToString("MMM dd")</span>
                                 </div>
-                                <div class="search-actions">
-                                    <button class="btn btn-primary btn-sm" @onclick="() => RunSearch(search)">Run</button>
+                                <div class="search-actions" style="display: flex; gap: var(--space-2);">
+                                    <button class="btn btn-primary btn-sm" style="flex: 1;" @onclick="() => RunSearch(search)">Run</button>
+                                    <button class="btn btn-danger btn-sm" style="flex: 1;" @onclick="() => RemoveActiveSearch(search.Id)">Remove</button>
                                 </div>
                             </div>
                         }
@@ -316,6 +322,24 @@
             }
         }
     }
+    // This is the view job handler
+    private async Task ViewJob(JobPost job)
+    {
+        string applicationUrl = "";
+        
+        if (!string.IsNullOrEmpty(job.ExternalApplicationUrl))
+        {
+            applicationUrl = job.ExternalApplicationUrl;
+        }
+        else
+        {
+            var companyName = job.Employer?.Name?.ToLower()?.Replace(" ", "") ?? "company";
+            applicationUrl = $"https://careers.{companyName}.com/apply/{job.Id}";
+        }
+        
+        await JSRuntime.InvokeVoidAsync("open", applicationUrl, "_blank");
+    }
+
     // This is the apply to job handler
     private async Task ApplyToJob(int jobId)
     {
@@ -384,5 +408,30 @@
 
         var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
         Navigation.NavigateTo($"/job-listings{queryString}");
+    }
+    
+    private async Task RemoveActiveSearch(int searchId)
+    {
+        try
+        {
+            var search = await DbContext.SavedSearches.FindAsync(searchId);
+            if (search != null && search.JobSeekerId == jobSeeker?.Id)
+            {
+                DbContext.SavedSearches.Remove(search);
+                await DbContext.SaveChangesAsync();
+                await LoadDashboardData();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle error silently or show message
+            Console.WriteLine($"Error removing search: {ex.Message}");
+        }
+    }
+    
+    private void CreateActiveSearch()
+    {
+        // Navigate to the saved searches page with the form
+        Navigation.NavigateTo("/saved-searches");
     }
 }

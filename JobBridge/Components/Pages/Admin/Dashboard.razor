@@ -1,8 +1,11 @@
 @page "/dashboard/admin"
 @attribute [Authorize(Roles = "Admin")]
 @using JobBridge.Data
+@using JobBridge.Components.Common
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
 @inject JobBridgeContext DbContext
+@inject NavigationManager Navigation
 
 <PageTitle>Admin Dashboard - JobBridge</PageTitle>
 
@@ -11,7 +14,7 @@
     <div class="dashboard-header">
         <div class="hero-section">
             <div class="hero-content">
-                <h1 class="hero-title">Admin Dashboard</h1>
+                <h1 class="hero-title" style="background: linear-gradient(90deg, #0ea5e9, #d946ef) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; background-clip: text !important; color: transparent !important;">Admin Dashboard</h1>
                 <p class="hero-subtitle">Platform Overview and Management</p>
                 <div class="hero-buttons">
                     <a href="/admin/users" class="btn btn-primary">Manage Users</a>
@@ -24,7 +27,7 @@
     <!-- Platform Statistics -->
     <div class="dashboard-stats">
         <div class="grid grid-cols-4">
-            <StatisticsCard Icon="👥"  Value="@totalUsers.ToString()" Label="Total Users" />
+            <StatisticsCard Icon="👥" Value="@totalUsers.ToString()" Label="Total Users" />
             <StatisticsCard Icon="💼" Value="@totalJobs.ToString()" Label="Active Jobs" />
             <StatisticsCard Icon="📊" Value="@totalApplications.ToString()" Label="Applications Today" />
             <StatisticsCard Icon="🏢" Value="@totalCompanies.ToString()" Label="Companies" />
@@ -78,7 +81,7 @@
             <!-- Pending Job Approvals -->
             <div class="section-container">
                 <div class="section-header">
-                    <h3>Pending Job Approvals</h3>
+                    <h3>Recent Job Posts</h3>
                     <a href="/admin/jobs" class="btn btn-sm btn-secondary">View All Jobs</a>
                 </div>
                 @if (pendingJobs?.Any() == true)
@@ -104,7 +107,7 @@
                 else
                 {
                     <div class="empty-state">
-                        <p>No jobs pending approval.</p>
+                        <p>No recent job posts.</p>
                     </div>
                 }
             </div>
@@ -184,22 +187,22 @@
                 <a href="/admin/users" class="action-card">
                     <div class="action-icon" aria-hidden="true">👥</div>
                     <h4>User Management</h4>
-                    <p>Manage user accounts and permissions</p>
+                    <p>View all users and job seekers</p>
                 </a>
                 <a href="/admin/jobs" class="action-card">
                     <div class="action-icon" aria-hidden="true">💼</div>
-                    <h4>Job Moderation</h4>
-                    <p>Review and approve job postings</p>
+                    <h4>Job Management</h4>
+                    <p>Review and moderate job postings</p>
                 </a>
                 <a href="/admin/reports" class="action-card">
                     <div class="action-icon" aria-hidden="true">📊</div>
-                    <h4>Analytics Reports</h4>
-                    <p>View detailed platform analytics</p>
+                    <h4>Reports</h4>
+                    <p>View platform analytics and reports</p>
                 </a>
                 <a href="/admin/settings" class="action-card">
                     <div class="action-icon" aria-hidden="true">⚙️</div>
-                    <h4>Platform Settings</h4>
-                    <p>Configure system settings</p>
+                    <h4>Settings</h4>
+                    <p>Configure platform settings</p>
                 </a>
             </div>
         </div>
@@ -207,151 +210,160 @@
 </div>
 
 @code {
-    // Platform Statistics
     private int totalUsers = 0;
     private int totalJobs = 0;
     private int totalApplications = 0;
     private int totalCompanies = 0;
-    
-    // Growth Metrics
     private int weeklyNewUsers = 0;
     private int monthlyNewUsers = 0;
-    private decimal userGrowthRate = 0;
-    
-    // Job Metrics
+    private double userGrowthRate = 0.0;
     private int activeJobs = 0;
     private int expiredJobs = 0;
-    private decimal averageApplicationsPerJob = 0;
+    private double averageApplicationsPerJob = 0.0;
+    private int responseTime = 45;
     
-    // System Health
-    private int responseTime = 0;
-    
-    // Data Lists
-    private List<AdminUserModel>? recentUsers;
-    private List<AdminJobModel>? pendingJobs;
+    private List<UserSummary>? recentUsers;
+    private List<JobSummary>? pendingJobs;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadAdminDashboardData();
+        await LoadDashboardData();
     }
 
-    private async Task LoadAdminDashboardData()
+    private async Task LoadDashboardData()
     {
         try
         {
-            // Real database queries
+            // Load basic statistics
             totalUsers = await DbContext.Users.CountAsync();
-        totalJobs = await DbContext.JobPosts.CountAsync(j => j.IsActive);
-        totalApplications = await DbContext.Applications
-            .CountAsync(a => a.AppliedDate.Date == DateTime.Today);
-        totalCompanies = await DbContext.Employers.CountAsync();
-        
-        // Growth metrics
-        var weekAgo = DateTime.Now.AddDays(-7);
-        var monthAgo = DateTime.Now.AddDays(-30);
-        weeklyNewUsers = await DbContext.Users.CountAsync(u => u.CreatedAt >= weekAgo);
-        monthlyNewUsers = await DbContext.Users.CountAsync(u => u.CreatedAt >= monthAgo);
-        userGrowthRate = totalUsers > 0 ? (decimal)monthlyNewUsers / totalUsers : 0;
-        
-        // Job metrics
-        activeJobs = await DbContext.JobPosts.CountAsync(j => j.IsActive);
-        expiredJobs = await DbContext.JobPosts.CountAsync(j => !j.IsActive);
-        var totalJobsWithApps = await DbContext.JobPosts.CountAsync(j => j.NumberOfApplicants > 0);
-        averageApplicationsPerJob = totalJobsWithApps > 0 ? 
-            (decimal)await DbContext.JobPosts.SumAsync(j => j.NumberOfApplicants) / totalJobsWithApps : 0;
-        
-        responseTime = 145; // Mock system metric
+            totalJobs = await DbContext.JobPosts.CountAsync(j => j.IsActive);
+            totalApplications = await DbContext.Applications
+                .CountAsync(a => a.AppliedDate.Date == DateTime.Today);
+            totalCompanies = await DbContext.Employers.CountAsync();
 
-        // Recent users from database
-        var users = await DbContext.Users
-            .OrderByDescending(u => u.CreatedAt)
-            .Take(5)
-            .ToListAsync();
+            // Load growth statistics
+            var weekAgo = DateTime.UtcNow.AddDays(-7);
+            var monthAgo = DateTime.UtcNow.AddMonths(-1);
             
-        recentUsers = users.Select(u => new AdminUserModel
-        {
-            Id = int.Parse(u.Id),
-            Name = $"{u.FirstName} {u.LastName}",
-            Email = u.Email ?? "",
-            Role = u.Role,
-            RegisteredDate = u.CreatedAt,
-            IsActive = true // Assuming all users are active for now
-        }).ToList();
+            weeklyNewUsers = await DbContext.Users
+                .CountAsync(u => u.CreatedAt >= weekAgo);
+            monthlyNewUsers = await DbContext.Users
+                .CountAsync(u => u.CreatedAt >= monthAgo);
 
-        // Recent job posts (assuming they need approval)
-        var jobs = await DbContext.JobPosts
-            .Include(j => j.Employer)
-            .OrderByDescending(j => j.PostedDate)
-            .Take(5)
-            .ToListAsync();
+            var totalUsersLastMonth = await DbContext.Users
+                .CountAsync(u => u.CreatedAt < monthAgo);
+            userGrowthRate = totalUsersLastMonth > 0 ? 
+                (double)monthlyNewUsers / totalUsersLastMonth : 0;
+
+            // Load job statistics
+            activeJobs = await DbContext.JobPosts.CountAsync(j => j.IsActive);
+            expiredJobs = await DbContext.JobPosts
+                .CountAsync(j => j.ApplicationDeadline < DateTime.UtcNow);
             
-        pendingJobs = jobs.Select(j => new AdminJobModel
-        {
-            Id = j.Id,
-            Title = j.JobTitle,
-            CompanyName = j.Employer?.Name ?? "Unknown",
-            Location = j.Location,
-            PostedDate = j.PostedDate
-        }).ToList();
+            var totalApplicationsCount = await DbContext.Applications.CountAsync();
+            averageApplicationsPerJob = activeJobs > 0 ? 
+                (double)totalApplicationsCount / activeJobs : 0;
+
+            // Load recent users
+            recentUsers = await DbContext.Users
+                .OrderByDescending(u => u.CreatedAt)
+                .Take(5)
+                .Select(u => new UserSummary
+                {
+                    Id = u.Id,
+                    Name = $"{u.FirstName} {u.LastName}",
+                    Email = u.Email ?? "",
+                    Role = u.Role ?? "Unknown",
+                    RegisteredDate = u.CreatedAt,
+                    IsActive = true
+                })
+                .ToListAsync();
+
+            // Load recent jobs
+            var jobsData = await DbContext.JobPosts
+                .Include(j => j.Employer)
+                .Where(j => j.IsActive)
+                .OrderByDescending(j => j.PostedDate)
+                .Take(5)
+                .ToListAsync();
+                
+            pendingJobs = jobsData.Select(j => new JobSummary
+            {
+                Id = j.Id,
+                Title = j.JobTitle,
+                CompanyName = j.Employer?.Name ?? "Unknown",
+                Location = j.Location,
+                PostedDate = j.PostedDate
+            }).ToList();
         }
         catch (Exception ex)
         {
-            // Log error and set default values
-            Console.WriteLine($"Error loading admin dashboard: {ex.Message}");
-            totalUsers = 0;
-            totalJobs = 0;
-            totalApplications = 0;
-            totalCompanies = 0;
-            recentUsers = new List<AdminUserModel>();
-            pendingJobs = new List<AdminJobModel>();
+            Console.WriteLine($"Error loading dashboard data: {ex.Message}");
         }
     }
 
-    private async Task ViewUser(int userId)
+    private async Task ViewUser(string userId)
     {
-        // Navigate to user details page (implement later)
+        // Navigate to user profile page
+        Navigation.NavigateTo($"/profile/jobseeker/{userId}");
         await Task.CompletedTask;
     }
 
-    private async Task ToggleUserStatus(int userId)
+    private async Task ToggleUserStatus(string userId)
     {
-        var user = await DbContext.Users.FindAsync(userId.ToString());
+        var user = recentUsers?.FirstOrDefault(u => u.Id == userId);
         if (user != null)
         {
-            // Toggle user status logic (implement based on your User model)
-            // For now, just update the UI
-            var adminUser = recentUsers?.FirstOrDefault(u => u.Id == userId);
-            if (adminUser != null)
-            {
-                adminUser.IsActive = !adminUser.IsActive;
-            }
+            user.IsActive = !user.IsActive;
+            StateHasChanged();
         }
     }
 
     private async Task ApproveJob(int jobId)
     {
-        // Mock approve job
-        pendingJobs?.RemoveAll(j => j.Id == jobId);
-        await Task.Delay(1);
+        var job = pendingJobs?.FirstOrDefault(j => j.Id == jobId);
+        if (job != null)
+        {
+            pendingJobs?.Remove(job);
+            StateHasChanged();
+        }
     }
 
     private async Task RejectJob(int jobId)
     {
-        // Mock reject job
-        pendingJobs?.RemoveAll(j => j.Id == jobId);
-        await Task.Delay(1);
+        try
+        {
+            var job = await DbContext.JobPosts.FindAsync(jobId);
+            if (job != null)
+            {
+                job.IsActive = false;
+                job.UpdatedAt = DateTime.UtcNow;
+                await DbContext.SaveChangesAsync();
+                
+                // Remove from UI list
+                var jobSummary = pendingJobs?.FirstOrDefault(j => j.Id == jobId);
+                if (jobSummary != null)
+                {
+                    pendingJobs?.Remove(jobSummary);
+                }
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rejecting job: {ex.Message}");
+        }
     }
 
     private async Task ViewJob(int jobId)
     {
-        // Mock view job action
-        await Task.Delay(1);
+        Navigation.NavigateTo($"/job/{jobId}");
+        await Task.CompletedTask;
     }
 
-    // Temporary models for UI development
-    public class AdminUserModel
+    public class UserSummary
     {
-        public int Id { get; set; }
+        public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
@@ -359,7 +371,7 @@
         public bool IsActive { get; set; }
     }
 
-    public class AdminJobModel
+    public class JobSummary
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;

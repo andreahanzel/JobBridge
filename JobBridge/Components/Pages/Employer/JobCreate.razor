@@ -114,7 +114,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Timezone</label>
+                        <label class="form-label required">Timezone</label>
                         <select class="form-control" @bind="jobPost.Timezone">
                             <option value="">Select Timezone</option>
                             <option value="PST (Pacific)">PST (Pacific)</option>
@@ -122,6 +122,7 @@
                             <option value="CST (Central)">CST (Central)</option>
                             <option value="EST (Eastern)">EST (Eastern)</option>
                         </select>
+                        <ValidationMessage For="@(() => jobPost.Timezone)" class="text-danger" />
                     </div>
 
                     <div class="form-group">
@@ -256,13 +257,13 @@
                 <div class="form-group">
                     <div class="checkbox-group">
                         <label class="checkbox-option">
-                            <input type="checkbox" @bind="jobPost.IsFeatured" />
+                            <input type="radio" name="jobType" value="featured" @onchange="OnJobTypeChanged" checked="@jobPost.IsFeatured" />
                             <span class="checkbox-label">This is a featured job posting</span>
                             <span class="checkbox-hint">Featured jobs get higher visibility</span>
                         </label>
 
                         <label class="checkbox-option">
-                            <input type="checkbox" @bind="jobPost.IsUrgent" />
+                            <input type="radio" name="jobType" value="urgent" @onchange="OnJobTypeChanged" checked="@jobPost.IsUrgent" />
                             <span class="checkbox-label">This is an urgent hiring need</span>
                             <span class="checkbox-hint">Shows an "urgent" badge to attract faster applications</span>
                         </label>
@@ -381,6 +382,13 @@
         {
             maxSalaryFormatted = input;
         }
+    }
+
+    private void OnJobTypeChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        jobPost.IsFeatured = value == "featured";
+        jobPost.IsUrgent = value == "urgent";
     }
 
     private void HandleCancel()

@@ -1,0 +1,146 @@
+@page "/admin/reports"
+@attribute [Authorize(Roles = "Admin")]
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@inject JobBridgeContext DbContext
+
+<PageTitle>Reports - Admin</PageTitle>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="hero-title">Platform Reports</h1>
+        <p class="hero-subtitle">Analytics and insights for platform performance</p>
+    </div>
+
+    <div class="reports-content">
+        <!-- User Analytics -->
+        <div class="report-section">
+            <h3>User Analytics</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Total Users</h4>
+                    <span class="stat-number">@totalUsers</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Job Seekers</h4>
+                    <span class="stat-number">@jobSeekers</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Employers</h4>
+                    <span class="stat-number">@employers</span>
+                </div>
+                <div class="stat-card">
+                    <h4>New This Month</h4>
+                    <span class="stat-number">@newUsersThisMonth</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Analytics -->
+        <div class="report-section">
+            <h3>Job Analytics</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Total Jobs</h4>
+                    <span class="stat-number">@totalJobs</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Active Jobs</h4>
+                    <span class="stat-number">@activeJobs</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Applications</h4>
+                    <span class="stat-number">@totalApplications</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Avg Applications/Job</h4>
+                    <span class="stat-number">@avgApplications.ToString("F1")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Companies -->
+        <div class="report-section">
+            <h3>Top Companies by Job Posts</h3>
+            <div class="table-container">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Active Jobs</th>
+                            <th>Total Applications</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (topCompanies?.Any() == true)
+                        {
+                            @foreach (var company in topCompanies)
+                            {
+                                <tr>
+                                    <td>@company.Name</td>
+                                    <td>@company.JobCount</td>
+                                    <td>@company.ApplicationCount</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    private int totalUsers = 0;
+    private int jobSeekers = 0;
+    private int employers = 0;
+    private int newUsersThisMonth = 0;
+    private int totalJobs = 0;
+    private int activeJobs = 0;
+    private int totalApplications = 0;
+    private double avgApplications = 0;
+    private List<CompanyStats>? topCompanies;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReportData();
+    }
+
+    private async Task LoadReportData()
+    {
+        totalUsers = await DbContext.Users.CountAsync();
+        jobSeekers = await DbContext.Users.CountAsync(u => u.Role == "JobSeeker");
+        employers = await DbContext.Users.CountAsync(u => u.Role == "Employer");
+        
+        var monthAgo = DateTime.UtcNow.AddMonths(-1);
+        newUsersThisMonth = await DbContext.Users.CountAsync(u => u.CreatedAt >= monthAgo);
+        
+        totalJobs = await DbContext.JobPosts.CountAsync();
+        activeJobs = await DbContext.JobPosts.CountAsync(j => j.IsActive);
+        totalApplications = await DbContext.Applications.CountAsync();
+        
+        avgApplications = activeJobs > 0 ? (double)totalApplications / activeJobs : 0;
+
+        topCompanies = await DbContext.Employers
+            .Select(e => new CompanyStats
+            {
+                Name = e.Name ?? "Unknown",
+                JobCount = e.JobPosts.Count(j => j.IsActive),
+                ApplicationCount = DbContext.Applications.Count(a => e.JobPosts.Any(j => j.Id == a.JobPostId))
+            })
+            .Where(c => c.JobCount > 0)
+            .OrderByDescending(c => c.JobCount)
+            .Take(10)
+            .ToListAsync();
+    }
+
+    public class CompanyStats
+    {
+        public string Name { get; set; } = "";
+        public int JobCount { get; set; }
+        public int ApplicationCount { get; set; }
+    }
+}

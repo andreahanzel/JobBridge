@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
 
 
 <div class="job-card">
@@ -70,10 +71,13 @@
             <div class="job-timing">
                 <span class="posted-date">Posted @GetRelativeTime(JobPost.PostedDate)</span>
             </div>
-            <div class="job-cta">
+            <div class="job-cta" style="display: flex; flex-direction: column; gap: var(--space-2);">
+                <button class="btn btn-secondary btn-sm" style="background-color: #22c55e; color: white; border-color: #22c55e;" @onclick:stopPropagation="true" @onclick="async () => await ViewJob(JobPost)">
+                    Apply External
+                    <span class="btn-arrow" aria-hidden="true">→</span>
+                </button>
                 <button class="btn btn-primary btn-sm" @onclick:stopPropagation="true" @onclick="async () => await ApplyForJob(JobPost)">
                     Apply Now
-                    <span class="btn-arrow" aria-hidden="true">→</span>
                 </button>
             </div>
         </div>
@@ -128,16 +132,8 @@
         return description.Length > 120 ? description.Substring(0, 120) + "..." : description;
     }
 
-    private async Task ApplyForJob(JobPost job)
+    private async Task ViewJob(JobPost job)
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        
-        if (!authState.User.Identity?.IsAuthenticated == true)
-        {
-            Navigation.NavigateTo("/authentication/login");
-            return;
-        }
-        
         string applicationUrl = "";
         
         if (!string.IsNullOrEmpty(job.ExternalApplicationUrl))
@@ -151,7 +147,21 @@
             applicationUrl = $"https://careers.{companyName}.com/apply/{job.Id}";
         }
         
-        Navigation.NavigateTo(applicationUrl, forceLoad: true);
+        await JSRuntime.InvokeVoidAsync("open", applicationUrl, "_blank");
+    }
+
+    private async Task ApplyForJob(JobPost job)
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        
+        if (!authState.User.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/authentication/login");
+            return;
+        }
+        
+        // Add application to Recent Applications - navigate to dashboard to handle this
+        Navigation.NavigateTo($"/apply/{job.Id}");
     }
 
     // This method retrieves the skill tags from a job description
