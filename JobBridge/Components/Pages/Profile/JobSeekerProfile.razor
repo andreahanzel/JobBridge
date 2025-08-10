@@ -1,4 +1,5 @@
 @page "/profile/jobseeker/{Id:int}"
+@page "/profile/jobseeker/{UserId}"
 @attribute [Authorize(Roles = "Employer")]
 @using JobBridge.Data
 @using JobBridge.Models
@@ -14,27 +15,78 @@
 <div class="profile-container">
     @if (hasAccess && jobSeeker != null)
     {
-        <div class="profile-section">
-            <h2>Applicant Basic Profile</h2>
-            <div class="profile-details">
-                <div class="detail-item">
-                    <strong>First Name:</strong>
-                    <span>@jobSeeker.User.FirstName</span>
-                </div>
-                <div class="detail-item">
-                    <strong>Last Name:</strong>
-                    <span>@jobSeeker.User.LastName</span>
-                </div>
-                <div class="detail-item">
-                    <strong>Email:</strong>
-                    <span>@jobSeeker.User.Email</span>
-                </div>
-                <div class="detail-item">
-                    <strong>Phone Number:</strong>
-                    <span>@(!string.IsNullOrEmpty(jobSeeker.User.Phone) ? jobSeeker.User.Phone : "Not provided")</span>
+        @if (isAdmin)
+        {
+            <div class="profile-section">
+                <h2>Complete User Registration Details (Admin View)</h2>
+                <div class="profile-details">
+                    <div class="detail-item">
+                        <strong>User ID:</strong>
+                        <span>@jobSeeker.User.Id</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>First Name:</strong>
+                        <span>@jobSeeker.User.FirstName</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Last Name:</strong>
+                        <span>@jobSeeker.User.LastName</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Email:</strong>
+                        <span>@jobSeeker.User.Email</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Phone Number:</strong>
+                        <span>@(!string.IsNullOrEmpty(jobSeeker.User.Phone) ? jobSeeker.User.Phone : "Not provided")</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Role:</strong>
+                        <span>@jobSeeker.User.Role</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Email Confirmed:</strong>
+                        <span>@(jobSeeker.User.EmailConfirmed ? "Yes" : "No")</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Account Created:</strong>
+                        <span>@jobSeeker.User.CreatedAt.ToString("MMM dd, yyyy 'at' hh:mm tt")</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Last Updated:</strong>
+                        <span>@jobSeeker.User.UpdatedAt.ToString("MMM dd, yyyy 'at' hh:mm tt")</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Resume URL:</strong>
+                        <span>@(!string.IsNullOrEmpty(jobSeeker.ResumeUrl) ? jobSeeker.ResumeUrl : "Not provided")</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
+        else
+        {
+            <div class="profile-section">
+                <h2>Applicant Basic Profile</h2>
+                <div class="profile-details">
+                    <div class="detail-item">
+                        <strong>First Name:</strong>
+                        <span>@jobSeeker.User.FirstName</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Last Name:</strong>
+                        <span>@jobSeeker.User.LastName</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Email:</strong>
+                        <span>@jobSeeker.User.Email</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Phone Number:</strong>
+                        <span>@(!string.IsNullOrEmpty(jobSeeker.User.Phone) ? jobSeeker.User.Phone : "Not provided")</span>
+                    </div>
+                </div>
+            </div>
+        }
     }
     else if (!hasAccess)
     {
@@ -270,9 +322,11 @@
 
 @code { // This is the code block for the job seeker profile
     [Parameter] public int Id { get; set; }
+    [Parameter] public string? UserId { get; set; }
     
     private JobSeeker? jobSeeker;
     private bool hasAccess = false;
+    private bool isAdmin = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -283,48 +337,88 @@
     private async Task CheckAccessAndLoadProfile()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(currentUserId))
         {
             Navigation.NavigateTo("/login");
             return;
         }
 
-        // Get current employer
-        var employer = await DbContext.Employers
-            .FirstOrDefaultAsync(e => e.UserId == userId);
-            
-        if (employer == null)
+        // Determine the JobSeeker ID to look up
+        int jobSeekerId;
+        if (!string.IsNullOrEmpty(UserId))
         {
-            hasAccess = false;
-            return;
+            // Route with UserId - find JobSeeker by User ID
+            var jobSeekerByUserId = await DbContext.JobSeekers
+                .FirstOrDefaultAsync(js => js.UserId == UserId);
+            if (jobSeekerByUserId == null)
+            {
+                hasAccess = false;
+                return;
+            }
+            jobSeekerId = jobSeekerByUserId.Id;
+        }
+        else
+        {
+            // Route with Id - use directly
+            jobSeekerId = Id;
         }
 
-        // Check if job seeker has applied to any of this employer's jobs
-        hasAccess = await DbContext.Applications
-            .AnyAsync(a => a.JobSeekerId == Id && a.JobPost.EmployerId == employer.Id);
+        // Check if current user is Admin
+        isAdmin = authState.User.IsInRole("Admin");
+        
+        if (isAdmin)
+        {
+            // Admin has access to all profiles
+            hasAccess = true;
+        }
+        else
+        {
+            // Get current employer
+            var employer = await DbContext.Employers
+                .FirstOrDefaultAsync(e => e.UserId == currentUserId);
+                
+            if (employer == null)
+            {
+                hasAccess = false;
+                return;
+            }
+
+            // Check if job seeker has applied to any of this employer's jobs
+            hasAccess = await DbContext.Applications
+                .AnyAsync(a => a.JobSeekerId == jobSeekerId && a.JobPost.EmployerId == employer.Id);
+        }
 
         if (hasAccess)
         {
             jobSeeker = await DbContext.JobSeekers
                 .Include(js => js.User)
-                .FirstOrDefaultAsync(js => js.Id == Id);
+                .FirstOrDefaultAsync(js => js.Id == jobSeekerId);
 
-            // Track profile view
-            var existingView = await DbContext.ProfileViews
-                .FirstOrDefaultAsync(pv => pv.JobSeekerId == Id && pv.EmployerId == employer.Id);
-                
-            if (existingView == null)
+            // Track profile view (only for employers, not admins)
+            if (!isAdmin)
             {
-                var profileView = new ProfileView
+                var employer = await DbContext.Employers
+                    .FirstOrDefaultAsync(e => e.UserId == currentUserId);
+                    
+                if (employer != null)
                 {
-                    JobSeekerId = Id,
-                    EmployerId = employer.Id,
-                    ViewedAt = DateTime.UtcNow
-                };
-                DbContext.ProfileViews.Add(profileView);
-                await DbContext.SaveChangesAsync();
+                    var existingView = await DbContext.ProfileViews
+                        .FirstOrDefaultAsync(pv => pv.JobSeekerId == jobSeekerId && pv.EmployerId == employer.Id);
+                        
+                    if (existingView == null)
+                    {
+                        var profileView = new ProfileView
+                        {
+                            JobSeekerId = jobSeekerId,
+                            EmployerId = employer.Id,
+                            ViewedAt = DateTime.UtcNow
+                        };
+                        DbContext.ProfileViews.Add(profileView);
+                        await DbContext.SaveChangesAsync();
+                    }
+                }
             }
         }
     }

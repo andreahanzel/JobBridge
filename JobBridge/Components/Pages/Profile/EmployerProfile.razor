@@ -1,0 +1,171 @@
+@page "/profile/employer/{UserId}"
+@attribute [Authorize(Roles = "Admin")]
+@using JobBridge.Data
+@using JobBridge.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject JobBridgeContext DbContext
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Employer Profile - JobBridge</PageTitle>
+
+<div class="profile-container">
+    @if (employer != null)
+    {
+        <div class="profile-section">
+            <h2>Complete Employer Profile (Admin View)</h2>
+            <div class="profile-details">
+                <div class="detail-item">
+                    <strong>User ID:</strong>
+                    <span>@employer.User.Id</span>
+                </div>
+                <div class="detail-item">
+                    <strong>First Name:</strong>
+                    <span>@employer.User.FirstName</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Last Name:</strong>
+                    <span>@employer.User.LastName</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Email:</strong>
+                    <span>@employer.User.Email</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Phone Number:</strong>
+                    <span>@(!string.IsNullOrEmpty(employer.User.Phone) ? employer.User.Phone : "Not provided")</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Role:</strong>
+                    <span>@employer.User.Role</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Email Confirmed:</strong>
+                    <span>@(employer.User.EmailConfirmed ? "Yes" : "No")</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Account Created:</strong>
+                    <span>@employer.User.CreatedAt.ToString("MMM dd, yyyy 'at' hh:mm tt")</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Last Updated:</strong>
+                    <span>@employer.User.UpdatedAt.ToString("MMM dd, yyyy 'at' hh:mm tt")</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Company Name:</strong>
+                    <span>@(!string.IsNullOrEmpty(employer.Name) ? employer.Name : "Not provided")</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Industry:</strong>
+                    <span>@(!string.IsNullOrEmpty(employer.Industry) ? employer.Industry : "Not provided")</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Location:</strong>
+                    <span>@(!string.IsNullOrEmpty(employer.Location) ? employer.Location : "Not provided")</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Number of Employees:</strong>
+                    <span>@employer.NumberOfEmployees</span>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="loading">
+            <p>Loading profile...</p>
+        </div>
+    }
+</div>
+
+<style>
+    .profile-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .profile-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .profile-section h2 {
+        text-align: center;
+        margin-bottom: 2rem;
+        background: linear-gradient(90deg, #0ea5e9, #d946ef);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 1.75rem;
+        font-weight: 600;
+    }
+
+    .profile-details {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .detail-item {
+        margin-bottom: 1rem;
+    }
+
+    .detail-item strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #374151;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .detail-item span {
+        display: block;
+        padding: 0.75rem;
+        background-color: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        color: #111827;
+        font-size: 1rem;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .loading p {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+    }
+</style>
+
+@code {
+    [Parameter] public string? UserId { get; set; }
+    
+    private Employers? employer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployerProfile();
+    }
+
+    private async Task LoadEmployerProfile()
+    {
+        if (!string.IsNullOrEmpty(UserId))
+        {
+            employer = await DbContext.Employers
+                .Include(e => e.User)
+                .FirstOrDefaultAsync(e => e.UserId == UserId);
+        }
+    }
+}

@@ -36,6 +36,10 @@
                 <div class="stat-label">New Today</div>
             </div>
             <div class="stat-card">
+                <div class="stat-number">@jobs.Count(j => j.IsUrgent)</div>
+                <div class="stat-label">Urgent</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-number">@jobs.Count(j => j.IsFeatured)</div>
                 <div class="stat-label">Featured</div>
             </div>

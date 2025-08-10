@@ -1,5 +1,6 @@
 @page "/jobs/{id:int}"
 @page "/job-listings/{id:int}"
+@page "/job/{id:int}"
 @using JobBridge.Data
 @using JobBridge.Models
 @using Microsoft.EntityFrameworkCore
@@ -153,7 +154,7 @@ else if (jobPost != null)
                         <p>@jobPost.RequiredSkills</p>
 
                         <h3>Nice to Have Skills</h3>
-                        <p>@jobPost.NiceToHaveSkills</p>
+   <p>@jobPost.NiceToHaveSkills</p>
                     </div>
                 </section>
             </div>

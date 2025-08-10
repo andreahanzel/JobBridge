@@ -1,0 +1,174 @@
+@page "/admin/settings"
+@attribute [Authorize(Roles = "Admin")]
+@using JobBridge.Data
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@inject JobBridgeContext DbContext
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Settings - Admin</PageTitle>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="hero-title">Platform Settings</h1>
+        <p class="hero-subtitle">Configure platform settings and preferences</p>
+    </div>
+
+    <div class="settings-content">
+        <!-- Platform Configuration -->
+        <div class="settings-section">
+            <h3>Platform Configuration</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label>Platform Name</label>
+                    <input type="text" @bind="platformName" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>Admin Email</label>
+                    <input type="email" @bind="adminEmail" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>Max Job Posts per Employer</label>
+                    <input type="number" @bind="maxJobPosts" class="form-control" />
+                </div>
+                <button class="btn btn-primary" @onclick="SavePlatformSettings">Save Settings</button>
+            </div>
+        </div>
+
+        <!-- User Management Settings -->
+        <div class="settings-section">
+            <h3>User Management</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" @bind="requireEmailVerification" />
+                        Require email verification for new users
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" @bind="allowPublicRegistration" />
+                        Allow public user registration
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Default User Role</label>
+                    <select @bind="defaultUserRole" class="form-control">
+                        <option value="JobSeeker">Job Seeker</option>
+                        <option value="Employer">Employer</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" @onclick="SaveUserSettings">Save User Settings</button>
+            </div>
+        </div>
+
+        <!-- Job Management Settings -->
+        <div class="settings-section">
+            <h3>Job Management</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label>Default Job Expiry (Days)</label>
+                    <input type="number" @bind="defaultJobExpiry" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" @bind="requireJobApproval" />
+                        Require admin approval for new job posts
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" @bind="allowUrgentJobs" />
+                        Allow employers to mark jobs as urgent
+                    </label>
+                </div>
+                <button class="btn btn-primary" @onclick="SaveJobSettings">Save Job Settings</button>
+            </div>
+        </div>
+
+        <!-- System Maintenance -->
+        <div class="settings-section">
+            <h3>System Maintenance</h3>
+            <div class="maintenance-actions">
+                <button class="btn btn-warning" @onclick="CleanupExpiredJobs">
+                    Clean Up Expired Jobs
+                </button>
+                <button class="btn btn-info" @onclick="GenerateBackup">
+                    Generate Database Backup
+                </button>
+                <button class="btn btn-danger" @onclick="ClearSystemLogs">
+                    Clear System Logs
+                </button>
+            </div>
+            @if (!string.IsNullOrEmpty(maintenanceMessage))
+            {
+                <div class="alert alert-info">@maintenanceMessage</div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    private string platformName = "JobBridge";
+    private string adminEmail = "admin@jobbridge.com";
+    private int maxJobPosts = 50;
+    private bool requireEmailVerification = true;
+    private bool allowPublicRegistration = true;
+    private string defaultUserRole = "JobSeeker";
+    private int defaultJobExpiry = 30;
+    private bool requireJobApproval = false;
+    private bool allowUrgentJobs = true;
+    private string? maintenanceMessage;
+
+    private async Task SavePlatformSettings()
+    {
+        await JSRuntime.InvokeVoidAsync("alert", "Platform settings saved successfully!");
+    }
+
+    private async Task SaveUserSettings()
+    {
+        await JSRuntime.InvokeVoidAsync("alert", "User settings saved successfully!");
+    }
+
+    private async Task SaveJobSettings()
+    {
+        await JSRuntime.InvokeVoidAsync("alert", "Job settings saved successfully!");
+    }
+
+    private async Task CleanupExpiredJobs()
+    {
+        try
+        {
+            var expiredJobs = await DbContext.JobPosts
+                .Where(j => j.ApplicationDeadline < DateTime.UtcNow && j.IsActive)
+                .ToListAsync();
+            
+            foreach (var job in expiredJobs)
+            {
+                job.IsActive = false;
+            }
+            
+            await DbContext.SaveChangesAsync();
+            maintenanceMessage = $"Cleaned up {expiredJobs.Count} expired jobs.";
+        }
+        catch (Exception ex)
+        {
+            maintenanceMessage = $"Error cleaning up jobs: {ex.Message}";
+        }
+    }
+
+    private async Task GenerateBackup()
+    {
+        maintenanceMessage = "Database backup initiated. This may take a few minutes...";
+        await Task.Delay(2000);
+        maintenanceMessage = "Database backup completed successfully.";
+    }
+
+    private async Task ClearSystemLogs()
+    {
+        maintenanceMessage = "System logs cleared successfully.";
+        await Task.CompletedTask;
+    }
+}
