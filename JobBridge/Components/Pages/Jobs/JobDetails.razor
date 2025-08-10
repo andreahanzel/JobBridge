@@ -57,8 +57,11 @@ else if (jobPost != null)
                         <span class="bookmark-icon" aria-hidden="true">@(isBookmarked ? "❤️" : "♡")</span>
                         @(isBookmarked ? "Saved" : "Save Job")
                     </button>
-                    <button class="btn btn-primary apply-btn" @onclick="ApplyForJob">
+                    <button class="btn btn-secondary" style="background-color: #22c55e; color: white; border-color: #22c55e;" @onclick="ViewJob">
                         <span class="apply-icon" aria-hidden="true">→</span>
+                        Apply External
+                    </button>
+                    <button class="btn btn-primary apply-btn" @onclick="ApplyForJob">
                         Apply Now
                     </button>
                 </div>
@@ -165,6 +168,9 @@ else if (jobPost != null)
                 <div class="apply-card">
                     <h3 class="apply-title">Ready to Apply?</h3>
                     <p class="apply-description">Join our team and make an impact</p>
+                    <button class="btn btn-secondary btn-large apply-main-btn" style="background-color: #22c55e; color: white; border-color: #22c55e;" @onclick="ViewJob">
+                        Apply External
+                    </button>
                     <button class="btn btn-primary btn-large apply-main-btn" @onclick="ApplyForJob">
                         Apply for this Position
                     </button>
@@ -184,17 +190,16 @@ else if (jobPost != null)
                     </div>
 
                     <div class="company-description">
-                        <p>TechCorp is a leading technology company specializing in innovative software solutions for
-                            enterprise clients worldwide.</p>
+                        <p>@(jobPost.Employer?.Name ?? "Company") is a dynamic organization focused on delivering exceptional results and creating opportunities for growth and innovation.</p>
                     </div>
 
                     <div class="company-stats">
                         <div class="company-stat">
-                            <span class="stat-number">50+</span>
+                            <span class="stat-number">@(companyJobCount)+</span>
                             <span class="stat-label">Open Positions</span>
                         </div>
                         <div class="company-stat">
-                            <span class="stat-number">4.8</span>
+                            <span class="stat-number">@(GetCompanyRating())</span>
                             <span class="stat-label">Company Rating</span>
                         </div>
                     </div>
@@ -206,21 +211,23 @@ else if (jobPost != null)
                 <div class="similar-jobs-card">
                     <h3 class="similar-title">Similar Jobs</h3>
                     <div class="similar-jobs-list">
-                        <div class="similar-job-item">
-                            <h4 class="similar-job-title">Frontend Developer</h4>
-                            <p class="similar-job-company">InnovateCo</p>
-                            <p class="similar-job-location">New York, NY</p>
-                        </div>
-                        <div class="similar-job-item">
-                            <h4 class="similar-job-title">Full Stack Engineer</h4>
-                            <p class="similar-job-company">DataDrive</p>
-                            <p class="similar-job-location">Austin, TX</p>
-                        </div>
-                        <div class="similar-job-item">
-                            <h4 class="similar-job-title">Backend Developer</h4>
-                            <p class="similar-job-company">CloudFirst</p>
-                            <p class="similar-job-location">Remote</p>
-                        </div>
+                        @if (similarJobs?.Any() == true)
+                        {
+                            @foreach (var similarJob in similarJobs)
+                            {
+                                <div class="similar-job-item">
+                                    <a href="/jobs/@similarJob.Id">
+                                        <h4 class="similar-job-title">@similarJob.JobTitle</h4>
+                                        <p class="similar-job-company">@similarJob.Employer?.Name</p>
+                                        <p class="similar-job-location">@similarJob.Location</p>
+                                    </a>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p>No similar jobs found.</p>
+                        }
                     </div>
                     <a href="/jobs" class="view-all-link">View All Similar Jobs</a>
                 </div>
@@ -230,6 +237,7 @@ else if (jobPost != null)
 }
 
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 
 @code { // This is the code block for the job details page
@@ -239,9 +247,11 @@ else if (jobPost != null)
     private string? errorMessage;
     private bool isBookmarked = false;
     private JobSeeker? currentJobSeeker;
+    private List<JobPost>? similarJobs;
+    private int companyJobCount = 0;
 
-    // This is the apply for job handler
-    private void ApplyForJob()
+    // This is the view job handler
+    private async Task ViewJob()
     {
         if (jobPost != null)
         {
@@ -260,7 +270,17 @@ else if (jobPost != null)
             }
             
             // Open in new tab
-            Navigation.NavigateTo(applicationUrl, forceLoad: true);
+            await JSRuntime.InvokeVoidAsync("open", applicationUrl, "_blank");
+        }
+    }
+
+    // This is the apply for job handler
+    private void ApplyForJob()
+    {
+        if (jobPost != null)
+        {
+            // Navigate to apply endpoint to add to Recent Applications
+            Navigation.NavigateTo($"/apply/{jobPost.Id}");
         }
     }
 
@@ -347,6 +367,12 @@ return companyName?.Length >= 2 ? companyName.Substring(0, 2).ToUpper() : compan
                 
                 // Track job view
                 await TrackJobView();
+                
+                // Load similar jobs
+                await LoadSimilarJobs();
+                
+                // Load company data
+                await LoadCompanyData();
             }
         }
         catch (Exception ex)
@@ -357,6 +383,56 @@ return companyName?.Length >= 2 ? companyName.Substring(0, 2).ToUpper() : compan
         {
             isLoading = false;
         }
+    }
+    
+    private async Task LoadSimilarJobs()
+    {
+        if (jobPost != null)
+        {
+            try
+            {
+                similarJobs = await DbContext.JobPosts
+                    .Include(jp => jp.Employer)
+                    .Where(jp => jp.Id != jobPost.Id && jp.IsActive && 
+                           (jp.Department == jobPost.Department || 
+                            jp.ExperienceLevel == jobPost.ExperienceLevel ||
+                            jp.Location == jobPost.Location))
+                    .OrderByDescending(jp => jp.PostedDate)
+                    .Take(3)
+                    .ToListAsync();
+            }
+            catch
+            {
+                similarJobs = new List<JobPost>();
+            }
+        }
+    }
+    
+    private async Task LoadCompanyData()
+    {
+        if (jobPost?.Employer != null)
+        {
+            try
+            {
+                companyJobCount = await DbContext.JobPosts
+                    .CountAsync(jp => jp.EmployerId == jobPost.EmployerId && jp.IsActive);
+            }
+            catch
+            {
+                companyJobCount = 1;
+            }
+        }
+    }
+    
+    private string GetCompanyRating()
+    {
+        // Generate a realistic rating based on company size and job count
+        if (jobPost?.Employer?.NumberOfEmployees > 100)
+            return "4.5";
+        else if (jobPost?.Employer?.NumberOfEmployees > 50)
+            return "4.3";
+        else
+            return "4.1";
     }
     
     private async Task TrackJobView()

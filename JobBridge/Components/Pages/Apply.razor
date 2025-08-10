@@ -1,0 +1,63 @@
+@page "/apply/{jobId:int}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using JobBridge.Data
+@using JobBridge.Models
+@using Microsoft.EntityFrameworkCore
+@inject JobBridgeContext DbContext
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    [Parameter] public int JobId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if (string.IsNullOrEmpty(userId))
+        {
+            Navigation.NavigateTo("/authentication/login");
+            return;
+        }
+
+        var jobSeeker = await DbContext.JobSeekers
+            .FirstOrDefaultAsync(js => js.UserId == userId);
+
+        if (jobSeeker == null)
+        {
+            // Create JobSeeker record if it doesn't exist
+            jobSeeker = new JobSeeker
+            {
+                UserId = userId,
+                ResumeUrl = "",
+                RememberMe = false
+            };
+            DbContext.JobSeekers.Add(jobSeeker);
+            await DbContext.SaveChangesAsync();
+        }
+
+        // Check if already applied
+        bool alreadyApplied = await DbContext.Applications
+            .AnyAsync(a => a.JobSeekerId == jobSeeker.Id && a.JobPostId == JobId);
+
+        if (!alreadyApplied)
+        {
+            var newApplication = new Application
+            {
+                JobSeekerId = jobSeeker.Id,
+                JobPostId = JobId,
+                Status = ApplicationStatus.Pending,
+                AppliedDate = DateTime.UtcNow
+            };
+
+            DbContext.Applications.Add(newApplication);
+            await DbContext.SaveChangesAsync();
+        }
+
+        // Redirect to dashboard
+        Navigation.NavigateTo($"/dashboard/jobseeker/{jobSeeker.Id}");
+    }
+}

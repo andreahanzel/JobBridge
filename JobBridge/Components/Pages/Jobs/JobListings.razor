@@ -316,10 +316,19 @@
                 (j.Employer != null && j.Employer.Name != null && j.Employer.Name.ToLower().Contains(searchTerm)) ||
                 (j.RequiredSkills != null && j.RequiredSkills.ToLower().Contains(searchTerm)) ||
                 (j.NiceToHaveSkills != null && j.NiceToHaveSkills.ToLower().Contains(searchTerm)) ||
-                (j.KeyResponsibilities != null && j.KeyResponsibilities.ToLower().Contains(searchTerm)));
+                (j.KeyResponsibilities != null && j.KeyResponsibilities.ToLower().Contains(searchTerm)) ||
+                (j.RequiredQualifications != null && j.RequiredQualifications.ToLower().Contains(searchTerm)) ||
+                (j.PreferredQualifications != null && j.PreferredQualifications.ToLower().Contains(searchTerm)));
             
             var afterCount = query.Count();
             Console.WriteLine($"Before filter: {beforeCount} jobs, After filter: {afterCount} jobs");
+            
+            // Log all job titles for debugging
+            Console.WriteLine("Available job titles:");
+            foreach(var job in jobs.Take(10))
+            {
+                Console.WriteLine($"  - {job.JobTitle} ({job.Department})");
+            }
         }
 
             if (!string.IsNullOrWhiteSpace(currentSearch.Location))
