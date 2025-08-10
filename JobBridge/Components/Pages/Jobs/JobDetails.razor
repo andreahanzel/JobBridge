@@ -7,7 +7,7 @@
 @inject JobBridgeContext DbContext
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>@jobPost.JobTitle - JobBridge</PageTitle>
+<PageTitle>@(jobPost?.JobTitle ?? "Job Details") - JobBridge</PageTitle>
 
 @if (isLoading)
 {
@@ -254,7 +254,7 @@ else if (jobPost != null)
             else
             {
                 // Generate a mock application URL based on company name
-                var companyName = jobPost.Employer?.Name?.ToLower().Replace(" ", "") ?? "company";
+                var companyName = jobPost.Employer?.Name?.ToLower()?.Replace(" ", "") ?? "company";
                 applicationUrl = $"https://careers.{companyName}.com/apply/{jobPost.Id}";
             }
             
@@ -274,7 +274,7 @@ else if (jobPost != null)
         {
             return $"{words[0][0]}{words[1][0]}".ToUpper();
         }
-return companyName.Length >= 2 ? companyName.Substring(0, 2).ToUpper() : companyName.ToUpper();
+return companyName?.Length >= 2 ? companyName.Substring(0, 2).ToUpper() : companyName?.ToUpper() ?? "?";
     }
 
     // This is the save job handler
