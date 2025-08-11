@@ -1,49 +1,51 @@
 @namespace JobBridge.Components.Common
 
 <div class="search-bar-container">
-    <div class="search-bar-wrapper">
-        <div class="search-input-group">
-            <label for="search-term-input" class="visually-hidden">Search for jobs, companies, or keywords</label>
-            <div class="search-icon">
-                <span class="icon" aria-hidden="true">🔍</span>
+    <form @onsubmit="PerformSearch" @onsubmit:preventDefault="true">
+        <div class="search-bar-wrapper">
+            <div class="search-input-group">
+                <label for="search-term-input" class="visually-hidden">Search for jobs, companies, or keywords</label>
+                <div class="search-icon">
+                    <span class="icon" aria-hidden="true">🔍</span>
+                </div>
+                <input type="text"
+                        id="search-term-input" class="search-input"
+                        placeholder="@Placeholder"
+                        @bind="SearchTerm"
+                        @bind:event="oninput"
+                        @onkeypress="HandleKeyPress"
+                        @onfocus="OnSearchFocus"
+                        @onblur="OnSearchBlur" />
+                
+                @if (!string.IsNullOrEmpty(SearchTerm))
+                {
+                    <button type="button" class="clear-button" @onclick="ClearSearch" aria-label="Clear search">
+                        <span class="clear-icon" aria-hidden="true">✕</span>
+                    </button>
+                }
             </div>
-            <input type="text"
-                    id="search-term-input" class="search-input"
-                    placeholder="@Placeholder"
-                    @bind="SearchTerm"
+
+            <div class="location-input-group">
+                <label for="location-input" class="visually-hidden">Location</label>
+                <div class="location-icon">
+                    <span class="icon" aria-hidden="true">📍</span>
+                </div>
+                <input type="text"
+                    id="location-input" class="location-input"
+                    placeholder="Location"
+                    @bind="LocationTerm"
                     @bind:event="oninput"
                     @onkeypress="HandleKeyPress"
-                    @onfocus="OnSearchFocus"
-                    @onblur="OnSearchBlur" />
-            
-            @if (!string.IsNullOrEmpty(SearchTerm))
-            {
-                <button class="clear-button" @onclick="ClearSearch" aria-label="Clear search">
-                    <span class="clear-icon" aria-hidden="true">✕</span>
-                </button>
-            }
-        </div>
-
-        <div class="location-input-group">
-            <label for="location-input" class="visually-hidden">Location</label>
-            <div class="location-icon">
-                <span class="icon" aria-hidden="true">📍</span>
+                    @onfocus="OnLocationFocus"
+                    @onblur="OnLocationBlur" />
             </div>
-            <input type="text"
-                id="location-input" class="location-input"
-                placeholder="Location"
-                @bind="LocationTerm"
-                @bind:event="oninput"
-                @onkeypress="HandleKeyPress"
-                @onfocus="OnLocationFocus"
-                @onblur="OnLocationBlur" />
-        </div>
 
-        <button class="search-button" @onclick="PerformSearch" aria-label="Search">
-            <span class="search-btn-icon" aria-hidden="true">🔍</span>
-            <span class="search-btn-text">Search</span>
-        </button>
-    </div>
+            <button type="submit" class="search-button">
+                <span class="search-btn-icon" aria-hidden="true">🔍</span>
+                <span class="search-btn-text">Search</span>
+            </button>
+        </div>
+    </form>
 
     <!-- Advanced Search Toggle -->
     <div class="advanced-search-toggle">
@@ -106,9 +108,12 @@
 
     private List<string> RecentSearches = new();
 
+
+    
     private async Task PerformSearch()
     {
-        Console.WriteLine($"PerformSearch: SearchTerm='{SearchTerm}', LocationTerm='{LocationTerm}'");
+        Console.WriteLine($"PerformSearch CALLED: SearchTerm='{SearchTerm}', LocationTerm='{LocationTerm}'");
+        
         var searchModel = new SearchModel
         {
             SearchTerm = SearchTerm,
@@ -126,8 +131,10 @@
             }
         }
 
+        Console.WriteLine($"About to invoke OnSearch with: {searchModel.SearchTerm}");
         await OnSearch.InvokeAsync(searchModel);
         IsFocused = false;
+        Console.WriteLine($"PerformSearch COMPLETED");
     }
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
