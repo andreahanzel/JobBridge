@@ -304,9 +304,24 @@
 
     private async Task ViewUser(string userId)
     {
-        // Navigate to user profile page
-        Navigation.NavigateTo($"/profile/jobseeker/{userId}");
-        await Task.CompletedTask;
+        // Find the user and navigate to appropriate profile based on role
+        var user = await DbContext.Users.FindAsync(userId);
+        if (user != null)
+        {
+            if (user.Role == "JobSeeker")
+            {
+                Navigation.NavigateTo($"/profile/jobseeker/{userId}");
+            }
+            else if (user.Role == "Employer")
+            {
+                Navigation.NavigateTo($"/profile/employer/{userId}");
+            }
+            else
+            {
+                // For Admin or other roles, go to user management page
+                Navigation.NavigateTo($"/admin/users");
+            }
+        }
     }
 
     private async Task ToggleUserStatus(string userId)

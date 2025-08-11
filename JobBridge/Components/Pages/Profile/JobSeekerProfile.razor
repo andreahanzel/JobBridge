@@ -1,6 +1,6 @@
 @page "/profile/jobseeker/{Id:int}"
 @page "/profile/jobseeker/{UserId}"
-@attribute [Authorize(Roles = "Employer")]
+@attribute [Authorize(Roles = "Employer,Admin")]
 @using JobBridge.Data
 @using JobBridge.Models
 @using Microsoft.EntityFrameworkCore

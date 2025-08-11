@@ -35,6 +35,7 @@
     opacity: 0;
     transition: opacity var(--transition-fast);
     border-radius: var(--radius-2xl);
+    pointer-events: none;
 }
 
 .search-bar-wrapper:focus-within {
