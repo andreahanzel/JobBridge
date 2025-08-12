@@ -25,7 +25,13 @@ namespace JobBridge.Services
             {
                 // Add a small delay to ensure JS runtime is ready
                 await Task.Delay(100);
-                var authData = await jsRuntime.InvokeAsync<string>("localStorage.getItem", "authData");
+                
+                // Check sessionStorage first, then localStorage
+                var authData = await jsRuntime.InvokeAsync<string>("sessionStorage.getItem", "authData");
+                if (string.IsNullOrEmpty(authData))
+                {
+                    authData = await jsRuntime.InvokeAsync<string>("localStorage.getItem", "authData");
+                }
                 if (!string.IsNullOrEmpty(authData))
                 {
                     var userData = JsonSerializer.Deserialize<UserData>(authData);
@@ -69,19 +75,26 @@ namespace JobBridge.Services
             var identity = new ClaimsIdentity(claims, "Custom");
             _currentUser = new ClaimsPrincipal(identity);
 
+            // Always store in sessionStorage (for current session)
+            // Use localStorage only if remember is true
+            var userData = new UserData
+            {
+                UserId = userId,
+                Email = email,
+                Name = name,
+                Role = role,
+                FirstName = firstName
+            };
+
+            var authData = JsonSerializer.Serialize(userData);
+            
             if (remember)
             {
-                var userData = new UserData
-                {
-                    UserId = userId,
-                    Email = email,
-                    Name = name,
-                    Role = role,
-                    FirstName = firstName
-                };
-
-                var authData = JsonSerializer.Serialize(userData);
                 await jsRuntime.InvokeVoidAsync("localStorage.setItem", "authData", authData);
+            }
+            else
+            {
+                await jsRuntime.InvokeVoidAsync("sessionStorage.setItem", "authData", authData);
             }
 
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
@@ -94,6 +107,7 @@ namespace JobBridge.Services
         {
             _currentUser = new ClaimsPrincipal(new ClaimsIdentity());
             await jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authData");
+            await jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", "authData");
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
