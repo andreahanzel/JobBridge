@@ -42,6 +42,7 @@
         if (firstRender)
         {
             await SessionAuth.InitializeAsync(JSRuntime);
+            StateHasChanged(); // Added this line to refresh the UI after auth loads
         }
     }
 }
