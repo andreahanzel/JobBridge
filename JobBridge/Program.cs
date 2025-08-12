@@ -26,8 +26,8 @@ builder.Services.AddSingleton(builder.Configuration);
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddSingleton<SessionAuthService>();
-builder.Services.AddSingleton<AuthenticationStateProvider>(provider => provider.GetService<SessionAuthService>()!);
+builder.Services.AddScoped<SessionAuthService>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<SessionAuthService>());
 
 builder.Services.AddHttpClient();
 builder.Services.AddSqlite<JobBridgeContext>("Data Source=jobbridge.db");
@@ -136,14 +136,34 @@ using (var scope = app.Services.CreateScope())
         {
             // In production, ensure the database file exists
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-            var dbPath = connectionString?.Replace("Data Source=", "");
-            if (!string.IsNullOrEmpty(dbPath) && !File.Exists(dbPath))
+            var dbPath = connectionString?.Replace("Data Source=", "").Trim();
+            
+            // Ensure directory exists for production path
+            if (!string.IsNullOrEmpty(dbPath))
             {
-                await db.Database.EnsureCreatedAsync();
+                var directory = Path.GetDirectoryName(dbPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                
+                if (!File.Exists(dbPath))
+                {
+                    await db.Database.EnsureCreatedAsync();
+                }
             }
         }
         
-        await db.Database.MigrateAsync();
+        try 
+            {
+                await db.Database.MigrateAsync();
+            }
+            catch (Exception migrationEx)
+            {
+                // If migration fails, try to ensure database exists
+                logger.LogWarning("Migration failed, attempting to ensure database exists: {Message}", migrationEx.Message);
+                await db.Database.EnsureCreatedAsync();
+            }
         
         try
         {
