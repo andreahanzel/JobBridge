@@ -23,7 +23,9 @@ namespace JobBridge.Services
         {
             try
             {
-                var authData = await jsRuntime.InvokeAsync<string>("localStorage.getItem", "authData"); // Get auth data from localStorage
+                // Add a small delay to ensure JS runtime is ready
+                await Task.Delay(100);
+                var authData = await jsRuntime.InvokeAsync<string>("localStorage.getItem", "authData");
                 if (!string.IsNullOrEmpty(authData))
                 {
                     var userData = JsonSerializer.Deserialize<UserData>(authData);

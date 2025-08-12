@@ -1,7 +1,8 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @inject SessionAuthService SessionAuth
 @inject IJSRuntime JSRuntime
-@using System.Security.Claims
 
 <div class="page-layout-horizontal">
     <header class="top-navbar-container" role="banner">
