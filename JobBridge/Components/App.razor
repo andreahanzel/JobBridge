@@ -94,23 +94,6 @@
     }
 </style>
 
-<script>
-    window.addEventListener('load', () => {
-        Blazor.start({
-            reconnectionHandler: {
-                onConnectionDown: () => {
-                    document.getElementById('components-reconnect-modal').classList.add('show');
-                },
-                onConnectionUp: () => {
-                    document.getElementById('components-reconnect-modal').classList.remove('show');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                }
-            }
-        });
-    });
-</script>
 
 <body>
     <!-- Skip link for accessibility -->
@@ -127,7 +110,7 @@
         // ensures that the initial page focus is on the skip-link.
         window.addEventListener('load', () => {
             const skipLink = document.querySelector('.skip-link');
-   
+
             if (skipLink) {
                 setTimeout(() => {
                     skipLink.focus();
@@ -139,29 +122,32 @@
     <script src="_framework/blazor.web.js"></script>
 
     <script>
-        // Add smooth scrolling behavior
-        document.documentElement.style.scrollBehavior = "smooth";
+        // Wait for Blazor to be ready before executing
+        window.addEventListener('DOMContentLoaded', () => {
+            // Add smooth scrolling behavior
+            document.documentElement.style.scrollBehavior = "smooth";
 
-        // Add theme color meta tag based on user preference
-        if (
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-        ) {
-            document
-                .querySelector('meta[name="theme-color"]')
-                .setAttribute("content", "#1e293b");
-        }
-
-        // Update navbar shadow on scroll
-        window.addEventListener("scroll", () => {
-            const navbar = document.querySelector(".top-navbar-container");
-            if (navbar) {
-                if (window.scrollY > 10) {
-                    navbar.classList.add("scrolled");
-                } else {
-                    navbar.classList.remove("scrolled");
-                }
+            // Add theme color meta tag based on user preference
+            if (
+                window.matchMedia &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches
+            ) {
+                document
+                    .querySelector('meta[name="theme-color"]')
+                    .setAttribute("content", "#1e293b");
             }
+
+            // Update navbar shadow on scroll
+            window.addEventListener("scroll", () => {
+                const navbar = document.querySelector(".top-navbar-container");
+                if (navbar) {
+                    if (window.scrollY > 10) {
+                        navbar.classList.add("scrolled");
+                    } else {
+                        navbar.classList.remove("scrolled");
+                    }
+                }
+            });
         });
     </script>
 
