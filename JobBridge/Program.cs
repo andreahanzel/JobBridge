@@ -154,7 +154,16 @@ using (var scope = app.Services.CreateScope())
             }
         }
         
-        await db.Database.MigrateAsync();
+        try 
+            {
+                await db.Database.MigrateAsync();
+            }
+            catch (Exception migrationEx)
+            {
+                // If migration fails, try to ensure database exists
+                logger.LogWarning("Migration failed, attempting to ensure database exists: {Message}", migrationEx.Message);
+                await db.Database.EnsureCreatedAsync();
+            }
         
         try
         {
