@@ -30,7 +30,7 @@ Add features after the second team meeting
 
 ### Team Members
 
-- Andrea Toreki - UI/UX & Frontend Lead
+- Andrea Toreki - UI/UX & Frontend Lead, Deployment
 - Amanda Cristina Schneider Migliorini - Database Architect
 - Anana Agwu Ezikpe - Project Setup & Auth Lead
 - Emory Ryan Worsham - Backend Developer
@@ -43,8 +43,8 @@ Add features after the second team meeting
 ## Project Links
 
 - **Repository**: [Azure DevOps Repo](https://dev.azure.com/atorekiTEAM/_git/CSE325TeamProject)
-- **Live Demo**: [JobBridge App](https://jobbridge-team06-d5agcya8cka3agd8.northcentralus-01.azurewebsites.net/)
-- **Video Demo**: [YouTube Link] (Add after recording)
+- **Live Demo on Render**: [JobBridge App](https://jobbridge-app.onrender.com/)
+- **Video Demo**: [YouTube Link] (Will add after recording)
 
 ## About JobBridge
 
